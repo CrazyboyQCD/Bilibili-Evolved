@@ -3,7 +3,7 @@ import type { Content, Instance, Props } from 'tippy.js'
 import tippy from 'tippy.js'
 
 import { addStyle } from '../style'
-import miniStyle from './mini.scss'
+import miniStyle from './mini.css?raw';
 
 export interface MiniToast {
   message: Content

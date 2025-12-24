@@ -1,4 +1,4 @@
-import mdiStyle from './mdi.css'
+import mdiStyle from './mdi.css?raw';
 
 export const initMdiStyle = () => {
   // const mdi = document.createElement('link')

@@ -150,7 +150,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import './common';
+@use 'common' as *;
 .be-popup {
   position: absolute;
   z-index: 1;

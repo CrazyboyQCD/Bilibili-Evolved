@@ -223,13 +223,13 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'common';
-@import './blocker';
+@use 'common';
+@use './blocker' as blocker;
 
 body.enable-feeds-filter:not(.disable-feeds-filter) {
-  @include type-block();
-  @include side-block();
-  @include pattern-block();
+  @include blocker.type-block();
+  @include blocker.side-block();
+  @include blocker.pattern-block();
 }
 body.disable-feeds-filter {
   .feeds-filter-section {
@@ -245,7 +245,7 @@ body.disable-feeds-filter {
   display: none;
   flex-direction: column;
   max-height: 80vh;
-  @include no-scrollbar();
+  @include common.no-scrollbar();
 
   body.enable-feeds-filter:not(.disable-feeds-filter) & {
     display: flex;
@@ -296,7 +296,7 @@ body.disable-feeds-filter {
     }
   }
   h2 {
-    @include semi-bold();
+    @include common.semi-bold();
     font-size: 13px;
     margin: 0;
     margin-bottom: 8px;

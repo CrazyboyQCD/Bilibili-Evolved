@@ -127,7 +127,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 .settings-panel-content .sidebar > * {
   position: relative;
   flex: 1;

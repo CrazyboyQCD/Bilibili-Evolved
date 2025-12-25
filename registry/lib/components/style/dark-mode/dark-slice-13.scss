@@ -1,4 +1,4 @@
-@import './dark-definitions';
+@use './dark-definitions' as *;
 .series {
   .bt-top .bt {
     @include color('e');

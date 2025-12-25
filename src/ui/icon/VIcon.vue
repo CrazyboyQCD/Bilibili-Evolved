@@ -46,6 +46,8 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
+@use './bilifont' as *;
+@use './vanfont' as *;
 /** 由于允许自定义SVG插入, 样式不能是scoped的, 否则匹配不上 */
 @font-face {
   font-family: 'be-iconfont-bilifont';
@@ -56,8 +58,7 @@ export default defineComponent({
   src: url('//s1.hdslb.com/bfs/static/jinkela/video/asserts/iconfont.6401a86.ttf')
     format('truetype');
 }
-@import './bilifont';
-@import './vanfont';
+
 .be-icon {
   color: inherit;
   fill: inherit;

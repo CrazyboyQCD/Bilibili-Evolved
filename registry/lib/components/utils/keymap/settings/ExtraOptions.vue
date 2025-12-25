@@ -42,7 +42,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 .keymap-extra-options {
   @include h-center();
   justify-content: center;

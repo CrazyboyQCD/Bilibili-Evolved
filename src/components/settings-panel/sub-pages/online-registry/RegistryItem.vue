@@ -190,8 +190,8 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
-@import 'markdown';
+@use 'common' as *;
+@use 'markdown' as *;
 
 .online-registry-item-wrapper {
   min-height: 39px;

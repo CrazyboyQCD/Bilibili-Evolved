@@ -274,14 +274,14 @@ const ThisComponent = defineComponent({
 export default ThisComponent
 </script>
 <style lang="scss">
-@import 'common';
-@import '../popup';
+@use 'common';
+@use '../popup';
 
 .custom-navbar .favorites-list {
   width: 380px;
-  @include navbar-popup-height();
+  @include popup.navbar-popup-height();
   font-size: 12px;
-  @include v-stretch();
+  @include common.v-stretch();
   justify-content: center;
   .be-empty,
   .be-loading {
@@ -292,7 +292,7 @@ export default ThisComponent
     text-align: center;
   }
   .header {
-    @include h-stretch();
+    @include common.h-stretch();
     justify-content: space-between;
     margin: 16px 12px;
     .search {
@@ -308,19 +308,19 @@ export default ThisComponent
     }
     .dropdown-popup {
       max-height: 300px;
-      @include no-scrollbar();
+      @include common.no-scrollbar();
     }
     .operation {
       margin-left: 8px;
     }
     .more-info {
-      @include h-center();
-      @include round-bar(26);
+      @include common.h-center();
+      @include common.round-bar(26);
       padding: 4px;
     }
     .play-all {
-      @include h-center();
-      @include round-bar(26);
+      @include common.h-center();
+      @include common.round-bar(26);
       padding: 4px;
     }
   }
@@ -330,8 +330,8 @@ export default ThisComponent
     justify-content: space-between;
     flex-grow: 1;
     .floating {
-      @include round-bar(20);
-      @include h-center();
+      @include common.round-bar(20);
+      @include common.h-center();
       background-color: #000c;
       color: white;
       justify-content: center;
@@ -413,8 +413,8 @@ export default ThisComponent
         .title {
           grid-area: title;
           font-size: 13px;
-          @include semi-bold();
-          @include max-line(2);
+          @include common.semi-bold();
+          @include common.max-line(2);
           -webkit-box-align: start;
           margin: 0;
           margin-top: 8px;
@@ -430,8 +430,8 @@ export default ThisComponent
           justify-self: start;
           align-self: center;
           max-width: calc(100% - 16px);
-          @include h-center();
-          @include round-bar(24);
+          @include common.h-center();
+          @include common.round-bar(24);
           border: 1px solid #8882;
           &:hover {
             background-color: #8882;
@@ -457,7 +457,7 @@ export default ThisComponent
           }
         }
         .description {
-          @include single-line();
+          @include common.single-line();
           margin: 4px 10px;
         }
       }

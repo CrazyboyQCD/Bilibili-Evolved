@@ -171,7 +171,7 @@ const ThisComponent = defineComponent({
 export default ThisComponent
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 .custom-navbar-settings {
   @include popup();
   width: 400px;

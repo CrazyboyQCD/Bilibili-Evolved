@@ -1,4 +1,4 @@
-@import 'common';
+@use 'common' as *;
 
 @mixin subtitle {
   &.bilibili-player-area .subtitle-position.subtitle-position {

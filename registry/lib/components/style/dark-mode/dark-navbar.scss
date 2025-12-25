@@ -1,9 +1,9 @@
-@import "./dark-definitions";
+@use './dark-definitions' as *;
 .z_top .z_top_nav ul li:hover,
 .uns_box ul.menu li:not(.b-post):hover,
 .search-bar-ctnr .search-bar,
 .nav-header-wrapper .nav-header .nav-header-search-bar {
-  @include background-color("2");
+  @include background-color('2');
 }
 .bili-header-m .nav-menu .nav-mask,
 .bili-header-m .nav-menu.blur-black .nav-mask,
@@ -12,7 +12,7 @@
 #app > .link-navbar,
 #app > .nav-header-wrapper,
 .b-header-mask-wrp .b-header-mask {
-  @include background-color("3");
+  @include background-color('3');
 }
 .z_top .i-link:hover,
 .z_top .z_top_nav ul li.home:hover {
@@ -26,13 +26,13 @@
     .main-ctnr .nav-logo,
     .nav-item.selected .label,
     .nav-item:hover .icon-font {
-      @include color("e");
+      @include color('e');
     }
   }
   & > .nav-header-wrapper > .nav-header {
     .nav-header-mainsite,
     .order-center {
-      @include color("e");
+      @include color('e');
     }
   }
 }
@@ -48,13 +48,13 @@
 .link-navbar .main-ctnr .nav-logo,
 .search-bar-ctnr .search-bar input,
 .nav-header-wrapper .nav-header .nav-header-search-bar {
-  @include color("e");
+  @include color('e');
 }
 .search-bar-ctnr .search-bar {
   .placeholder,
   .search-btn,
   input::placeholder {
-    @include color("87");
+    @include color('87');
   }
 }
 .uns_box li.u-i:hover a.i-link,

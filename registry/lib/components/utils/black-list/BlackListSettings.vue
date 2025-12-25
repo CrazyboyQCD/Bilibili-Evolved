@@ -116,7 +116,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 .custom-black-list-settings {
   @include popup();
   width: 400px;

@@ -1,4 +1,4 @@
-@import "./dark-definitions";
+@use './dark-definitions' as *;
 @mixin level-badge($levels, $color) {
   @each $num in $levels {
     .level-#{$num} {
@@ -33,13 +33,13 @@
 .title-renew-panel .actions,
 .user-title-using-cntr .panel,
 .international-home {
-  @include background-color("2");
+  @include background-color('2');
 }
 .manga-navbar {
   .search-bar .search-bar-bg,
   .user-panel .drop-list .logout-btn-container,
   .drop-list .more-btn-container {
-    @include background-color("3");
+    @include background-color('3');
   }
 }
 .skeleton {
@@ -48,7 +48,7 @@
   .skeleton-user-name,
   .skeleton-time,
   .skeleton-content {
-    @include background-color("3");
+    @include background-color('3');
   }
 }
 .yzly-content-ctnr .btn,
@@ -60,15 +60,15 @@
 .international-header .bili-banner,
 .message-list-content .notify-wrapper .notify-text,
 .user-title-using-cntr .user-title-box {
-  @include background-color("3");
+  @include background-color('3');
 }
 .up-info .u-face .fa {
-  @include background-color("4");
+  @include background-color('4');
 }
 .share-step {
   .core-style {
-    @include color("e");
-    @include border-color("4");
+    @include color('e');
+    @include border-color('4');
     @include background-color();
     &:hover,
     &:focus-within {
@@ -82,54 +82,54 @@
   .hab-ctnr,
   .news-ctnr,
   .rank-ctnr {
-    @include background-color("4");
+    @include background-color('4');
   }
 }
 .confirmorder-container {
-  @include background-color("4");
+  @include background-color('4');
   @include no-shadow();
   h1 {
-    @include color("e");
+    @include color('e');
     span {
-      @include color("a");
+      @include color('a');
     }
   }
   .card {
     .card-bottom .delete {
       @include to-gray();
       &:hover {
-        @include to-theme("pink");
+        @include to-theme('pink');
       }
     }
     &.active {
       @include theme-border-color();
       &::before {
-        @include to-theme("pink");
+        @include to-theme('pink');
       }
     }
   }
   .discounts {
-    @include border-color("5");
+    @include border-color('5');
     .discounts-list p {
       @include border-color();
-      @include background-color("1");
-      @include color("6");
+      @include background-color('1');
+      @include color('6');
     }
   }
   .total-container div span {
-    @include color("e");
+    @include color('e');
     &.total {
       @include theme-color();
     }
   }
   .confirm-bottom .confirm-paybtn.active {
-    @include to-theme("pink");
+    @include to-theme('pink');
   }
   .confirm-bottom .service-term {
-    @include color("a");
+    @include color('a');
     .check-icon,
     .check-icon.checked {
-      @include to-theme("pink");
+      @include to-theme('pink');
     }
     .term-content {
       @include theme-color();
@@ -139,74 +139,74 @@
 .eticket-container {
   .top-box .header {
     @include border-color();
-    @include background-color("3");
+    @include background-color('3');
     .header-back {
       @include to-white();
     }
     h1 {
-      @include color("e");
+      @include color('e');
     }
     &::after {
       @include border-color();
     }
   }
   .eticket-info-container {
-    @include background-color("4");
+    @include background-color('4');
     @include no-shadow();
   }
   .eticket-info-right {
     div {
-      @include color("e");
+      @include color('e');
     }
     p {
-      @include color("a");
+      @include color('a');
     }
   }
   .qrcode-container {
-    @include background-color("4");
+    @include background-color('4');
     .qrcode-tip {
       @include background-color();
-      @include color("e");
+      @include color('e');
     }
     .qrcode-container-item .qrcode-hide-tip {
-      @include color("e");
+      @include color('e');
     }
     .ticket-code,
     .ticket-type {
       &,
       .color-gray-light {
-        @include color("a");
+        @include color('a');
       }
       span {
-        @include color("e");
+        @include color('e');
       }
     }
     .addr-map {
-      @include background-color("38");
+      @include background-color('38');
       h1 {
-        @include color("e");
+        @include color('e');
       }
       p {
-        @include color("a");
+        @include color('a');
       }
       .map-icon {
-        @include to-theme("pink");
+        @include to-theme('pink');
       }
     }
   }
 }
 .orderdetail-container {
   .orderdetail-wrapper {
-    @include color("a");
+    @include color('a');
     .wrapper-ticket {
-      @include color("e");
+      @include color('e');
       .tip {
         @include theme-color();
       }
     }
   }
   .total-container div span {
-    @include color("e");
+    @include color('e');
     &.total {
       @include theme-color();
     }
@@ -221,16 +221,16 @@
 .van-popper-history .view-all,
 .share-content .video-card,
 .section-block .flip-view {
-  @include background-color("4");
+  @include background-color('4');
 }
 .love-card .header::after {
-  @include background-color("5");
+  @include background-color('5');
 }
 .s_tag .btn-add span {
-  @include background-color("e");
+  @include background-color('e');
 }
 .coin-dialog-mask .coin-operated .mc .mc-box {
-  @include background-color("f");
+  @include background-color('f');
 }
 .card .risk-tip-content {
   background-color: #624f27 !important;
@@ -253,14 +253,14 @@
   @include background-color();
 }
 .manga-navbar .search-bar .placeholder-list .placeholder-item {
-  @include color("8");
+  @include color('8');
 }
 
 .manga-navbar .data-list .list-container {
   .empty-hinter,
   .failure-hinter,
   .loading-hinter {
-    @include color("a");
+    @include color('a');
   }
 }
 #biliAppHomeSetting label ~ span,
@@ -276,13 +276,13 @@
 .share-content .video-card .up-info .tip,
 .live-panel .title .count,
 .video-desc .reprint {
-  @include color("a");
+  @include color('a');
 }
 #biliAppHomeSetting {
   select,
   input,
   a {
-    @include color("e");
+    @include color('e');
   }
 }
 
@@ -292,7 +292,7 @@
   .user-info-panel .info-item,
   .user-panel .drop-list .logout-btn-container .logout-button,
   .drop-list .more-btn-container .more-button {
-    @include color("e");
+    @include color('e');
   }
 }
 .medal-ctnr {
@@ -303,41 +303,41 @@
 
 .reply {
   .divider {
-    @include border-color("5");
+    @include border-color('5');
   }
   .divider-last {
     &::before,
     &::after {
-      @include background-color("5");
+      @include background-color('5');
     }
     span {
-      @include color("a");
+      @include color('a');
     }
   }
 }
 .share-success {
   .success-text {
-    @include color("e");
+    @include color('e');
   }
   .success-link {
     @include theme-color();
   }
   .success-btn {
     @include border-color();
-    @include background-color("4");
-    @include color("e");
+    @include background-color('4');
+    @include color('e');
   }
 }
 .center-box {
   .line-1 {
     .name-field {
-      @include color("e");
+      @include color('e');
       a {
-        @include color("e");
+        @include color('e');
       }
     }
     .like-item {
-      @include color("e");
+      @include color('e');
     }
   }
   .line-2 {
@@ -349,7 +349,7 @@
 .bb-comment,
 .comment-bilibili-fold {
   .comment-send .dynamic-repost {
-    @include color("c");
+    @include color('c');
   }
 }
 .manga-navbar-history-list .action-button,
@@ -378,16 +378,16 @@
 .bilibili-player-video-control .bilibili-player-video-btn-speed,
 .gridview-content-container .song-intro,
 .song-padding .song-intro {
-  @include color("e");
+  @include color('e');
 }
 .van-popover .vip:hover,
 .international-header .mini-upload:hover {
-  @include color("f");
+  @include color('f');
 }
 .superChat-card-detail {
   .card-item-middle-top .name,
   .card-item-top-right {
-    @include color("e");
+    @include color('e');
   }
 }
 
@@ -402,24 +402,24 @@ $rankColors: (
   #2d0855: #f6be18,
 );
 @each $current, $original in $rankColors {
-  $rgb: "rgb(" + red($current) + ", " + green($current) + ", " + blue($current) + ")";
+  $rgb: 'rgb(' + red($current) + ', ' + green($current) + ', ' + blue($current) + ')';
   .fans-medal-item:not(.medal-guard) {
-    &[style*="border-color: #{$rgb}"],
-    &[style*="border-color: #{$current}"] {
+    &[style*='border-color: #{$rgb}'],
+    &[style*='border-color: #{$current}'] {
       border-color: $original !important;
       .label {
         background-color: $original !important;
       }
       .fans-medal-label {
         @include no-image();
-        @include color("2");
+        @include color('2');
         background-color: $original !important;
       }
       .level {
         color: $original !important;
       }
       .fans-medal-level {
-        @include background-color("2");
+        @include background-color('2');
         color: $original !important;
       }
     }
@@ -427,8 +427,8 @@ $rankColors: (
 }
 .fans-medal-item.medal-guard {
   .fans-medal-level {
-    @include background-color("2");
-    @include color("e");
+    @include background-color('2');
+    @include color('e');
   }
 }
 
@@ -449,21 +449,21 @@ $highlight-map: (
 }
 .card-content .like-users-panel {
   &::before {
-    @include background-color("6");
+    @include background-color('6');
   }
   .users-box {
-    @include color("e");
+    @include color('e');
     .like-users-list {
       &,
       &:active,
       &:link,
       &:visited {
-        @include color("e");
+        @include color('e');
       }
     }
   }
   .suffix-text {
-    @include color("a");
+    @include color('a');
   }
 }
 .live-room-app .aside-area .chat-control-panel {
@@ -479,10 +479,10 @@ $highlight-map: (
   }
   .charge-header {
     .user-link {
-      @include background-color("3");
+      @include background-color('3');
       @include border-color();
       .user-name {
-        @include color("e");
+        @include color('e');
       }
       &:hover .user-name {
         @include theme-color();
@@ -491,17 +491,17 @@ $highlight-map: (
   }
   .battery-item {
     .battery-bg {
-      @include background-color("3");
+      @include background-color('3');
       @include border-color();
     }
     .battery-tool input {
       @include background-color();
-      @include border-color("4");
-      @include color("e");
+      @include border-color('4');
+      @include color('e');
     }
     &.active {
       .battery-bg {
-        @include background-color("4");
+        @include background-color('4');
         @include theme-border-color();
       }
       .battery-text {
@@ -513,35 +513,35 @@ $highlight-map: (
     }
   }
   .charge-info {
-    @include color("e");
+    @include color('e');
     span {
       @include theme-color();
     }
   }
   .split-line {
-    @include background-color("4");
+    @include background-color('4');
   }
   .battery-pay-info {
-    @include color("e");
+    @include color('e');
     span {
       @include theme-color();
     }
     .battery-pay-tips span {
-      @include color("a");
+      @include color('a');
     }
   }
   .battery-tips {
-    @include color("a");
+    @include color('a');
     a,
     a:hover {
       @include theme-color();
     }
   }
   .checkbox-bwxr.active {
-    @include to-theme("blue");
+    @include to-theme('blue');
   }
   .btn-default {
-    @include theme-background-color("80");
+    @include theme-background-color('80');
     @include foreground-color();
     @include border-color();
     &:hover {
@@ -550,7 +550,7 @@ $highlight-map: (
   }
   .charge-success-content {
     > p {
-      @include color("e");
+      @include color('e');
       span,
       i {
         @include theme-color();
@@ -559,28 +559,28 @@ $highlight-map: (
     > .charge-success-message {
       @include theme-border-color();
       .charge-success-message-tool span {
-        @include color("a");
+        @include color('a');
       }
     }
   }
 }
 .activity-m {
   .inside-wrp {
-    @include border-color("4");
+    @include border-color('4');
     .right .inside-bg::before {
       background-image: linear-gradient(90deg, #222, transparent 30%) !important;
     }
   }
   .hinter-msg {
-    @include color("e");
+    @include color('e');
   }
   .b-btn-praise {
     @include theme-background-color();
     @include foreground-color();
     &.voted {
-      @include color("a");
+      @include color('a');
       @include border-color();
-      @include background-color("3");
+      @include background-color('3');
     }
   }
 }
@@ -612,31 +612,31 @@ $highlight-map: (
   }
 }
 .june-activity-entry .progress-bar {
-  @include color("a");
+  @include color('a');
   @include background-color();
-  @include border-color("37a29c");
+  @include border-color('37a29c');
 }
 .focus-us .text {
-  @include color("6d757a");
+  @include color('6d757a');
 }
 .main-wrap {
   .container {
     @include no-shadow();
   }
   .bg-circle {
-    @include background-color("4");
+    @include background-color('4');
   }
   .version-date,
   .text-wrap {
-    @include color("a");
+    @include color('a');
   }
   .info-title {
-    @include color("e");
+    @include color('e');
   }
   .info-select {
-    @include border-color("5");
+    @include border-color('5');
     li {
-      @include color("e");
+      @include color('e');
       &.active {
         @include foreground-color();
         @include theme-background-color();
@@ -645,62 +645,62 @@ $highlight-map: (
   }
 }
 .channel-sidebar {
-  @include background-color("2");
-  @include border-color("4");
+  @include background-color('2');
+  @include border-color('4');
   .sidebar-search-bar {
-    @include border-color("3");
+    @include border-color('3');
     .inner-input {
-      @include color("e");
+      @include color('e');
       @include background-color();
     }
   }
   .discovery-panel {
-    @include border-color("4");
+    @include border-color('4');
     &__title {
-      @include color("e");
+      @include color('e');
       &.discovery-panel__title--active {
-        @include background-color("3");
+        @include background-color('3');
       }
       &:hover {
-        @include background-color("4");
+        @include background-color('4');
       }
       .iconfont {
-        @include color("e");
+        @include color('e');
       }
     }
     .content-item {
       &__name {
-        @include color("e");
+        @include color('e');
       }
       &__count {
-        @include color("a");
+        @include color('a');
       }
       &.content-item--active {
-        @include background-color("3");
+        @include background-color('3');
       }
       &:hover {
-        @include background-color("4");
+        @include background-color('4');
       }
     }
     &__toggle {
       @include background-color();
-      @include color("a");
+      @include color('a');
     }
   }
   .subscribe-panel {
     @include background-color();
     &__title {
       .text {
-        @include color("e");
+        @include color('e');
       }
       .count,
       .btn {
-        @include color("a");
+        @include color('a');
       }
     }
     &__login {
       .hint {
-        @include color("a");
+        @include color('a');
       }
       .login-btn {
         @include theme-background-color();
@@ -708,17 +708,17 @@ $highlight-map: (
       }
     }
     .subscribe-item--active {
-      @include background-color("3");
+      @include background-color('3');
     }
     .subscribe-item {
       &:hover {
-        @include background-color("4");
+        @include background-color('4');
       }
       .cover {
-        @include background-color("4");
+        @include background-color('4');
       }
       .name {
-        @include color("e");
+        @include color('e');
       }
     }
   }
@@ -730,26 +730,26 @@ $highlight-map: (
   .type-header {
     .header-info {
       .title {
-        @include color("e");
+        @include color('e');
       }
       .count {
-        @include color("a");
+        @include color('a');
       }
     }
   }
   .slide-channel-panel {
     .arrow-btn .iconfont {
-      @include color("a");
+      @include color('a');
     }
     .slide {
       .mini-channel-card {
-        @include background-color("3");
-        @include color("e");
+        @include background-color('3');
+        @include color('e');
         .cover {
-          @include background-color("28");
+          @include background-color('28');
         }
         .label {
-          @include color("a");
+          @include color('a');
         }
       }
     }
@@ -757,8 +757,8 @@ $highlight-map: (
   .hot-channel-panel {
     .change-btn {
       @include border-color();
-      @include color("e");
-      @include background-color("3");
+      @include color('e');
+      @include background-color('3');
       img {
         @include to-white();
       }
@@ -767,7 +767,7 @@ $highlight-map: (
       .card {
         @include background-color();
         .title {
-          @include color("e");
+          @include color('e');
         }
       }
     }
@@ -775,8 +775,8 @@ $highlight-map: (
 }
 .detail-page-container {
   .detail-banner {
-    &:not([style*="background-color"]) {
-      @include background-color("4");
+    &:not([style*='background-color']) {
+      @include background-color('4');
     }
     .mini-channel-card .cover {
       @include background-color();
@@ -795,34 +795,34 @@ $highlight-map: (
       @include background-color();
     }
     .van-tabs-wrap .van-tabs-tab:not(.van-tabs-tab-active) {
-      @include color("e");
+      @include color('e');
     }
     .year-selector,
     .play-selector {
       &__item {
         @include background-color();
-        &:not([style*="border"]) {
-          @include color("a");
-          @include border-color("4");
+        &:not([style*='border']) {
+          @include color('a');
+          @include border-color('4');
         }
       }
     }
     .rank-card-panel {
       .header {
         .title {
-          @include color("e");
+          @include color('e');
         }
         .desc {
-          @include color("a");
+          @include color('a');
         }
       }
       .toggle {
         > span {
-          @include background-color("2");
-          @include color("a");
+          @include background-color('2');
+          @include color('a');
         }
         &::before {
-          @include background-color("4");
+          @include background-color('4');
         }
       }
     }
@@ -832,10 +832,10 @@ $highlight-map: (
   .inner-container {
     &__header {
       .title {
-        @include color("e");
+        @include color('e');
       }
       .count {
-        @include color("a");
+        @include color('a');
       }
     }
   }
@@ -843,24 +843,24 @@ $highlight-map: (
 .detail-page-container,
 .discovery-container,
 .category-container {
-  @include background-color("2");
+  @include background-color('2');
   &::-webkit-scrollbar-track {
     @include border-color();
   }
   .video-card {
     &__content {
       .cover-picture {
-        @include background-color("4");
+        @include background-color('4');
       }
     }
     .video-name {
-      @include color("e");
+      @include color('e');
       &:hover {
         @include theme-color();
       }
     }
     .up-name {
-      @include color("a");
+      @include color('a');
       &:hover {
         @include theme-color();
       }
@@ -869,14 +869,14 @@ $highlight-map: (
   .channel-list-preview {
     .header-info {
       .title {
-        @include color("e");
+        @include color('e');
       }
       .header-desc {
-        @include color("a");
+        @include color('a');
       }
     }
     .channel-btns {
-      > [class*="btn"] {
+      > [class*='btn'] {
         @include theme-border-color();
         @include theme-color();
       }
@@ -885,8 +885,8 @@ $highlight-map: (
   @include back-top-btn();
 }
 .international-home .contact-help {
-  @include color("9");
-  @include background-color("3");
+  @include color('9');
+  @include background-color('3');
   @include border-color();
   box-shadow: 0 6px 10px 0 #111 !important;
 }
@@ -895,19 +895,19 @@ $highlight-map: (
 .van-popover {
   .mini-type .nav-search {
     #nav_searchform {
-      @include background-color("3");
+      @include background-color('3');
       @include border-color();
       .nav-search-keyword {
-        @include color("a");
+        @include color('a');
         &:focus {
-          @include color("e");
+          @include color('e');
         }
       }
     }
     .nav-search-btn {
-      @include background-color("4");
+      @include background-color('4');
       .nav-search-submit {
-        @include color("e");
+        @include color('e');
       }
       &:hover .nav-search-submit {
         @include theme-color();
@@ -917,9 +917,9 @@ $highlight-map: (
 }
 .most-viewed-panel {
   > .icon {
-    @include fill("6");
+    @include fill('6');
     &.active {
-      @include fill("a");
+      @include fill('a');
       &:hover {
         @include theme-fill();
       }
@@ -928,15 +928,15 @@ $highlight-map: (
   .most-viewed-item {
     .section {
       .avatar {
-        @include border-color("4");
+        @include border-color('4');
         box-shadow: 0 0 0 1px transparent !important;
         &.active {
           box-shadow: 0 0 0 1px var(--theme-color) !important;
         }
       }
       .icon-all {
-        @include theme-background-color("30");
-        @include border-color("4");
+        @include theme-background-color('30');
+        @include border-color('4');
         box-shadow: 0 0 0 1px transparent !important;
         &.active {
           box-shadow: 0 0 0 1px var(--theme-color) !important;
@@ -948,15 +948,15 @@ $highlight-map: (
     }
     .icon-bg-1 {
       .icon-bg-2 {
-        @include theme-background-color("10");
-        @include border-color("4");
+        @include theme-background-color('10');
+        @include border-color('4');
       }
       .icon {
         @include theme-fill();
       }
       .avatar {
-        @include background-color("2");
-        @include border-color("4");
+        @include background-color('2');
+        @include border-color('4');
       }
 
       &.active {
@@ -970,16 +970,16 @@ $highlight-map: (
 }
 .live-up .live-up-img {
   box-shadow: 0 0 0 1px var(--theme-color) !important;
-  @include border-color("4");
-  @include background-color("2");
+  @include border-color('4');
+  @include background-color('2');
 }
 .bilibili-search-suggest,
 .bilibili-search-history {
-  @include background-color("3");
+  @include background-color('3');
   @include border-color();
 }
 .module-game .rule .detail .content {
-  @include color("0");
+  @include color('0');
 }
 #biliAppHomeSetting {
   select,
@@ -1000,7 +1000,7 @@ $highlight-map: (
   @include border-color();
 }
 .wide-members .avatar {
-  @include border-color("3");
+  @include border-color('3');
 }
 .manga-navbar .search-bar .confirm-btn .search-icon,
 .container .level-intro .svg-icon {
@@ -1029,8 +1029,8 @@ $highlight-map: (
 .van-popper .popper__arrow {
   @include hide();
 }
-.nav-tab-bar .tab-item[data-tab-id="1"]:not(.on)::before {
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAQAAAACj/OVAAAD00lEQVRYw+2YbWhVdRzHb2aWsILo4UVC5Pd3drfdIZNW1sRod7eW1gSxLIxo5aWgB1GHbkNaDILoAaJYtKQNRDHQTcp6McQoISusXuSLZTXXICVoa3Nmtu0+nE8vdtzd1T3c7dzzzu/31b2X+//w+//+5/y+54RCVzSLKq+zqD1t9driPB4uCxjm3G+f6ILI2E7bu+ElgcB0u3UJIXcd23mT19jMqnHsiF6vXJjv2iqtX5S5HzDAZHWzFbnCjjq35BFnK21UxBlmKv3ESlfoRKQgf5vZL17F9QBDfMkRkpOQf1ON0Of5qm+/iHu4f2jEQYhDWVWeptwVzmN5wIVXiFL3LwB6qEAYMRou6SXsR1jvhqv919cq3gIgyVpEDT9P2UmXGMKiPnFcpT/FLwC0Ie5hiOn0DsJafAKLbhMrvAUfRbQxvX5A2Dd+O3i3WOcteC/ixxmAZxDq89vBKvGUt+Au6iYujak0jNCg3ztMRDxEbvoNYd1+gTfILXHHcgJ2IazL/2XxnTiSE3AbwqnzD9whanPA9RNxRdFS38BlN2pQfDUrsB5hB/Jz894qyt0/ZsQdQNhoofICbF6gz0SUnmlxnYRdYc/kbR5GCnRcLHP3kboMNkAjQjjNeY5O2itElBa6GfNG1VGaiLhCI1ab/0wTEzYRnpYTyUSpzqKiAEKU7RJvJz5idQZ1VsetySkNJo0utAHxKwCfIuzrisXBJtJqUe0dk+cQeiHgCKw28Z53VIpRym4NFFd+jQbFKQAOIuyLgOuzNWKNt6GbEPZ80MDd4n1vyFrCkuGbA8VFFums6Ju4Z+pwwPUV1ogab0NrEc6mvCPCZc5L1qp2zz1iOTFixHBQWnvVrnZrceJ5mQ6RAmuVO/kZcHrbmL3iO2vbx6KUnYl9dNBBB7tpyHKL9/0etiSUFtbkD7dalLl9Oea0b91CLGGOH+AesYonc/ZdiKU75/2cZMdy691lvTzo2Dwyto2JZTzAxjlU+ASVlCBsoDg8t+qW2DnR9N8Ic9cQ8YSw3sii2UbOtU6FnnXiTtyJO4dEufvycD3zcR02IuzD8bWsquj6qWq6T7/Pr2M5eEgbL+2YY+dFdbqBRuqTm89FU9FkllNV6ap0VTrmXnTm0/gvWf9IRVPRVHVy2/kdifrU+qSQW/hg9kDtFNtnfPjyo1aETk7CVSzWvw6DBKcKRGFJ5risFesJUg0INWZFvpZAgYcRdiwDPCO6AwVeoBilim8a39BScSen6A3Uj4wKZ0MoFAqFiu/Idd759sMXD82LOqGTAft7543mBVfeoAeg/wFlFeKImou+wAAAAABJRU5ErkJggg==") !important;
+.nav-tab-bar .tab-item[data-tab-id='1']:not(.on)::before {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAQAAAACj/OVAAAD00lEQVRYw+2YbWhVdRzHb2aWsILo4UVC5Pd3drfdIZNW1sRod7eW1gSxLIxo5aWgB1GHbkNaDILoAaJYtKQNRDHQTcp6McQoISusXuSLZTXXICVoa3Nmtu0+nE8vdtzd1T3c7dzzzu/31b2X+//w+//+5/y+54RCVzSLKq+zqD1t9driPB4uCxjm3G+f6ILI2E7bu+ElgcB0u3UJIXcd23mT19jMqnHsiF6vXJjv2iqtX5S5HzDAZHWzFbnCjjq35BFnK21UxBlmKv3ESlfoRKQgf5vZL17F9QBDfMkRkpOQf1ON0Of5qm+/iHu4f2jEQYhDWVWeptwVzmN5wIVXiFL3LwB6qEAYMRou6SXsR1jvhqv919cq3gIgyVpEDT9P2UmXGMKiPnFcpT/FLwC0Ie5hiOn0DsJafAKLbhMrvAUfRbQxvX5A2Dd+O3i3WOcteC/ixxmAZxDq89vBKvGUt+Au6iYujak0jNCg3ztMRDxEbvoNYd1+gTfILXHHcgJ2IazL/2XxnTiSE3AbwqnzD9whanPA9RNxRdFS38BlN2pQfDUrsB5hB/Jz894qyt0/ZsQdQNhoofICbF6gz0SUnmlxnYRdYc/kbR5GCnRcLHP3kboMNkAjQjjNeY5O2itElBa6GfNG1VGaiLhCI1ab/0wTEzYRnpYTyUSpzqKiAEKU7RJvJz5idQZ1VsetySkNJo0utAHxKwCfIuzrisXBJtJqUe0dk+cQeiHgCKw28Z53VIpRym4NFFd+jQbFKQAOIuyLgOuzNWKNt6GbEPZ80MDd4n1vyFrCkuGbA8VFFums6Ju4Z+pwwPUV1ogab0NrEc6mvCPCZc5L1qp2zz1iOTFixHBQWnvVrnZrceJ5mQ6RAmuVO/kZcHrbmL3iO2vbx6KUnYl9dNBBB7tpyHKL9/0etiSUFtbkD7dalLl9Oea0b91CLGGOH+AesYonc/ZdiKU75/2cZMdy691lvTzo2Dwyto2JZTzAxjlU+ASVlCBsoDg8t+qW2DnR9N8Ic9cQ8YSw3sii2UbOtU6FnnXiTtyJO4dEufvycD3zcR02IuzD8bWsquj6qWq6T7/Pr2M5eEgbL+2YY+dFdbqBRuqTm89FU9FkllNV6ap0VTrmXnTm0/gvWf9IRVPRVHVy2/kdifrU+qSQW/hg9kDtFNtnfPjyo1aETk7CVSzWvw6DBKcKRGFJ5risFesJUg0INWZFvpZAgYcRdiwDPCO6AwVeoBilim8a39BScSen6A3Uj4wKZ0MoFAqFiu/Idd759sMXD82LOqGTAft7543mBVfeoAeg/wFlFeKImou+wAAAAABJRU5ErkJggg==') !important;
 }
 .aside-item.active .item-border,
 .aside-item:hover .item-border {
@@ -1041,7 +1041,7 @@ $highlight-map: (
 }
 #bilibili_pbp,
 #bilibili_pbp_canvas {
-  @include to-theme("blue");
+  @include to-theme('blue');
 }
 .interact-dialog .btn,
 .rookie-guide .close-button,

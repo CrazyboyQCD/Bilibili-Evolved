@@ -85,7 +85,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .bb-comment .translate-container,
 .card-content .translate-container {

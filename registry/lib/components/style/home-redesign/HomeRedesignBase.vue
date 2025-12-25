@@ -9,7 +9,7 @@ import { defineComponent } from 'vue'
 export default defineComponent({})
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 html {
   scroll-behavior: smooth;

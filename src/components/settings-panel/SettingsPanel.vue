@@ -277,7 +277,7 @@ export default ThisComponent
 </script>
 
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .settings-panel-popup {
   z-index: 1000;

@@ -1,5 +1,5 @@
 @import './dark-definitions';
-@import 'common';
+@use 'common' as *;
 
 #disable-popup-modal,
 #vip-exchange-modal {
@@ -295,7 +295,9 @@ blockquote {
 .up-info .up-info_right .name .username.is-vip {
   color: #fb7299 !important;
 }
-.bilibili-player .bilibili-player-video-danmaku-setting-left-block-content .bilibili-player-block-filter-type.disabled {
+.bilibili-player
+  .bilibili-player-video-danmaku-setting-left-block-content
+  .bilibili-player-block-filter-type.disabled {
   .bilibili-player-block-filter-image {
     @include theme-fill();
   }

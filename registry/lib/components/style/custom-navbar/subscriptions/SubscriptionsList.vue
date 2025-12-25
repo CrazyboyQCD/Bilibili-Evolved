@@ -158,7 +158,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .subscription-list {
   width: 100%;

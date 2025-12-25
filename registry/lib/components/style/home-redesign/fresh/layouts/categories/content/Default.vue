@@ -98,7 +98,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .fresh-home-categories-default {
   @include h-stretch(var(--fresh-home-categories-column-gap));

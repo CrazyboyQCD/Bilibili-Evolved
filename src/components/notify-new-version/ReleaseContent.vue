@@ -42,8 +42,8 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
-@import 'markdown';
+@use 'common' as *;
+@use 'markdown' as *;
 
 .release-content {
   @include v-stretch(12px);

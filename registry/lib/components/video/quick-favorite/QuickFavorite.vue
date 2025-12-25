@@ -186,7 +186,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scoped>
-@import 'common';
+@use 'common' as *;
 @import './font';
 
 .quick-favorite {

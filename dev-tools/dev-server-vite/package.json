@@ -1,0 +1,19 @@
+{
+  "name": "bilibili-evolved-dev-server-vite",
+  "version": "1.0.0",
+  "description": "Vite-based development server for Bilibili-Evolved",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "tsx index.ts",
+    "start": "tsx index.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "vite": "^5.0.0",
+    "ws": "^8.14.0",
+    "async-exit-hook": "^2.0.1"
+  }
+}

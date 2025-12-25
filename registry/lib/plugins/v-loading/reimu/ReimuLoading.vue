@@ -5,7 +5,7 @@
   </div>
 </template>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 @import './image.css';
 
 .reimu-loading {

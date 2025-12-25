@@ -24,7 +24,7 @@ export const parseExternalInput = async <T>(input: ExternalInput<T>): Promise<T>
       const [file] = files
       const text = await file.text()
       try {
-        return eval(`(${text})`) as T
+        return (0, eval)(`(${text})`) as T
       } catch (error) {
         console.error(error)
         return null
@@ -37,7 +37,7 @@ export const parseExternalInput = async <T>(input: ExternalInput<T>): Promise<T>
     try {
       /** eval magic variable */
       const exports = {}
-      const result = eval(input) as T
+      const result = (0, eval)(input) as T
       // console.log(exports)
       if (Object.values(exports).length > 0) {
         const value = Object.values(exports)[0]

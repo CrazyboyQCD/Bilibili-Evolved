@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
 import { userScriptPlugin } from './vite-plugin-userscript'
+import { injectMetadata } from './vite-plugin-inject-metadata'
 
 export default defineConfig({
   plugins: [
@@ -36,7 +37,9 @@ export default defineConfig({
   build: {
     rolldownOptions: {
       input: resolve(__dirname, 'src/client/bilibili-evolved.ts'),
-      plugins: [],
+      plugins: [
+        injectMetadata()
+      ],
       output: {
         format: 'iife',
         name: 'BilibiliEvolved',

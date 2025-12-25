@@ -22,7 +22,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 .be-loading {
   flex-grow: 1;
   @include h-center();

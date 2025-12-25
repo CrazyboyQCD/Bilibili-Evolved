@@ -38,7 +38,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .be-video-control-bar-extend {
   display: flex;

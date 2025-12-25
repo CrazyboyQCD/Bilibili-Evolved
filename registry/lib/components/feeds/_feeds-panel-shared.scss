@@ -1,4 +1,4 @@
-@import 'common';
+@use 'common';
 
 .live-up-list {
   // 默认状态
@@ -17,7 +17,7 @@
   flex-direction: column !important;
 }
 .bili-dyn-live-users__body {
-  @include no-scrollbar();
+  @include common.no-scrollbar();
   margin: 0px -16px -16px -16px;
   padding: 0px 16px 4px 16px;
   // 默认状态

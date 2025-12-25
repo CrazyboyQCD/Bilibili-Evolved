@@ -52,7 +52,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .component-action {
   @include h-center(6px);

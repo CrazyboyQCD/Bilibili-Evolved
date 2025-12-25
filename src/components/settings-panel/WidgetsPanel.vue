@@ -90,8 +90,8 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'common';
-@import 'markdown';
+@use 'common' as *;
+@use 'markdown' as *;
 
 .widgets-panel {
   max-height: var(--panel-height);

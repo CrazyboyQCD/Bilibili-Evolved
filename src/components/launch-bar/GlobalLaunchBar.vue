@@ -55,7 +55,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .global-launch-bar-container {
   $barHeight: 50px;

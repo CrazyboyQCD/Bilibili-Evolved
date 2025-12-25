@@ -22,7 +22,7 @@ export const startDevServer = () =>
           directoryListing: ['/dist', '/dist/**', '/registry/dist', '/registry/dist/**'],
         })
       }
-      if (url.startsWith('/registry')) {
+      if (url?.startsWith('/registry')) {
         const existingWatcher = watchers.find(w => w.url === url)
         const registryInfo = parseRegistryUrl(url)
         if (existingWatcher && registryInfo) {

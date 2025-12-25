@@ -1,4 +1,4 @@
-@import "common";
+@use 'common' as *;
 
 @mixin pbp {
   #bilibili_pbp,

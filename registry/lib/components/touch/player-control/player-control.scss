@@ -1,4 +1,4 @@
-@import 'common';
+@use 'common' as *;
 
 @mixin replace-with-icon() {
   display: block;

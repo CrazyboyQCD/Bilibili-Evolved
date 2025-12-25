@@ -57,7 +57,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .minimal-home {
   --minimal-home-auto-card-column: 1;

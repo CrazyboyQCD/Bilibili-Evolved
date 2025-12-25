@@ -33,8 +33,8 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'common';
-@import 'markdown';
+@use 'common' as *;
+@use 'markdown' as *;
 
 .component-description {
   word-break: break-all;

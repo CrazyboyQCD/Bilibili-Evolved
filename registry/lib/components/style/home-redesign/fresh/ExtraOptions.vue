@@ -149,7 +149,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .fresh-home-extra-options {
   @include v-stretch(10px);

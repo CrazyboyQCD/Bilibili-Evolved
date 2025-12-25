@@ -121,10 +121,10 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common';
 
 .be-live-list {
-  @include v-stretch(12px);
+  @include common.v-stretch(12px);
   padding: 12px 16px;
   border-radius: 4px;
   font-size: 12px;
@@ -135,11 +135,11 @@ export default defineComponent({
     color: #eee;
   }
   &-header {
-    @include h-center();
+    @include common.h-center();
     justify-content: space-between;
   }
   &-title {
-    @include h-center(4px);
+    @include common.h-center(4px);
     font-size: 14px;
   }
   &-count {
@@ -147,7 +147,7 @@ export default defineComponent({
     font-size: 12px;
   }
   &-actions {
-    @include h-center(4px);
+    @include common.h-center(4px);
   }
   &-refresh {
     cursor: pointer;
@@ -166,14 +166,14 @@ export default defineComponent({
     opacity: 0.5;
     padding: 2px;
     cursor: pointer;
-    @include h-center();
+    @include common.h-center();
     &:hover {
       opacity: 1;
       color: var(--theme-color);
     }
   }
   &-search {
-    @include h-center(8px);
+    @include common.h-center(8px);
     .be-icon {
       opacity: 0.6;
     }
@@ -182,8 +182,8 @@ export default defineComponent({
     }
   }
   &-content {
-    @include no-scrollbar();
-    @include v-stretch(8px);
+    @include common.no-scrollbar();
+    @include common.v-stretch(8px);
     // 默认状态
     max-height: calc(100vh - 358px);
     // 开启过滤器
@@ -196,7 +196,7 @@ export default defineComponent({
     }
   }
   &-item {
-    @include h-center(8px);
+    @include common.h-center(8px);
     cursor: pointer;
     &-avatar {
       overflow: hidden;
@@ -205,13 +205,13 @@ export default defineComponent({
       border: 1px solid #8884;
     }
     &-info {
-      @include v-stretch(2px);
+      @include common.v-stretch(2px);
       flex-grow: 1;
       width: 0;
     }
     &-title,
     &-user {
-      @include single-line();
+      @include common.single-line();
     }
     &-title {
       font-size: 14px;

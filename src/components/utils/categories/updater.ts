@@ -14,7 +14,7 @@ export const updateCategories = async () => {
     throw new Error('no match in script')
   }
   const variables = match[1].match(/(\w+?)(?==\[)/g)
-  const data = eval(`var ${match[1]}; [${variables.join(',')}]`)
+  const data = (0, eval)(`var ${match[1]}; [${variables.join(',')}]`)
   DownloadPackage.single('raw.json', data)
 }
 export const updateIcons = () => {

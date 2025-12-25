@@ -82,8 +82,8 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'common';
-@import 'markdown';
+@use 'common' as *;
+@use 'markdown' as *;
 
 .component-settings {
   display: flex;

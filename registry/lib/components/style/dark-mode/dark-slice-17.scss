@@ -1,5 +1,5 @@
 @import './dark-definitions';
-@import 'common';
+@use 'common' as *;
 
 .video-info-v1 .video-data {
   @include color('a');

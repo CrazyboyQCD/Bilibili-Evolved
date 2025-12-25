@@ -68,7 +68,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .fresh-home-trending {
   @include v-stretch();

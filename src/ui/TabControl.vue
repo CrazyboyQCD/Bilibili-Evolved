@@ -107,8 +107,8 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import './common';
-@import './tabs';
+@use 'common' as *;
+@use 'tabs' as *;
 
 .be-tab-control {
   display: flex;

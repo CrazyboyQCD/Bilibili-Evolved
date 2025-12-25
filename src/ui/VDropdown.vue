@@ -159,7 +159,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-@import './common';
+@use 'common' as *;
 .be-dropdown {
   display: flex;
   @include round-corner(4px);

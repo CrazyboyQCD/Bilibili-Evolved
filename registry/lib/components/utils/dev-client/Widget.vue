@@ -63,7 +63,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scoped>
-@import 'common';
+@use 'common' as *;
 
 .be-dev-client {
   box-shadow: 0 0 0 1px #8884;

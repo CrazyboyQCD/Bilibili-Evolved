@@ -52,10 +52,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'common';
+@use 'common';
 
 .custom-navbar-logo-container {
-  @include v-stretch();
+  @include common.v-stretch();
   justify-content: center;
   height: 100%;
   padding: 8px 0;

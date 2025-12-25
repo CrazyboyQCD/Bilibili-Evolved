@@ -1,4 +1,4 @@
-@import 'common';
+@use 'common';
 
 #app {
   z-index: 0;
@@ -48,7 +48,7 @@
 }
 .live-panel .live-up-list {
   overflow: auto;
-  @include no-scrollbar();
+  @include common.no-scrollbar();
 }
 @import '../feeds-panel-shared';
 

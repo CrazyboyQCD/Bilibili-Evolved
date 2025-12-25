@@ -177,7 +177,7 @@ export default ThisComponent
 </script>
 
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .component-detail {
   min-width: 264px;

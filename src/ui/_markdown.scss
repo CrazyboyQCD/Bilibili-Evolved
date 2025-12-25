@@ -1,4 +1,4 @@
-@import "common";
+@use 'common' as *;
 @mixin markdown {
   line-height: normal;
   ul,
@@ -71,7 +71,7 @@
       color: inherit !important;
     }
     &::before {
-      content: "";
+      content: '';
       position: absolute;
       display: block;
       width: 3px;

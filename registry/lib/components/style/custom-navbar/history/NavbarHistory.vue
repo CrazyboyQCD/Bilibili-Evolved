@@ -247,16 +247,16 @@ const ThisComponent = defineComponent({
 export default ThisComponent
 </script>
 <style lang="scss">
-@import 'common';
-@import '../popup';
+@use 'common';
+@use '../popup';
 
 .custom-navbar-history-list {
   width: 400px;
-  @include navbar-popup-height();
+  @include popup.navbar-popup-height();
   font-size: 12px;
   padding: 0;
   margin: 0;
-  @include v-stretch();
+  @include common.v-stretch();
   justify-content: center;
   @mixin items-animation {
     &-enter-from,
@@ -275,16 +275,16 @@ export default ThisComponent
     box-sizing: border-box;
   }
   .header {
-    @include v-stretch(6px);
+    @include common.v-stretch(6px);
     margin: 16px 12px 4px 12px;
     .header-row {
-      @include h-stretch(8px);
+      @include common.h-stretch(8px);
       .row-title {
-        @include h-center();
+        @include common.h-center();
       }
     }
     .type-filters {
-      @include h-center(6px);
+      @include common.h-center(6px);
       .type-filter {
         .be-button {
           padding: 4px 8px 4px 6px;
@@ -305,17 +305,17 @@ export default ThisComponent
       }
     }
     .operations {
-      @include h-center(8px);
+      @include common.h-center(8px);
       .operation {
         .be-button {
-          @include round-button();
+          @include common.round-button();
         }
       }
     }
   }
   .content {
-    @include v-stretch();
-    @include no-scrollbar();
+    @include common.v-stretch();
+    @include common.no-scrollbar();
     justify-content: space-between;
     flex-grow: 1;
     .be-scroll-trigger,
@@ -326,18 +326,18 @@ export default ThisComponent
       margin: 12px 0;
     }
     .cards {
-      @include items-animation();
+      @include common.items-animation();
       flex: 1;
       scroll-behavior: smooth;
       position: relative;
-      @include no-scrollbar();
+      @include common.no-scrollbar();
       padding-bottom: 12px;
       .empty-tip {
         text-align: center;
       }
       .time-group {
         // padding-bottom: 16px;
-        @include items-animation();
+        @include common.items-animation();
         &-name {
           padding: 8px 12px;
           font-size: 12px;
@@ -352,8 +352,8 @@ export default ThisComponent
         &-items {
           padding: 0 12px;
           .floating {
-            @include round-bar(20);
-            @include h-center();
+            @include common.round-bar(20);
+            @include common.h-center();
             background-color: #000c;
             color: white;
             justify-content: center;
@@ -429,7 +429,7 @@ export default ThisComponent
               }
             }
             .title {
-              @include semi-bold();
+              @include common.semi-bold();
               grid-area: title;
               white-space: nowrap;
               overflow: hidden;
@@ -453,7 +453,7 @@ export default ThisComponent
             }
             .up {
               grid-area: up;
-              @include h-center();
+              @include common.h-center();
               padding-left: 8px;
               opacity: 1;
               .be-icon {

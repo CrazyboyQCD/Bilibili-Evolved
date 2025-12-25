@@ -170,7 +170,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 @import './rank-list';
 
 .fresh-home-rank-list {

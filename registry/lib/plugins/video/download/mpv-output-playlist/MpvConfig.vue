@@ -43,7 +43,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 .rpc-config.download-video-config-section {
   @include v-center();
   align-items: stretch;

@@ -1,4 +1,4 @@
-@import 'common';
+@use 'common' as *;
 
 .bilibili-player-video-control {
   &-mask {
@@ -47,7 +47,9 @@
 }
 body {
   &.video-control-progress-background {
-    .squirtle-progress-bar:not(.squirtle-progress-buffer):not(.squirtle-progress-timeline):not(.squirtle-progress-dot-container),
+    .squirtle-progress-bar:not(.squirtle-progress-buffer):not(.squirtle-progress-timeline):not(
+        .squirtle-progress-dot-container
+      ),
     .bpx-player-progress-schedule {
       background-color: transparent !important;
     }

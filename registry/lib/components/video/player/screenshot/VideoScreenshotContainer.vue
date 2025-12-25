@@ -65,7 +65,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .video-screenshot-container {
   position: relative;

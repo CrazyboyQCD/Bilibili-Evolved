@@ -181,7 +181,7 @@ export default ThisComponent
 </script>
 
 <style lang="scss">
-@import 'common';
+@use 'common';
 
 .custom-navbar-item {
   color: inherit;
@@ -244,7 +244,7 @@ export default ThisComponent
   }
 
   &.active .main-content {
-    @include semi-bold();
+    @include common.semi-bold();
     font-size: 11pt;
   }
 

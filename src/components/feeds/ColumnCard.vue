@@ -42,7 +42,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-@import 'common';
+@use 'common' as *;
 .column-card {
   width: 356px;
   display: flex;

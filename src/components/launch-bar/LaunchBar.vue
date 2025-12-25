@@ -271,7 +271,7 @@ const ThisComponent = defineComponent({
 export default ThisComponent
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 .launch-bar {
   --color: black;
   color: var(--color);

@@ -26,7 +26,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 @import 'tabs';
 
 .fresh-home {

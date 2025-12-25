@@ -1,4 +1,4 @@
-@import 'common';
+@use 'common' as *;
 
 @media screen and (max-width: 1200px) {
   .bpx-player-video-inputbar,

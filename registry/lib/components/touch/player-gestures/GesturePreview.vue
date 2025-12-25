@@ -203,7 +203,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 .gesture-preview {
   color: #fff;
   background-color: rgba(0, 0, 0, 0.8);

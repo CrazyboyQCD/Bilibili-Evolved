@@ -244,7 +244,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .manage-panel {
   height: calc(var(--panel-height) - 52px - 48px);

@@ -5,7 +5,7 @@
   </div>
 </template>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .fresh-home-sub-header {
   @include h-center(6px);

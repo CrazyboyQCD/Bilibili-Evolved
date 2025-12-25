@@ -99,7 +99,10 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
+@use './dock/center' as *;
+@use './dock/left' as *;
+@use './dock/right' as *;
 .be-settings {
   body.player-mode-blackmask & {
     visibility: hidden;
@@ -204,7 +207,5 @@ export default defineComponent({
 .bilibili-player-dm-tip-wrap {
   pointer-events: none !important;
 }
-@import './dock/center';
-@import './dock/left';
-@import './dock/right';
+
 </style>

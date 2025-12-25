@@ -62,10 +62,10 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common';
 .live-feeds {
   width: 100%;
-  @include v-center();
+  @include common.v-center();
   .live-feeds-content {
     align-self: stretch;
     &-enter-from,
@@ -82,7 +82,7 @@ export default defineComponent({
       background-color: #fff;
       box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.05);
       border: 1px solid #8882;
-      @include h-stretch();
+      @include common.h-stretch();
       height: 54px;
       border-radius: 26px;
       box-sizing: border-box;
@@ -107,17 +107,17 @@ export default defineComponent({
         transform: scale(1.05);
       }
       .live-info {
-        @include v-stretch();
+        @include common.v-stretch();
         flex: 1 0 0;
         width: 0;
         justify-content: center;
       }
       .live-title {
         font-size: 14px;
-        @include semi-bold();
+        @include common.semi-bold();
         padding: 0 12px;
         padding-bottom: 6px;
-        @include single-line();
+        @include common.single-line();
         color: inherit;
         line-height: normal;
       }
@@ -127,7 +127,7 @@ export default defineComponent({
       .live-name {
         opacity: 0.75;
         padding: 0 12px;
-        @include single-line();
+        @include common.single-line();
         line-height: normal;
       }
     }

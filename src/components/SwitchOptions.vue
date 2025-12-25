@@ -114,7 +114,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 .switch-options {
   position: relative;
   --columns: 1;

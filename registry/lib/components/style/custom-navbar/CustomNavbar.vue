@@ -89,7 +89,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'common';
+@use 'common';
 
 .van-message-box {
   z-index: 10002 !important;
@@ -160,7 +160,7 @@ body.fixed-navbar {
   justify-content: center;
   line-height: normal;
 
-  @include on-fullscreen {
+  @include common.on-fullscreen {
     z-index: 1;
   }
   // &:not(.fill) .custom-navbar-iconfont {

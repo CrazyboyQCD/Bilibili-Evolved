@@ -55,7 +55,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .be-up-info {
   &:not(.fallback) {

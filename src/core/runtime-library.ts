@@ -15,6 +15,7 @@ export class RuntimeLibrary<LibraryType> implements PromiseLike<LibraryType> {
 
   constructor(public config: RuntimeLibraryConfig<LibraryType>) {}
 
+  // oxlint-disable-next-line no-thenable
   async then<Resolve = LibraryType, Reject = never>(
     resolve?: (value: LibraryType) => Resolve | PromiseLike<Resolve>,
     reject?: (reason: any) => Reject | PromiseLike<Reject>,
@@ -27,7 +28,7 @@ export class RuntimeLibrary<LibraryType> implements PromiseLike<LibraryType> {
           const code: string = await monkey({ url })
           console.log(`[Runtime Library] Downloaded from ${url} , length = ${code.length}`)
           ;(function runEval() {
-            return eval(code)
+            return (0, eval)(code)
             // eslint-disable-next-line no-extra-bind
           }).bind(window)()
           return getModule(window)

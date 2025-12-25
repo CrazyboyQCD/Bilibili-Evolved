@@ -333,7 +333,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .user-info-panel {
   border-radius: 8px;

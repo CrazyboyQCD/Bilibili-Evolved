@@ -123,7 +123,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .keymap-settings-grid .grid-row {
   padding: 2px 0;

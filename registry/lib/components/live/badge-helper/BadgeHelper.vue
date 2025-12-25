@@ -144,7 +144,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import 'common';
+@use 'common';
 .badge-popup {
   top: 50%;
   left: calc(100% + 8px);
@@ -152,9 +152,9 @@ export default defineComponent({
   transform-origin: left;
   padding: 4px;
   max-height: calc(100vh - 150px);
-  @include card();
-  @include no-scrollbar();
-  @include round-corner(4px);
+  @include common.card();
+  @include common.no-scrollbar();
+  @include common.round-corner(4px);
   &.open {
     transform: scale(1) translateY(-50%);
   }
@@ -174,7 +174,7 @@ export default defineComponent({
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     li {
-      @include round-corner(4px);
+      @include common.round-corner(4px);
       cursor: pointer;
       padding: 6px 8px;
       display: flex;

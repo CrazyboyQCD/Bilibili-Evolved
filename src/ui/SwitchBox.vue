@@ -60,7 +60,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
-@import './common';
+@use 'common' as *;
 .be-switch-box {
   @include default-transition();
   outline: none !important;

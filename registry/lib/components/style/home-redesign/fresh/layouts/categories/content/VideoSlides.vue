@@ -210,7 +210,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 @import 'effects';
 
 .fresh-home-video-slides {

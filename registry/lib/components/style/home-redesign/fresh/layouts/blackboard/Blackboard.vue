@@ -115,7 +115,7 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 $max-card-count: 16;
 .fresh-home {

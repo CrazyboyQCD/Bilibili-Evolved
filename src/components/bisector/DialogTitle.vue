@@ -31,7 +31,7 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-@import 'common';
+@use 'common' as *;
 
 div {
   @include h-center(8px);

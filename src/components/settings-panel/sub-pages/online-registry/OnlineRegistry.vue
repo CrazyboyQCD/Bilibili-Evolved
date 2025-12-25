@@ -208,7 +208,7 @@ const ThisComponent = defineComponent({
 export default ThisComponent
 </script>
 <style lang="scss">
-@import 'common';
+@use 'common' as *;
 
 .online-registry {
   top: 50%;

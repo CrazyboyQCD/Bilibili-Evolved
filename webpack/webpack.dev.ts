@@ -1,5 +1,5 @@
-import type { Configuration } from 'webpack'
-import webpack from 'webpack'
+import type { Configuration } from '@rspack/core'
+import webpack from '@rspack/core'
 
 import previewMeta from '../src/client/bilibili-evolved.preview.meta.json'
 import { getBanner, getDefaultConfig } from './webpack.config'

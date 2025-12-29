@@ -2,8 +2,8 @@ import get from 'lodash/get'
 import path from 'path'
 import TerserPlugin from 'terser-webpack-plugin'
 import { VueLoaderPlugin } from 'vue-loader'
-import type { Configuration } from 'webpack'
-import webpack from 'webpack'
+import type { Configuration } from '@rspack/core'
+import webpack from '@rspack/core'
 
 import commonMeta from '../src/client/common.meta.json'
 import * as gitInfo from './compilation-info/git'
@@ -125,12 +125,13 @@ export const getDefaultConfig = (src = relativePath('src')): Configuration => {
       }),
       // new HardSourcePlugin(),
     ],
-    cache: {
-      type: 'filesystem',
-      buildDependencies: {
-        config: [__filename],
-      },
-    },
+    cache: true
+    // {
+    //   type: 'filesystem',
+    //   buildDependencies: {
+    //     config: [__filename],
+    //   },
+    // },
   }
 }
 

@@ -1,6 +1,6 @@
 import exitHook from 'async-exit-hook'
-import type { Configuration, Watching } from 'webpack'
-import { webpack } from 'webpack'
+import type { Configuration, Watching } from '@rspack/core'
+import webpack from '@rspack/core'
 
 import { fromId } from '../../registry/lib/id'
 import { devServerConfig } from './config'

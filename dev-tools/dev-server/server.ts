@@ -2,7 +2,7 @@ import exitHook from 'async-exit-hook'
 import type { Server } from 'http'
 import { createServer } from 'http'
 import handler from 'serve-handler'
-import type { Configuration } from 'webpack'
+import type { Configuration } from '@rspack/core'
 
 import { buildByEntry } from '../../registry/webpack/config'
 import { devServerConfig } from './config'

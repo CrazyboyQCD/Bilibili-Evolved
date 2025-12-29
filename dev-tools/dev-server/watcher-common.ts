@@ -1,4 +1,4 @@
-import type { Stats } from 'webpack'
+import type { Stats } from '@rspack/core'
 
 export const defaultWatcherHandler = (
   initCallback: (result: Stats) => void,

@@ -1,5 +1,5 @@
 import exitHook from 'async-exit-hook'
-import webpack from 'webpack'
+import webpack from '@rspack/core'
 
 import webpackConfig from '../../webpack/webpack.dev'
 import { defaultWatcherHandler } from './watcher-common'
@@ -7,7 +7,7 @@ import { sendMessage } from './web-socket-server'
 
 export const startCoreWatcher = () =>
   new Promise<void>(resolve => {
-    const compiler = webpack(webpackConfig as webpack.Configuration)
+    const compiler = webpack(webpackConfig)
     console.log('本体编译中...')
     const instance = compiler.watch(
       {},

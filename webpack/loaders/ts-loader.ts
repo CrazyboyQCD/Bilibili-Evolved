@@ -1,4 +1,4 @@
-import type { RuleSetUseItem } from 'webpack'
+import type { RuleSetUseItem } from '@rspack/core'
 
 import { injectMetadata } from '../inject-metadata'
 

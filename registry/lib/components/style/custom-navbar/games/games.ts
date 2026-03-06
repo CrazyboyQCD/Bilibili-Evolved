@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from 'vue'
 import { CustomNavbarItemInit } from '../custom-navbar-item'
 
 export const games: CustomNavbarItemInit = {
@@ -10,5 +11,5 @@ export const games: CustomNavbarItemInit = {
 
   boundingWidth: 420,
   noPopupPadding: true,
-  popupContent: () => import('./GamesPopup.vue').then(m => m.default),
+  popupContent: defineAsyncComponent(() => import('./GamesPopup.vue')),
 }

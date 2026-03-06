@@ -28,11 +28,7 @@
           在线
         </OnlineRegistryButton>
       </div>
-      <VPopup
-        v-model="batchAddShow"
-        :trigger-element="$refs.batchAddButton"
-        class="batch-add-popup"
-      >
+      <VPopup v-model="batchAddShow" :trigger-element="batchAddButton.root" class="batch-add-popup">
         <TextArea
           ref="batchAddTextArea"
           v-model="batchUrl"
@@ -92,7 +88,8 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts" generic="T extends { name: string; displayName: string }">
+import { ref, computed, watch, onMounted, useTemplateRef, nextTick } from 'vue'
 import { installFeature, tryParseZip } from '@/core/install-feature'
 import { pickFile } from '@/core/file-picker'
 import { Toast, ToastType } from '@/core/toast'
@@ -102,140 +99,131 @@ import { VIcon, VButton, TextBox, VEmpty, VLoading, VPopup, TextArea, SwitchBox 
 import ManageItem from './ManageItem.vue'
 import OnlineRegistryButton from '../online-registry/OnlineRegistryButton.vue'
 
-export default Vue.extend({
-  components: {
-    VIcon,
-    VButton,
-    TextBox,
-    VEmpty,
-    VLoading,
-    VPopup,
-    TextArea,
-    SwitchBox,
-    ManageItem,
-    OnlineRegistryButton,
-  },
-  props: {
-    config: {
-      type: Object,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      search: '',
-      url: '',
-      loaded: false,
-      batchAddShow: false,
-      batchUrl: '',
-      excludeBuiltIn: true,
-      debouncedList: [],
+const { config } = defineProps<{
+  config: {
+    icon: string
+    title: string
+    description?: string
+    list: T[]
+    listFilter: (item: T, search: string, excludeBuiltIn: boolean) => boolean
+    onItemAdd?: (code: string, url: string) => Promise<string>
+  }
+}>()
+
+const batchAddButton = useTemplateRef('batchAddButton')
+const batchAddTextArea = useTemplateRef('batchAddTextArea')
+
+const search = ref('')
+const url = ref('')
+const loaded = ref(false)
+const batchAddShow = ref(false)
+const batchUrl = ref('')
+const excludeBuiltIn = ref(true)
+const debouncedList = ref<T[]>([])
+
+const filteredList = computed(() => {
+  return config.list.filter(it => config.listFilter(it, search.value, excludeBuiltIn.value))
+})
+
+watch(filteredList, () => {
+  loaded.value = false
+  window.setTimeout(() => {
+    debouncedList.value = filteredList.value
+    loaded.value = true
+  }, 200)
+})
+
+const browse = async () => {
+  const codes = await pickFile({ accept: '*.js;*.zip' })
+  if (codes.length === 0) {
+    return
+  }
+  const [codeFile] = codes
+  let code: string
+  if (codeFile.name.endsWith('.zip')) {
+    const JSZip = await JSZipLibrary
+    const zip = await JSZip.loadAsync(codeFile)
+    const files = Object.values(zip.files)
+    if (files.length === 0) {
+      Toast.info('不能打开空文件', `添加${config.title}`)
+      return
     }
-  },
-  computed: {
-    filteredList() {
-      return this.config.list.filter(it =>
-        this.config.listFilter(it, this.search, this.excludeBuiltIn),
-      )
-    },
-  },
-  watch: {
-    filteredList() {
-      this.loaded = false
-      window.setTimeout(() => {
-        this.debouncedList = this.filteredList
-        this.loaded = true
-      }, 200)
-    },
-  },
-  mounted() {
-    window.setTimeout(() => {
-      this.debouncedList = this.filteredList
-      this.loaded = true
+    code = await files[0].async('text')
+  } else {
+    code = await codeFile.text()
+  }
+  try {
+    Toast.info(await config.onItemAdd?.(code, ''), `添加${config.title}`)
+  } catch (error) {
+    logError(error)
+  }
+}
+
+const showBatchAddPopup = async () => {
+  batchAddShow.value = !batchAddShow.value
+  if (batchAddShow.value) {
+    await nextTick()
+    batchAddTextArea.value.focus()
+  }
+}
+
+const addItem = async () => {
+  if (!url.value) {
+    return
+  }
+  const toast = Toast.info('获取中...', `添加${config.title}`)
+  try {
+    const code = await tryParseZip(url.value)
+    if (config.onItemAdd) {
+      toast.message = await config.onItemAdd(code, url.value)
+    }
+    url.value = ''
+  } catch (error) {
+    console.error(error)
+    toast.type = ToastType.Error
+    toast.message = error.message || error
+  }
+}
+
+const batchAddItem = async () => {
+  if (!batchUrl.value) {
+    return
+  }
+  const urls = batchUrl.value
+    .split('\n')
+    .map(it => it.trim())
+    .filter(it => it !== '')
+  const toast = Toast.info(`获取中... (0/${urls.length})`, '批量添加')
+  let completed = 0
+  const results = await Promise.allSettled(
+    urls.map(async urlItem => {
+      const { message } = await installFeature(urlItem)
+      completed++
+      toast.message = `获取中... (${completed}/${urls.length})`
+      return message
+    }),
+  )
+  const successCount = results.filter(it => it.status === 'fulfilled').length
+  const failCount = results.filter(it => it.status === 'rejected').length
+  toast.message = `安装完成, 成功 ${successCount} 个, 失败 ${failCount} 个.`
+  const resultsText = results
+    .map((r, index) => {
+      const suffix = urls[index]
+      if (r.status === 'fulfilled') {
+        return `${r.value} ${suffix}`
+      }
+      return `${r.reason} ${suffix}`
     })
-  },
-  methods: {
-    async browse() {
-      const codes = await pickFile({ accept: '*.js;*.zip' })
-      if (codes.length === 0) {
-        return
-      }
-      const [codeFile] = codes
-      let code: string
-      if (codeFile.name.endsWith('.zip')) {
-        const JSZip = await JSZipLibrary
-        const zip = await JSZip.loadAsync(codeFile)
-        const files = Object.values(zip.files)
-        if (files.length === 0) {
-          Toast.info('不能打开空文件', `添加${this.config.title}`)
-          return
-        }
-        code = await files[0].async('text')
-      } else {
-        code = await codeFile.text()
-      }
-      try {
-        Toast.info(await this.config.onItemAdd?.(code, ''), `添加${this.config.title}`)
-      } catch (error) {
-        logError(error)
-      }
-    },
-    async showBatchAddPopup() {
-      this.batchAddShow = !this.batchAddShow
-      if (this.batchAddShow) {
-        await this.$nextTick()
-        this.$refs.batchAddTextArea?.focus()
-      }
-    },
-    async addItem() {
-      if (!this.url) {
-        return
-      }
-      const toast = Toast.info('获取中...', `添加${this.config.title}`)
-      try {
-        const code = await tryParseZip(this.url)
-        toast.message = await this.config.onItemAdd?.(code, this.url)
-        this.url = ''
-      } catch (error) {
-        console.error(error)
-        toast.type = ToastType.Error
-        toast.message = error
-      }
-    },
-    async batchAddItem() {
-      if (!this.batchUrl) {
-        return
-      }
-      const urls = (this.batchUrl as string)
-        .split('\n')
-        .map(it => it.trim())
-        .filter(it => it !== '')
-      const toast = Toast.info(`获取中... (0/${urls.length})`, '批量添加')
-      let completed = 0
-      const results = await Promise.allSettled(
-        urls.map(async url => {
-          const { message } = await installFeature(url)
-          completed++
-          toast.message = `获取中... (${completed}/${urls.length})`
-          return message
-        }),
-      )
-      const successCount = results.filter(it => it.status === 'fulfilled').length
-      const failCount = results.filter(it => it.status === 'rejected').length
-      toast.message = `安装完成, 成功 ${successCount} 个, 失败 ${failCount} 个.`
-      const resultsText = results
-        .map((r, index) => {
-          const suffix = urls[index]
-          if (r.status === 'fulfilled') {
-            return `${r.value} ${suffix}`
-          }
-          return `${r.reason} ${suffix}`
-        })
-        .join('\n')
-      console.log(resultsText)
-      this.batchUrl = ''
-    },
-  },
+    .join('\n')
+  console.log(resultsText)
+  batchUrl.value = ''
+}
+
+onMounted(() => {
+  window.setTimeout(() => {
+    debouncedList.value = filteredList.value
+    loaded.value = true
+  })
 })
 </script>
 <style lang="scss">

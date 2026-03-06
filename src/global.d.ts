@@ -1,10 +1,12 @@
 import { LoDashStatic } from 'lodash'
-import { CoreApis, ExternalApis } from './core/core-apis'
+import { CoreApis, externalApis } from './core/core-apis'
 import type { CdnConfig } from '../webpack/cdn/types'
 
 declare global {
   /** @deprecated Use window.lodash instead. */
   const _: LoDashStatic
+
+  type ExternalApis = typeof externalApis
 
   const lodash: LoDashStatic
   const Vue: typeof import('vue/types/umd')
@@ -56,6 +58,7 @@ declare global {
   }
   interface Window {
     aid: string | undefined
+    bvid: string | undefined
     cid: string | undefined
     pageno: string | number | undefined
     bilibiliEvolved: ExternalApis

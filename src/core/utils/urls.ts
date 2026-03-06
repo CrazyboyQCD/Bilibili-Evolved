@@ -40,7 +40,7 @@ export const mainSiteUrls = [
   'https://www.bilibili.com/v/',
   'https://www.bilibili.com/c/',
   /^https:\/\/www\.bilibili\.com\/$/,
-  /^https:\/\/www\.bilibili\.com\/([^\/]+)\.html$/,
+  /^https:\/\/www\.bilibili\.com\/([^/]+)\.html$/,
   /^https:\/\/www\.bilibili\.com\/watchlater\/#\/list$/,
   'https://www.bilibili.com/account/',
 ]
@@ -72,7 +72,7 @@ export const playerUrls = [
  * 测试当前页面网址是否符合传入的 URL 匹配列表
  * @param urlLists URL 匹配列表
  */
-export const matchCurrentPage = (...urlLists: TestPattern[] | TestPattern) =>
+export const matchCurrentPage = (...urlLists: readonly TestPattern[] | TestPattern) =>
   urlLists.some((list: TestPattern | string | RegExp) => {
     if (Array.isArray(list)) {
       return list.some(url => matchUrlPattern(url))

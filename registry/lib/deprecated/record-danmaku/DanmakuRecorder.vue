@@ -30,7 +30,8 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { select } from '@/core/spin-query'
 import { getJson } from '@/core/ajax'
 import { logError } from '@/core/utils/log'
@@ -39,83 +40,79 @@ import { DownloadPackage } from '@/core/download'
 import { LiveDanmaku } from '@/components/live/live-socket'
 import { VIcon, VButton } from '@/ui'
 
-export default {
-  components: {
-    VIcon,
-    VButton,
-  },
-  data() {
-    return {
-      isRecording: true,
-      danmakus: [],
-      opened: false,
-      collapsed: false,
-      loading: true,
-    }
-  },
-  async mounted() {
-    try {
-      const { LiveSocket } = await import('@/components/live/live-socket')
-      // 绕了一大圈拿 room id, 不知道为啥 URL 里那个数字有些直播间不是 room id
-      const user = (await select('.header-info-ctnr .room-cover')) as HTMLAnchorElement
-      const uidMatch = user.href.match(/space\.bilibili\.com\/(\d+)/)
-      if (!uidMatch) {
-        throw new Error(`无法获取 UID: ${user.href}`)
-      }
-      const uid = uidMatch[1]
-      const json = await getJson(
-        `https://api.live.bilibili.com/room/v1/Room/getRoomInfoOld?mid=${uid}`,
-      )
-      const roomIDMatch = document.URL.match(/live\.bilibili\.com\/(\d+)/)
-      if (!roomIDMatch) {
-        throw new Error(`无法获取 Room ID: ${document.URL}`)
-      }
-      const roomID = lodash.get(json, 'data.roomid', roomIDMatch[1])
-      const socket = new LiveSocket(parseInt(roomID))
-      socket.addEventListener('danmaku', (e: CustomEvent<LiveDanmaku>) => {
-        if (this.isRecording) {
-          console.log(e.detail.content)
-          this.danmakus.push(e.detail)
-        }
-      })
-      await socket.start()
-    } catch (error) {
-      logError(error)
-    } finally {
-      this.loading = false
-    }
-  },
-  methods: {
-    getXML() {
-      const danmakus = this.danmakus.map((d: LiveDanmaku) => {
-        const content = d.content
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&apos;')
-        return `<d p="${fixed(d.time / 1000, 3)},${d.type},${d.fontSize},${d.color},${
-          d.sendTime
-        },0,${d.userHash},0">${content}</d>`
-      })
-      const xml = `
+const isRecording = ref(true)
+const danmakus = ref<LiveDanmaku[]>([])
+const opened = ref(false)
+const collapsed = ref(false)
+const loading = ref(true)
+
+const getXML = () => {
+  const danmakusXml = danmakus.value.map(d => {
+    const content = d.content
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;')
+    return `<d p="${fixed(d.time / 1000, 3)},${d.type},${d.fontSize},${d.color},${d.sendTime},0,${
+      d.userHash
+    },0">${content}</d>`
+  })
+  const xml = `
 <?xml version="1.0" encoding="UTF-8"?>
 <i>
-  ${danmakus.join('\n  ')}
+  ${danmakusXml.join('\n  ')}
 </i>
-      `.trim()
-      return xml
-    },
-    async exportXML() {
-      const { getFriendlyTitle } = await import('@/core/utils/title')
-      DownloadPackage.single(`${getFriendlyTitle()}.xml`, this.getXML())
-    },
-    async exportASS() {
-      const xml = this.getXML()
-      console.log(xml)
-    },
-  },
+  `.trim()
+  return xml
 }
+
+const exportXML = async () => {
+  const { getFriendlyTitle } = await import('@/core/utils/title')
+  DownloadPackage.single(`${getFriendlyTitle()}.xml`, getXML())
+}
+
+// const exportASS = async () => {
+//   const xml = getXML()
+//   console.log(xml)
+// }
+
+onMounted(async () => {
+  try {
+    const { LiveSocket } = await import('@/components/live/live-socket')
+    // 绕了一大圈拿 room id, 不知道为啥 URL 里那个数字有些直播间不是 room id
+    const user = (await select('.header-info-ctnr .room-cover')) as HTMLAnchorElement
+    const uidMatch = user.href.match(/space\.bilibili\.com\/(\d+)/)
+    if (!uidMatch) {
+      throw new Error(`无法获取 UID: ${user.href}`)
+    }
+    const uid = uidMatch[1]
+    const json = await getJson(
+      `https://api.live.bilibili.com/room/v1/Room/getRoomInfoOld?mid=${uid}`,
+    )
+    const roomIDMatch = document.URL.match(/live\.bilibili\.com\/(\d+)/)
+    if (!roomIDMatch) {
+      throw new Error(`无法获取 Room ID: ${document.URL}`)
+    }
+    const roomID = lodash.get(json, 'data.roomid', roomIDMatch[1])
+    const socket = new LiveSocket(parseInt(roomID))
+    socket.addEventListener('danmaku', (e: CustomEvent<LiveDanmaku>) => {
+      if (isRecording.value) {
+        console.log(e.detail.content)
+        danmakus.value.push(e.detail)
+      }
+    })
+    await socket.start()
+  } catch (error) {
+    logError(error)
+  } finally {
+    loading.value = false
+  }
+})
+
+defineExpose({
+  opened,
+})
 </script>
 
 <style lang="scss" scoped>

@@ -5,45 +5,41 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { getUserInfo } from '@/core/user-info'
 import { getDpiSourceSet } from '@/core/utils'
 import { EmptyImageUrl } from '@/core/utils/constants'
 import notLoginFaceUrl from './akari.jpg'
 
 const noFaceUrl = '//static.hdslb.com/images/member/noface.gif'
-export default Vue.extend({
-  name: 'UserFace',
-  data() {
-    return {
-      faceSrc: EmptyImageUrl,
-      pendantSrc: EmptyImageUrl,
-      faceSrcset: null,
-      pendantSrcset: null,
-    }
-  },
-  async created() {
-    const userInfo = await getUserInfo()
-    if (!userInfo.isLogin) {
-      this.faceSrc = notLoginFaceUrl
-    } else {
-      if (userInfo.face) {
-        const faceUrl = userInfo.face.replace('http:', 'https:')
-        if (faceUrl.includes(noFaceUrl)) {
-          this.faceSrc = noFaceUrl
-        } else {
-          const faceBaseSize = 68
-          this.faceSrc = faceUrl
-          this.faceSrcset = getDpiSourceSet(faceUrl, faceBaseSize)
-        }
-      }
-      if (userInfo.pendant?.image) {
-        const pendantUrl = userInfo.pendant.image.replace('http:', 'https:')
-        const pendantBaseSize = 116
-        this.pendantSrcset = getDpiSourceSet(pendantUrl, pendantBaseSize, 'png')
+
+const faceSrc = ref(EmptyImageUrl)
+const pendantSrc = ref(EmptyImageUrl)
+const faceSrcset = ref<string | null>(null)
+const pendantSrcset = ref<string | null>(null)
+
+onMounted(async () => {
+  const userInfo = await getUserInfo()
+  if (!userInfo.isLogin) {
+    faceSrc.value = notLoginFaceUrl
+  } else {
+    if (userInfo.face) {
+      const faceUrl = userInfo.face.replace('http:', 'https:')
+      if (faceUrl.includes(noFaceUrl)) {
+        faceSrc.value = noFaceUrl
+      } else {
+        const faceBaseSize = 68
+        faceSrc.value = faceUrl
+        faceSrcset.value = getDpiSourceSet(faceUrl, faceBaseSize)
       }
     }
-  },
+    if (userInfo.pendant?.image) {
+      const pendantUrl = userInfo.pendant.image.replace('http:', 'https:')
+      const pendantBaseSize = 116
+      pendantSrcset.value = getDpiSourceSet(pendantUrl, pendantBaseSize, 'png')
+    }
+  }
 })
 </script>
 

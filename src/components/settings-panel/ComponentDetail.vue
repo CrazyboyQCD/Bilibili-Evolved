@@ -1,5 +1,5 @@
 <template>
-  <div class="component-detail">
+  <div ref="rootRef" class="component-detail">
     <div v-if="!settings" class="component-not-found">
       未找到组件'{{ componentData.displayName }}' ({{ componentData.name }}), 可能已被卸载.
     </div>
@@ -8,7 +8,7 @@
         <div class="display-name">
           {{ componentData.displayName }}
         </div>
-        <VIcon class="close" icon="close" :size="18" @click="$emit('close')" />
+        <VIcon class="close" icon="close" :size="18" @click="emit('close')" />
       </div>
       <div class="component-detail-tags">
         <div v-for="t of componentData.tags" :key="t.name" class="tag">
@@ -53,7 +53,7 @@
         <div class="component-detail-internal-data-row">
           <div class="internal-name">内部名称: {{ componentData.name }}</div>
           <MiniToast
-            v-if="componentData.configurable !== false && componentActions.length > 0"
+            v-if="componentData.configurable !== false && componentActionsComputed.length > 0"
             placement="bottom"
             trigger="click"
             class="extra-actions-wrapper"
@@ -63,18 +63,18 @@
             </div>
             <template #toast>
               <div class="extra-actions-list">
-                <div v-for="a of componentActions" :key="a.name">
+                <div v-for="a of componentActionsComputed" :key="a.name">
                   <component
-                    :is="a.component"
-                    v-if="a.component"
+                    :is="(a as ComponentVueAction).component"
+                    v-if=" (a as ComponentVueAction).component"
                     :item="a"
                     :component="componentData"
                   />
                   <ComponentAction
                     v-else
-                    v-show="a.visible !== false"
+                    v-show="(a as ComponentConfigAction).visible !== false"
                     class="extra-action-item"
-                    :item="a"
+                    :item="a as ComponentConfigAction"
                     :component="componentData"
                   />
                 </div>
@@ -87,61 +87,61 @@
   </div>
 </template>
 
-<script lang="ts">
-import { VButton, VIcon, SwitchBox, MiniToast } from '@/ui'
+<script setup lang="ts">
+import { ref, computed, onMounted, useTemplateRef, nextTick } from 'vue'
+import { VIcon, MiniToast } from '@/ui'
 import { visible } from '@/core/observer'
-import { OptionsMetadata } from '../component'
+import { ComponentMetadata, OptionsMetadata } from '../component'
 import ComponentDescription from './ComponentDescription.vue'
 import ComponentOption from './ComponentOption.vue'
-import { componentSettingsMixin } from './mixins'
-import { componentActions, ComponentConfigAction } from './component-actions/component-actions'
-import ComponentAction from './component-actions/ComponentAction.vue'
+import { componentActions } from './component-actions/component-actions'
 
-export default Vue.extend({
-  components: {
-    ComponentDescription,
-    ComponentOption,
-    ComponentAction,
-    VButton,
-    VIcon,
-    SwitchBox,
-    MiniToast,
-  },
-  mixins: [componentSettingsMixin],
-  data() {
-    return {
-      virtual: false,
-      componentActions: componentActions
-        .map(factory => factory((this as any).componentData))
-        .filter(it => {
-          if (it === undefined) {
-            return false
-          }
-          if ((it as ComponentConfigAction).visible === false) {
-            return false
-          }
-          return true
-        }),
-    }
-  },
-  computed: {
-    generatedOptions() {
-      return Object.entries((this.componentData.options ?? {}) as OptionsMetadata).filter(
-        ([, option]) => !option.hidden,
-      )
-    },
-  },
-  async mounted() {
-    const element = this.$el as HTMLElement
-    visible(element, records => {
-      records.forEach(record => {
-        this.virtual = !record.isIntersecting
-      })
+import { ComponentConfigAction, ComponentVueAction } from './component-actions/types'
+import ComponentAction from './component-actions/ComponentAction.vue'
+import { getComponentSettings } from '@/core/settings'
+
+const { componentData } = defineProps<{
+  componentData: ComponentMetadata
+}>()
+
+const emit = defineEmits<{ close: []; mounted: [] }>()
+
+const rootRef = useTemplateRef('rootRef')
+
+const virtual = ref(false)
+const settings = ref(getComponentSettings(componentData))
+
+const componentActionsComputed = computed(
+  () =>
+    componentActions
+      .map(factory => factory(componentData))
+      .filter(it => {
+        if (it === undefined) {
+          return false
+        }
+        if ((it as ComponentConfigAction).visible === false) {
+          return false
+        }
+        return true
+      }) as (ComponentConfigAction | ComponentVueAction)[],
+)
+
+const generatedOptions = computed(() =>
+  Object.entries((componentData.options ?? {}) as OptionsMetadata).filter(
+    ([, option]) => !option.hidden,
+  ),
+)
+
+onMounted(async () => {
+  const element = rootRef.value as HTMLElement
+  visible(element, records => {
+    records.forEach(record => {
+      virtual.value = !record.isIntersecting
     })
-    await this.$nextTick()
-    this.$emit('mounted')
-    console.log(this.componentActions)
-  },
+  })
+  await nextTick()
+  emit('mounted')
+  console.log(componentActionsComputed.value)
 })
 </script>
 

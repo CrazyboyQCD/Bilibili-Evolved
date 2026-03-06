@@ -1,22 +1,6 @@
-import {
-  defineComponentMetadata,
-  defineOptionsMetadata,
-  OptionsOfMetadata,
-} from '@/components/define'
+import { defineComponentMetadata } from '@/components/define'
 import { startResolution } from './resolution'
-
-const options = defineOptionsMetadata({
-  scale: {
-    displayName: '缩放级别',
-    defaultValue: 'auto',
-  },
-  originalImageInArticles: {
-    displayName: '在专栏中请求原图',
-    defaultValue: false,
-  },
-})
-
-export type Options = OptionsOfMetadata<typeof options>
+import { options } from './options'
 
 export const component = defineComponentMetadata({
   name: 'imageResolution',

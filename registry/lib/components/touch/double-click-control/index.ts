@@ -1,6 +1,6 @@
 import { defineComponentMetadata } from '@/components/define'
 import { playerAgent } from '@/components/video/player-agent'
-import { videoChange } from '@/core/observer'
+import { videoChange } from '@/core/video'
 import { addStyle } from '@/core/style'
 import { playerUrls } from '@/core/utils/urls'
 import touchStyles from './double-click-control.scss'

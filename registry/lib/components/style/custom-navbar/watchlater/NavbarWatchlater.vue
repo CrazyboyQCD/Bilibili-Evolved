@@ -56,17 +56,18 @@
     </transition-group>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch, onMounted, useTemplateRef } from 'vue'
 import { getComponentSettings } from '@/core/settings'
 import { formatDuration } from '@/core/utils/formatters'
 import {
-  watchlaterList,
   getWatchlaterList,
   RawWatchlaterItem,
   toggleWatchlater,
 } from '@/components/video/watchlater'
 import { VLoading, VEmpty, TextBox, VButton, VIcon, DpiImage } from '@/ui'
-import { popperMixin } from '../mixins'
+import { usePopper, UsePopperProps } from '../mixins'
+import { WatchlaterRedirectOptionType } from '../../../utils/watchlater-redirect'
 
 interface WatchlaterCard {
   aid: number
@@ -83,104 +84,104 @@ interface WatchlaterCard {
   totalPages: number
   percent: number
 }
-export default Vue.extend({
-  components: {
-    VLoading,
-    VEmpty,
-    TextBox,
-    VButton,
-    VIcon,
-    DpiImage,
-  },
-  mixins: [popperMixin],
-  data() {
-    const redirect = getComponentSettings('watchlaterRedirect')
-    return {
-      watchlaterList,
-      loading: true,
-      cards: [],
-      filteredCards: [],
-      search: '',
-      redirect: redirect.enabled && redirect.options.navbar,
-    }
-  },
-  watch: {
-    search() {
-      this.updateFilteredCards()
-    },
-  },
-  async created() {
-    try {
-      await this.updateList()
-    } finally {
-      this.loading = false
-    }
-  },
-  methods: {
-    toggleWatchlater,
-    popupRefresh() {
-      this.updateList()
-    },
-    async updateList() {
-      const rawList = await getWatchlaterList(true)
-      if (!rawList) {
-        this.cards = []
-        return
-      }
-      const getLink = (item: RawWatchlaterItem) => {
-        if (this.redirect) {
-          return `https://www.bilibili.com/video/${item.bvid}/`
-        }
-        return `https://www.bilibili.com/list/watchlater?bvid=${item.bvid}`
-      }
-      const cards = rawList.map(item => {
-        const currentPage = item.pages?.find(p => p.cid === item.cid)
-        const duration = currentPage?.duration ?? item.duration
-        const href = (() => {
-          if (!currentPage || !this.redirect) {
-            return getLink(item)
-          }
-          const { page } = currentPage
-          return page <= 1 ? getLink(item) : `${getLink(item)}?p=${page}`
-        })()
-        const percent = Math.round((1000 * item.progress) / duration) / 1000
 
-        return {
-          aid: item.aid,
-          href,
-          coverUrl: item.pic.replace('http:', 'https:'),
-          durationText: formatDuration(duration),
-          duration,
-          complete: item.progress < 0 || percent > 0.95, // 进度过95%算看完, -1值表示100%
-          title: item.title,
-          upName: item.owner.name,
-          upFaceUrl: item.owner.face.replace('http:', 'https:'),
-          upID: item.owner.mid,
-          currentPage: currentPage?.page,
-          totalPages: item.videos,
-          percent,
-        } as WatchlaterCard
-      })
-      this.cards = cards
-      if (this.search) {
-        this.updateFilteredCards()
-      } else {
-        this.filteredCards = cards
+const popper = usePopper(defineProps<UsePopperProps>())
+
+const redirectSetting = getComponentSettings<WatchlaterRedirectOptionType>('watchlaterRedirect')
+const redirect = redirectSetting.enabled && redirectSetting.options.navbar
+
+const loading = ref(true)
+const cards = ref<WatchlaterCard[]>([])
+const filteredCards = ref<WatchlaterCard[]>([])
+const search = ref('')
+const root = useTemplateRef('root')
+
+const updateFilteredCards = lodash.debounce(() => {
+  const searchLower = search.value.toLowerCase()
+  const cardsList = root.value?.querySelector('.watchlater-list-content') as HTMLElement
+  if (cardsList) {
+    cardsList.scrollTo(0, 0)
+  }
+  filteredCards.value = cards.value.filter(
+    card =>
+      card.title.toLowerCase().includes(searchLower) ||
+      card.upName.toLowerCase().includes(searchLower),
+  )
+}, 100)
+
+const updateList = async () => {
+  const rawList = await getWatchlaterList(true)
+  if (!rawList) {
+    cards.value = []
+    return
+  }
+  const getLink = (item: RawWatchlaterItem) => {
+    if (redirect) {
+      return `https://www.bilibili.com/video/${item.bvid}/`
+    }
+    return `https://www.bilibili.com/list/watchlater?bvid=${item.bvid}`
+  }
+  const newCards = rawList.map(item => {
+    const currentPage = item.pages?.find(p => p.cid === item.cid)
+    const duration = currentPage?.duration ?? item.duration
+    const href = (() => {
+      if (!currentPage || !redirect) {
+        return getLink(item)
       }
-    },
-    async remove(aid: number, index: number) {
-      this.cards.splice(index, 1)
-      await this.toggleWatchlater(aid)
-    },
-    updateFilteredCards: lodash.debounce(function updateFilteredCards() {
-      const search = this.search.toLowerCase()
-      const cardsList = this.$el.querySelector('.watchlater-list-content') as HTMLElement
-      cardsList.scrollTo(0, 0)
-      this.filteredCards = (this.cards as WatchlaterCard[]).filter(
-        card =>
-          card.title.toLowerCase().includes(search) || card.upName.toLowerCase().includes(search),
-      )
-    }, 100),
+      const { page } = currentPage
+      return page <= 1 ? getLink(item) : `${getLink(item)}?p=${page}`
+    })()
+    const percent = Math.round((1000 * item.progress) / duration) / 1000
+
+    return {
+      aid: item.aid,
+      href,
+      coverUrl: item.pic.replace('http:', 'https:'),
+      durationText: formatDuration(duration),
+      duration,
+      complete: item.progress < 0 || percent > 0.95, // 进度过95%算看完, -1值表示100%
+      title: item.title,
+      upName: item.owner.name,
+      upFaceUrl: item.owner.face.replace('http:', 'https:'),
+      upID: item.owner.mid,
+      currentPage: currentPage?.page,
+      totalPages: item.videos,
+      percent,
+    } as WatchlaterCard
+  })
+  cards.value = newCards
+  if (search.value) {
+    updateFilteredCards()
+  } else {
+    filteredCards.value = newCards
+  }
+}
+
+watch(search, () => {
+  updateFilteredCards()
+})
+
+const popupRefresh = () => {
+  updateList()
+}
+
+const remove = async (aid: number, index: number) => {
+  cards.value.splice(index, 1)
+  await toggleWatchlater(aid)
+}
+
+onMounted(async () => {
+  try {
+    await updateList()
+  } finally {
+    loading.value = false
+  }
+})
+
+defineExpose({
+  popupRefresh,
+  popupShow() {
+    popper.popupShow()
   },
 })
 </script>

@@ -29,7 +29,7 @@
             <div class="header-name">动作</div>
             <div class="header-default-binding">默认按键</div>
             <div class="header-preset-binding">
-              <VDropdown v-model="selectedPreset" :items="presetOptions" :key-mapper="it => it">
+              <VDropdown :value="selectedPreset" :items="presetOptions" :key-mapper="it => it">
                 <template #item="{ item }">
                   {{ item }}
                 </template>
@@ -41,63 +41,45 @@
             v-for="row of rows"
             :key="row.name"
             :row="row"
-            :selected-preset="selectedPreset"
+            :selected-preset="selectedPreset.get()"
           />
         </div>
       </div>
     </div>
   </VPopup>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 import { getComponentSettings } from '@/core/settings'
 import { VIcon, VDropdown, VPopup } from '@/ui'
 import KeymapSettingsRow from './KeymapSettingsRow.vue'
 import { actions } from '../actions'
-import { KeyBindingAction } from '../bindings'
+import { KeyBindingAction } from '../bindings-types'
 import { presets } from '../presets'
+import { Options } from '../options'
 
-const keymapOptions = getComponentSettings('keymap').options
+const keymapOptions = getComponentSettings<Options>('keymap').options
 console.log(presets, actions, keymapOptions.preset, keymapOptions.customKeyBindings)
-export default Vue.extend({
-  components: {
-    VIcon,
-    VDropdown,
-    VPopup,
-    KeymapSettingsRow,
+const triggerElement = ref<HTMLElement | null>(null)
+const popupOpen = ref(false)
+const selectedPreset = computed(() => ({
+  get() {
+    return keymapOptions.preset
   },
-  props: {
-    triggerElement: {
-      type: HTMLElement,
-      default: null,
-    },
+  set(value: string) {
+    keymapOptions.preset = value
   },
-  data() {
-    return {
-      popupOpen: false,
-      actions,
-      presets,
-      customKeyBindings: keymapOptions.customKeyBindings,
-    }
-  },
-  computed: {
-    selectedPreset: {
-      get() {
-        return keymapOptions.preset
-      },
-      set(value: string) {
-        keymapOptions.preset = value
-      },
-    },
-    rows() {
-      return Object.entries(this.actions).map(([name, action]) => ({
-        name,
-        ...(action as KeyBindingAction),
-      }))
-    },
-    presetOptions() {
-      return Object.keys(this.presets)
-    },
-  },
+}))
+const rows = computed(() =>
+  Object.entries(actions).map(([name, action]) => ({
+    name,
+    ...(action as KeyBindingAction),
+  })),
+)
+const presetOptions = computed(() => Object.keys(presets))
+defineExpose({
+  triggerElement,
+  popupOpen,
 })
 </script>
 <style lang="scss">

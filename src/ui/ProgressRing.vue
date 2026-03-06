@@ -25,57 +25,38 @@
   </div>
 </template>
 
-<script lang="ts">
-// https://css-tricks.com/building-progress-ring-quickly/
-export default Vue.extend({
-  name: 'ProgressRing',
-  props: {
-    size: {
-      type: Number,
-      required: true,
-    },
-    progress: {
-      type: Number,
-      default: 50,
-    },
-    stroke: {
-      type: Number,
-      default: 4,
-    },
-    min: {
-      type: Number,
-      default: 0,
-    },
-    max: {
-      type: Number,
-      default: 100,
-    },
-    transition: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  data() {
-    const radius = this.size / 2 - this.stroke
-    const circumference = radius * 2 * Math.PI
+<script setup lang="ts">
+import { computed } from 'vue'
 
-    return {
-      radius,
-      circumference,
-    }
-  },
-  computed: {
-    strokeDashoffset() {
-      let progress = this.progress as number
-      if (progress > this.max) {
-        progress = this.max
-      } else if (progress < this.min) {
-        progress = this.min
-      }
-      const percent: number = (progress - this.min) / (this.max - this.min)
-      return (1 - percent) * this.circumference
-    },
-  },
+// https://css-tricks.com/building-progress-ring-quickly/
+const {
+  size,
+  progress = 50,
+  stroke = 4,
+  min = 0,
+  max = 100,
+  transition = false,
+} = defineProps<{
+  size: number
+  progress?: number
+  stroke?: number
+  min?: number
+  max?: number
+  transition?: boolean
+}>()
+
+const radius = computed(() => size / 2 - stroke)
+const circumference = computed(() => radius.value * 2 * Math.PI)
+
+const strokeDashoffset = computed(() => {
+  let progressValue = progress
+  if (progressValue > max) {
+    progressValue = max
+  } else if (progressValue < min) {
+    progressValue = min
+  }
+  const percent: number = (progressValue - min) / (max - min)
+  return (1 - percent) * circumference.value
 })
 </script>
 

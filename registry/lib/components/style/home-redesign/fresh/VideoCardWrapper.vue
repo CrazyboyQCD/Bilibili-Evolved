@@ -1,16 +1,20 @@
 <template>
-  <div class="fresh-home-video-card-wrapper">
-    <VideoCard v-bind="$attrs" orientation="vertical" />
+  <div ref="root" class="fresh-home-video-card-wrapper">
+    <VideoCard
+      :data="attrs.data"
+      :orientation="attrs.orientation as string"
+      :show-stats="attrs.showStats as boolean"
+      :is-new="attrs.isNew as boolean"
+    />
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { useAttrs, useTemplateRef } from 'vue'
 import VideoCard from '@/components/feeds/VideoCard.vue'
 
-export default Vue.extend({
-  components: {
-    VideoCard,
-  },
-})
+const attrs = useAttrs()
+const root = useTemplateRef('root')
+defineExpose({ root })
 </script>
 <style lang="scss">
 .fresh-home-video-card-wrapper {

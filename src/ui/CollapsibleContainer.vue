@@ -24,93 +24,72 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, shallowRef, computed } from 'vue'
+<script setup lang="ts">
+import { computed, ref } from 'vue'
 import { VIcon } from '@/ui'
 
-export default defineComponent({
-  name: 'CollapsibleContainer',
-  components: {
-    VIcon,
-  },
-  props: {
-    /** 标题栏文本，在不重写slot的情况下修改显示文本 */
-    title: {
-      type: String,
-      default: '',
-    },
+const {
+  title = '',
+  expanded,
+  defaultExpanded = false,
+  enableExpandByHeader = true,
+  hideExpandButton = false,
+  disableContent = false,
+} = defineProps<{
+  /** 标题栏文本，在不重写slot的情况下修改显示文本 */
+  title?: string
 
-    /** 当前展开状态 */
-    expanded: {
-      type: Boolean,
-      default: undefined,
-    },
+  /** 当前展开状态 */
+  expanded?: boolean
 
-    /** 初始展开状态 */
-    defaultExpanded: {
-      type: Boolean,
-      default: false,
-    },
+  /** 初始展开状态 */
+  defaultExpanded?: boolean
 
-    /**
-     * 点击标题栏任意位置是否能触发展开/收起操作
-     *
-     * 通常在重写了title slot，有自定义的点击事件的情况禁用
-     */
-    enableExpandByHeader: {
-      type: Boolean,
-      default: true,
-    },
+  /**
+   * 点击标题栏任意位置是否能触发展开/收起操作
+   *
+   * 通常在重写了title slot，有自定义的点击事件的情况禁用
+   */
+  enableExpandByHeader?: boolean
 
-    /** 隐藏展开按钮 */
-    hideExpandButton: {
-      type: Boolean,
-      default: false,
-    },
+  /** 隐藏展开按钮 */
+  hideExpandButton?: boolean
 
-    /** 禁用内容区域 */
-    disableContent: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['expanded'],
-  setup(props, { emit }) {
-    // 定义内部值以便在未传递参数时能正常工作
-    const internalExpanded = shallowRef(props.defaultExpanded)
-    const computedExpanded = computed(() =>
-      props.expanded !== undefined ? props.expanded : internalExpanded.value,
-    )
+  /** 禁用内容区域 */
+  disableContent?: boolean
+}>()
 
-    // 切换展开/收起状态
-    const toggleExpand = () => {
-      if (props.expanded !== undefined) {
-        emit('expanded', !props.expanded)
-      } else {
-        internalExpanded.value = !internalExpanded.value
-      }
-    }
+const emit = defineEmits<{
+  expanded: [expanded: boolean]
+}>()
 
-    const onHeaderClick = () => {
-      if (props.enableExpandByHeader) {
-        toggleExpand()
-      }
-    }
+// 定义内部值以便在未传递参数时能正常工作
+const internalExpanded = ref(defaultExpanded)
+const computedExpanded = computed(() =>
+  expanded !== undefined ? expanded : internalExpanded.value,
+)
 
-    const onBtnClick = (e: MouseEvent) => {
-      // 避免重复触发点击事件
-      e.stopPropagation()
+// 切换展开/收起状态
+const toggleExpand = () => {
+  if (expanded !== undefined) {
+    emit('expanded', !expanded)
+  } else {
+    internalExpanded.value = !internalExpanded.value
+  }
+}
 
-      toggleExpand()
-    }
+const onHeaderClick = () => {
+  if (enableExpandByHeader) {
+    toggleExpand()
+  }
+}
 
-    return {
-      computedExpanded,
-      onBtnClick,
-      onHeaderClick,
-    }
-  },
-})
+const onBtnClick = (e: MouseEvent) => {
+  // 避免重复触发点击事件
+  e.stopPropagation()
+
+  toggleExpand()
+}
 </script>
 
 <style lang="scss" scoped>

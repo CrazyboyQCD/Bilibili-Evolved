@@ -12,128 +12,113 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-import { ComponentMetadata } from '@/components/types'
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import type { ComponentMetadata } from '@/components/types'
 import { Toast } from '@/core/toast'
-import { VIcon } from '@/ui'
 import { DevClientEvents } from './client'
 import { autoUpdateOptions, getDevClientOptions } from './options'
 import { urlConverter } from './converter'
 
 const options = getDevClientOptions()
 
-export default Vue.extend({
-  components: {
-    VIcon,
-  },
-  props: {
-    item: {
-      type: Object,
-      required: true,
-    },
-    component: {
-      type: Object,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      busy: false,
-      autoUpdateComponents: autoUpdateOptions.urls.components,
-      sessions: [],
-      isConnected: false,
+const { component } = defineProps<{
+  item: Record<string, unknown>
+  component: ComponentMetadata
+}>()
+
+const busy = ref(false)
+const autoUpdateComponents = autoUpdateOptions.urls.components
+const sessions = ref<string[]>([])
+const isConnected = ref(false)
+
+const autoUpdateRecord = computed(() => autoUpdateComponents[component.name])
+const componentUpdateUrl = computed(() => autoUpdateRecord.value?.url)
+
+const isDebugging = computed(() => {
+  if (!componentUpdateUrl.value) {
+    return false
+  }
+  return sessions.value.some((path: string) => {
+    const { pathname } = new URL(componentUpdateUrl.value)
+    return path === pathname
+  })
+})
+
+const canStartDebug = computed(() => {
+  return !isDebugging.value && urlConverter.toDevUrl(componentUpdateUrl.value) !== null
+})
+
+const canStopDebug = computed(() => {
+  return Boolean(isDebugging.value && componentUpdateUrl.value)
+})
+
+const handleSessionsUpdate = (e: CustomEvent<string[]>) => {
+  sessions.value = e.detail
+}
+
+const handleServerChange = (e: CustomEvent<boolean>) => {
+  isConnected.value = e.detail
+}
+
+const handleClick = async (action: () => Promise<void>) => {
+  if (busy.value) {
+    return
+  }
+  try {
+    busy.value = true
+    await action()
+  } finally {
+    busy.value = false
+  }
+}
+
+const startDebug = async () => {
+  await handleClick(async () => {
+    const { devClient } = await import('./client')
+    const devUrl = urlConverter.toDevUrl(componentUpdateUrl.value)
+    if (autoUpdateRecord.value.url !== devUrl) {
+      options.devRecords[component.name] = {
+        name: component.name,
+        originalUrl: componentUpdateUrl.value,
+      }
+      autoUpdateRecord.value.url = devUrl
     }
-  },
-  computed: {
-    autoUpdateRecord() {
-      const metadata = this.component as ComponentMetadata
-      return this.autoUpdateComponents[metadata.name]
-    },
-    componentUpdateUrl() {
-      return this.autoUpdateRecord?.url
-    },
-    isDebugging() {
-      return (
-        this.componentUpdateUrl &&
-        this.sessions.some((path: string) => {
-          const { pathname } = new URL(this.componentUpdateUrl)
-          return path === pathname
-        })
-      )
-    },
-    canStartDebug() {
-      return !this.isDebugging && urlConverter.toDevUrl(this.componentUpdateUrl) !== null
-    },
-    canStopDebug() {
-      return Boolean(this.isDebugging && this.componentUpdateUrl)
-    },
-  },
-  async created() {
+    const toast = Toast.info('启动调试中...', 'DevClient')
+    try {
+      await devClient.startDebug(autoUpdateRecord.value.url)
+    } catch (error) {
+      console.error(error)
+    } finally {
+      toast.close()
+    }
+  })
+}
+
+const stopDebug = async () => {
+  await handleClick(async () => {
     const { devClient } = await import('./client')
-    this.sessions = devClient.sessions
-    this.isConnected = devClient.isConnected
-    devClient.addEventListener(DevClientEvents.ServerChange, this.handleServerChange)
-    devClient.addEventListener(DevClientEvents.SessionsUpdate, this.handleSessionsUpdate)
-  },
-  async beforeDestroy() {
-    const { devClient } = await import('./client')
-    devClient.removeEventListener(DevClientEvents.SessionsUpdate, this.handleSessionsUpdate)
-  },
-  methods: {
-    handleSessionsUpdate(e: CustomEvent<string[]>) {
-      this.sessions = e.detail
-    },
-    handleServerChange(e: CustomEvent<boolean>) {
-      this.isConnected = e.detail
-    },
-    async handleClick(action: () => Promise<void>) {
-      if (this.busy) {
-        return
-      }
-      try {
-        this.busy = true
-        await action()
-      } finally {
-        this.busy = false
-      }
-    },
-    async startDebug() {
-      await this.handleClick(async () => {
-        const { devClient } = await import('./client')
-        const metadata = this.component as ComponentMetadata
-        const devUrl = urlConverter.toDevUrl(this.componentUpdateUrl)
-        // console.log('devUrl:', devUrl, 'autoUpdateRecord.url:', this.autoUpdateRecord.url)
-        if (this.autoUpdateRecord.url !== devUrl) {
-          options.devRecords[metadata.name] = {
-            name: metadata.name,
-            originalUrl: this.componentUpdateUrl,
-          }
-          this.autoUpdateRecord.url = devUrl
-        }
-        const toast = Toast.info('启动调试中...', 'DevClient')
-        try {
-          await devClient.startDebug(this.autoUpdateRecord.url)
-        } catch (error) {
-          console.error(error)
-        } finally {
-          toast.close()
-        }
-      })
-    },
-    async stopDebug() {
-      await this.handleClick(async () => {
-        const { devClient } = await import('./client')
-        const metadata = this.component as ComponentMetadata
-        const { pathname } = new URL(this.componentUpdateUrl)
-        if (devClient.isConnected) {
-          await devClient.stopDebug(pathname)
-        }
-        if (options.devRecords[metadata.name]) {
-          this.autoUpdateRecord.url = options.devRecords[metadata.name].originalUrl
-          delete options.devRecords[metadata.name]
-        }
-      })
-    },
-  },
+    const { pathname } = new URL(componentUpdateUrl.value)
+    if (devClient.isConnected) {
+      await devClient.stopDebug(pathname)
+    }
+    if (options.devRecords[component.name]) {
+      autoUpdateRecord.value.url = options.devRecords[component.name].originalUrl
+      delete options.devRecords[component.name]
+    }
+  })
+}
+
+onMounted(async () => {
+  const { devClient } = await import('./client')
+  sessions.value = devClient.sessions
+  isConnected.value = devClient.isConnected
+  devClient.addEventListener(DevClientEvents.ServerChange, handleServerChange)
+  devClient.addEventListener(DevClientEvents.SessionsUpdate, handleSessionsUpdate)
+})
+
+onUnmounted(async () => {
+  const { devClient } = await import('./client')
+  devClient.removeEventListener(DevClientEvents.SessionsUpdate, handleSessionsUpdate)
 })
 </script>

@@ -12,7 +12,7 @@
       >
         <VIcon icon="eye" :size="18" />
       </div>
-      <div class="close" @click="$emit('close')">
+      <div class="close" @click="emit('close')">
         <VIcon icon="close" :size="18" />
       </div>
     </div>
@@ -57,7 +57,7 @@
       <VPopup
         ref="detailsPopup"
         class="component-detail-panel"
-        :trigger-element="$refs.componentList"
+        :trigger-element="componentList"
         :open="componentDetailOpen"
         @popup-change="!$event && closePopper()"
       >
@@ -72,188 +72,176 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, watch, useTemplateRef } from 'vue'
 import { VIcon, TextBox, VPopup, VEmpty, VButton } from '@/ui'
 import { getHook } from '@/plugins/hook'
 import { deleteValue } from '@/core/utils'
 import ComponentSettings from './ComponentSettings.vue'
-import { ComponentMetadata, ComponentTag, components } from '../component'
+import { ComponentMetadata, components } from '../component'
 import ComponentDetail from './ComponentDetail.vue'
 import ComponentTags from './ComponentTags.vue'
 import { getDescriptionText } from '../description'
 import { SearchBarActionContext, searchBarActions } from './search-bar-actions'
 
+const emit = defineEmits(['close'])
+
+const componentTags = useTemplateRef('componentTags')
+const componentList = useTemplateRef('componentList')
+
 const defaultSearchFilter = (items: ComponentMetadata[]) => items
-export default {
-  name: 'SettingsPanel',
-  components: {
-    VIcon,
-    TextBox,
-    VPopup,
-    VButton,
-    VEmpty,
-    ComponentSettings,
-    ComponentDetail,
-    ComponentTags,
-  },
-  data() {
-    return {
-      components,
-      renderedComponents: components.filter(c => !c.hidden),
-      selectedComponent: null,
-      selectedComponents: [],
-      componentDetailOpen: false,
-      collapsed: false,
-      peek: false,
-      searchKeyword: '',
-      searchFilter: defaultSearchFilter,
-      searchBarActions,
+
+const renderedComponentsRef = ref<ComponentMetadata[]>(components.filter(c => !c.hidden))
+const selectedComponent = ref<ComponentMetadata | null>(null)
+const selectedComponents = ref<ComponentMetadata[]>([])
+const componentDetailOpen = ref(false)
+const collapsed = ref(false)
+const peek = ref(false)
+const searchKeyword = ref('')
+const searchFilter = ref<(items: ComponentMetadata[]) => ComponentMetadata[]>(defaultSearchFilter)
+
+const isComponentSelected = (name: string) =>
+  selectedComponents.value.some((c: ComponentMetadata) => c.name === name)
+
+// const tags = computed(() => {
+//   const renderedComponents = renderedComponentsRef.value
+//   let tagsArray = [] as (ComponentTag & { count: number })[]
+//   renderedComponents.forEach(it =>
+//     it.tags.forEach(t => {
+//       tagsArray.push({ count: 0, ...t })
+//     }),
+//   )
+//   const counts = lodash.countBy(tagsArray, (t: ComponentTag) => t.name)
+//   tagsArray = lodash.uniqBy(tagsArray, t => t.name)
+//   tagsArray.forEach(t => (t.count = counts[t.name]))
+//   return tagsArray
+// })
+
+const searchBarContext = computed((): SearchBarActionContext => {
+  return {
+    components,
+    selectedComponent: selectedComponent.value,
+    selectedComponents: selectedComponents.value,
+    searchKeyword: searchKeyword.value,
+    searchFilter: searchFilter.value,
+  }
+})
+
+const renderedComponents = computed({
+  get: () => renderedComponentsRef.value,
+  set: value => (renderedComponentsRef.value = value),
+})
+
+const closePopper = () => {
+  selectedComponent.value = null
+  selectedComponents.value = []
+  componentDetailOpen.value = false
+}
+
+const selectMultipleComponent = (component: ComponentMetadata, listSelect = false) => {
+  if (selectedComponent.value && listSelect) {
+    // handle shift + click
+    const { name } = component
+    const { name: selectedComponentName } = selectedComponent.value
+    const list = renderedComponentsRef.value
+    let startIdx = list.findIndex(c => c.name === selectedComponentName)
+    let endIdx = list.findIndex(c => c.name === name)
+    if (startIdx > endIdx) {
+      // if start index is greater than end index, swap them
+      ;[startIdx, endIdx] = [endIdx, startIdx]
+    }
+    selectedComponents.value = list.slice(startIdx, endIdx + 1)
+    return
+  }
+  const selectedList = selectedComponents.value
+  const selectedComponentItem = selectedList.find(c => c.name === component.name)
+  if (selectedComponentItem) {
+    deleteValue(selectedList, c => c.name === selectedComponentItem.name)
+  } else {
+    selectedList.push(component)
+  }
+}
+
+const selectComponent = (component: ComponentMetadata) => {
+  selectedComponents.value = []
+  const closeHooks = getHook('settingsPanel.componentDetail.close')
+  const openHooks = getHook('settingsPanel.componentDetail.open')
+  const selectedName = selectedComponent.value?.name
+  const isAlreadySelected = componentDetailOpen.value && selectedName === component.name
+  closeHooks.before(selectedName)
+  closePopper()
+  closeHooks.after(selectedName)
+  if (isAlreadySelected) {
+    return
+  }
+  openHooks.before(component.name)
+  selectedComponents.value.push(component)
+  selectedComponent.value = component
+  componentDetailOpen.value = true
+  openHooks.after(component.name)
+}
+
+const updateRenderedComponents = async () => {
+  const textMap: Record<string, string> = await (async () => {
+    if (!searchKeyword.value) {
+      return {}
+    }
+    return Object.fromEntries(
+      await Promise.all(
+        components.map(async c => [
+          c.name,
+          [
+            c.name,
+            c.displayName,
+            c.tags.map(t => `${t.name}\n${t.displayName}`).join('\n'),
+            await getDescriptionText(c),
+          ]
+            .join('\n')
+            .toLowerCase(),
+        ]),
+      ),
+    )
+  })()
+  const internalFiltered = components.filter(c => {
+    if (c.hidden) {
+      return false
+    }
+    if (searchKeyword.value) {
+      const text = textMap[c.name]
+      if (!text) {
+        return false
+      }
+      return text.includes(searchKeyword.value.toLowerCase())
+    }
+    return true
+  })
+  renderedComponentsRef.value = searchFilter.value(internalFiltered)
+}
+
+watch(
+  searchKeyword,
+  lodash.debounce(() => {
+    updateRenderedComponents()
+  }, 200),
+)
+
+watch(searchFilter, () => {
+  searchKeyword.value = ''
+  selectedComponents.value = []
+  updateRenderedComponents()
+})
+
+watch(
+  () => components,
+  () => {
+    updateRenderedComponents()
+    componentTags.value.refreshTags()
+    if (!components.some((c: ComponentMetadata) => c.name === selectedComponent.value?.name)) {
+      selectedComponent.value = null
     }
   },
-  computed: {
-    isComponentSelected() {
-      return (name: string) =>
-        this.selectedComponents.some((c: ComponentMetadata) => c.name === name)
-    },
-    tags() {
-      const renderedComponents = this.renderedComponents as ComponentMetadata[]
-      let tags = [] as (ComponentTag & { count: number })[]
-      renderedComponents.forEach(it =>
-        it.tags.forEach(t => {
-          tags.push({ count: 0, ...t })
-        }),
-      )
-      const counts = lodash.countBy(tags, (t: ComponentTag) => t.name)
-      tags = lodash.uniqBy(tags, t => t.name)
-      tags.forEach(t => (t.count = counts[t.name]))
-      return tags
-    },
-    searchBarContext(): SearchBarActionContext {
-      return lodash.pick(
-        this,
-        'components',
-        'selectedComponent',
-        'selectedComponents',
-        'searchKeyword',
-        'searchFilter',
-      )
-    },
-  },
-  watch: {
-    searchKeyword: lodash.debounce(function searchKeywordWatch() {
-      // if (this.searchKeyword !== '') {
-      //   this.$refs.componentTags?.reset()
-      // }
-      this.updateRenderedComponents()
-    }, 200),
-    searchFilter() {
-      // if (this.searchFilter !== defaultSearchFilter) {
-      this.searchKeyword = ''
-      this.selectedComponents = []
-      // }
-      this.updateRenderedComponents()
-    },
-    components() {
-      this.updateRenderedComponents()
-      this.$refs.componentTags.refreshTags()
-      if (
-        !this.components.some((c: ComponentMetadata) => c.name === this.selectedComponent?.name)
-      ) {
-        this.selectedComponent = null
-      }
-    },
-  },
-  methods: {
-    closePopper() {
-      this.selectedComponent = null
-      this.selectedComponents = []
-      this.componentDetailOpen = false
-    },
-    selectMultipleComponent(component: ComponentMetadata, listSelect = false) {
-      if (this.selectedComponent && listSelect) {
-        // handle shift + click
-        const { name } = component
-        const { name: selectedComponentName } = this.selectedComponent as ComponentMetadata
-        const list = this.renderedComponents as ComponentMetadata[]
-        let startIdx = list.findIndex(c => c.name === selectedComponentName)
-        let endIdx = list.findIndex(c => c.name === name)
-        if (startIdx > endIdx) {
-          // if start index is greater than end index, swap them
-          ;[startIdx, endIdx] = [endIdx, startIdx]
-        }
-        this.selectedComponents = list.slice(startIdx, endIdx + 1)
-        return
-      }
-      const selectedList = this.selectedComponents as ComponentMetadata[]
-      const selectedComponent = selectedList.find(c => c.name === component.name)
-      if (selectedComponent) {
-        deleteValue(selectedList, c => c.name === selectedComponent.name)
-      } else {
-        selectedList.push(component)
-      }
-    },
-    selectComponent(component: ComponentMetadata) {
-      this.selectedComponents = []
-      const closeHooks = getHook('settingsPanel.componentDetail.close')
-      const openHooks = getHook('settingsPanel.componentDetail.open')
-      const selectedName = this.selectedComponent?.name
-      const isAlreadySelected = this.componentDetailOpen && selectedName === component.name
-      closeHooks.before(selectedName)
-      this.closePopper()
-      closeHooks.after(selectedName)
-      if (isAlreadySelected) {
-        return
-      }
-      openHooks.before(component.name)
-      this.selectedComponents.push(component)
-      this.selectedComponent = component
-      this.componentDetailOpen = true
-      openHooks.after(component.name)
-    },
-    async updateRenderedComponents() {
-      const textMap: Record<string, string> = await (async () => {
-        if (!this.searchKeyword) {
-          return {}
-        }
-        return Object.fromEntries(
-          await Promise.all(
-            components.map(async c => [
-              c.name,
-              [
-                c.name,
-                c.displayName,
-                c.tags.map(t => `${t.name}\n${t.displayName}`).join('\n'),
-                await getDescriptionText(c),
-              ]
-                .join('\n')
-                .toLowerCase(),
-            ]),
-          ),
-        )
-      })()
-      const internalFiltered = components.filter(c => {
-        if (c.hidden) {
-          return false
-        }
-        if (this.searchKeyword) {
-          const text = textMap[c.name]
-          if (!text) {
-            return false
-          }
-          return text.includes(this.searchKeyword.toLowerCase())
-        }
-        return true
-      })
-      // if (this.searchKeyword) {
-      //   console.log('updateRenderedComponents', this.searchKeyword)
-      //   this.renderedComponents = internalFiltered
-      //   return
-      // }
-      // console.log('updateRenderedComponents', this.searchKeyword)
-      this.renderedComponents = this.searchFilter(internalFiltered)
-    },
-  },
-}
+  { deep: true },
+)
 </script>
 
 <style lang="scss">

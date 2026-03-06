@@ -6,7 +6,7 @@
     <TextBox
       v-if="type === 'text' || type === 'number'"
       change-on-blur
-      :validator="option.validator"
+      :validator="option.validator as any"
       :text="value.toString()"
       :placeholder="value.toString()"
       @change="type === 'text' ? valueChange($event) : numberChange($event)"
@@ -14,26 +14,34 @@
     <TextArea
       v-if="type === 'textArea'"
       change-on-blur
-      :validator="option.validator"
+      :validator="option.validator as any"
       :text="value.toString()"
       :placeholder="value.toString()"
       @change="valueChange($event)"
     ></TextArea>
-    <SwitchBox v-if="type === 'boolean'" :checked="value" @change="valueChange($event)"></SwitchBox>
+    <SwitchBox
+      v-if="type === 'boolean'"
+      :checked="value as boolean"
+      @change="valueChange($event)"
+    ></SwitchBox>
     <ColorPicker
       v-if="type === 'color'"
       :compact="true"
       :popup-offset="-95"
-      :color="value"
+      :color="value as string"
       @change="valueChange($event)"
     ></ColorPicker>
     <RangeInput
       v-if="type === 'range'"
-      :validator="option.validator"
-      :range="value"
+      :validator="option.validator as any"
+      :range="value as any"
       @change="valueChange($event)"
     ></RangeInput>
-    <ImagePicker v-if="type === 'image'" :image="value" @change="valueChange($event)"></ImagePicker>
+    <ImagePicker
+      v-if="type === 'image'"
+      :image="value as any"
+      @change="valueChange($event)"
+    ></ImagePicker>
     <VDropdown
       v-if="type === 'dropdown'"
       :value="value"
@@ -49,19 +57,20 @@
       v-if="type === 'switch'"
       small-size
       :popup-mode="false"
-      :options="option.defaultValue"
+      :options="option.defaultValue as any"
     ></SwitchOptions>
     <VSlider
       v-if="type === 'slider'"
       v-bind="option.slider"
-      :value="value"
+      :value="value as number"
       @change="debounceValueChange($event)"
     ></VSlider>
     <div v-if="type === 'unknown'" class="unknown-option-type">未知的选项类型</div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 import {
   TextBox,
   TextArea,
@@ -77,107 +86,72 @@ import { OptionMetadata } from '../component'
 import { getDropdownItems } from './dropdown'
 import SwitchOptions from '../SwitchOptions.vue'
 
-function valueChange(newValue: unknown) {
-  const settings = this.settings as ComponentSettings
-  settings.options[this.name] = newValue
-  this.value = newValue
-}
-export default {
-  name: 'ComponentOption',
-  components: {
-    SwitchOptions,
-    TextBox,
-    TextArea,
-    SwitchBox,
-    ColorPicker,
-    RangeInput,
-    VDropdown,
-    ImagePicker,
-    VSlider,
-  },
-  props: {
-    name: {
-      type: String,
-      required: true,
-    },
-    displayName: {
-      type: String,
-      default: '',
-    },
-    option: {
-      type: Object,
-      required: true,
-    },
-    component: {
-      type: Object,
-      required: true,
-    },
-  },
-  data() {
-    const settings = getComponentSettings(this.component)
-    return {
-      settings,
-      value: settings.options[this.name],
+const { name, displayName, option, component } = defineProps<{
+  name: string
+  displayName?: string
+  option: OptionMetadata
+  component: any
+}>()
+
+const settings = ref<ComponentSettings>(getComponentSettings(component))
+const value = ref(settings.value.options[name])
+
+const type = computed(() => {
+  const { defaultValue } = option
+  // console.log(option)
+  switch (typeof defaultValue) {
+    case 'boolean':
+      return 'boolean'
+    case 'number': {
+      if (option.slider) {
+        return 'slider'
+      }
+      return 'number'
     }
-  },
-  computed: {
-    type() {
-      const option = this.option as OptionMetadata
-      const { defaultValue } = option
-      // console.log(option)
-      switch (typeof defaultValue) {
-        case 'boolean':
-          return 'boolean'
-        case 'number': {
-          if (option.slider) {
-            return 'slider'
-          }
-          return 'number'
-        }
-        case 'string': {
-          if (option.color) {
-            return 'color'
-          }
-          if (option.dropdownEnum) {
-            return 'dropdown'
-          }
-          if (option.multiline) {
-            return 'textArea'
-          }
-          return 'text'
-        }
-        case 'object': {
-          if ('start' in defaultValue && 'end' in defaultValue) {
-            return 'range'
-          }
-          if ('name' in defaultValue && 'url' in defaultValue) {
-            return 'image'
-          }
-          if ('name' in defaultValue && 'switches' in defaultValue) {
-            return 'switch'
-          }
-          return 'unknown'
-        }
-        default:
-          return 'unknown'
+    case 'string': {
+      if (option.color) {
+        return 'color'
       }
-    },
-  },
-  methods: {
-    getDropdownItems,
-    numberChange(newValue: string) {
-      const settings = this.settings as ComponentSettings
-      const numberValue = parseFloat(newValue)
-      if (Number.isNaN(numberValue)) {
-        return
+      if (option.dropdownEnum) {
+        return 'dropdown'
       }
-      settings.options[this.name] = numberValue
-      this.value = numberValue
-    },
-    debounceValueChange: lodash.debounce(valueChange, 200),
-    valueChange,
-  },
+      if (option.multiline) {
+        return 'textArea'
+      }
+      return 'text'
+    }
+    case 'object': {
+      if ('start' in defaultValue && 'end' in defaultValue) {
+        return 'range'
+      }
+      if ('name' in defaultValue && 'url' in defaultValue) {
+        return 'image'
+      }
+      if ('name' in defaultValue && 'switches' in defaultValue) {
+        return 'switch'
+      }
+      return 'unknown'
+    }
+    default:
+      return 'unknown'
+  }
+})
+
+const valueChange = (newValue: unknown) => {
+  settings.value.options[name] = newValue
+  value.value = newValue
 }
+
+const numberChange = (newValue: string) => {
+  const numberValue = parseFloat(newValue)
+  if (Number.isNaN(numberValue)) {
+    return
+  }
+  settings.value.options[name] = numberValue
+  value.value = numberValue
+}
+
+const debounceValueChange = lodash.debounce(valueChange, 200)
 </script>
 
 <style lang="scss">

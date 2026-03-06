@@ -1,166 +1,178 @@
 <template>
   <div
+    ref="popupRef"
     class="be-popup"
     :class="{ open, fixed, close: !open, 'closed-style': closedStyle }"
-    v-on="$listeners"
+    v-bind="attrs"
   >
     <slot v-if="loaded"></slot>
   </div>
 </template>
 
-<script lang="ts">
-export default Vue.extend({
-  name: 'VPopup',
-  model: {
-    prop: 'open',
-    event: 'popup-change',
-  },
-  props: {
-    open: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    closedStyle: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
-    fixed: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    triggerElement: {
-      required: false,
-      default: null,
-    },
-    lazy: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
-    autoClose: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
-    autoDestroy: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    escClose: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    autoClosePredicate: {
-      type: Function,
-      required: false,
-      default: null,
-    },
-  },
-  data() {
-    return {
-      loaded: !this.lazy,
-    }
-  },
-  computed: {
-    trigger() {
-      if (this.triggerElement === null) {
-        return null
-      }
-      if ('$el' in this.triggerElement) {
-        return this.triggerElement.$el
-      }
-      return this.triggerElement
-    },
-  },
-  watch: {
-    open() {
-      if (this.lazy && !this.loaded) {
-        this.loaded = true
-      }
-      this.setAutoClose()
-    },
-  },
-  mounted() {
-    const element = this.$el as HTMLElement
-    if (this.open) {
-      this.setAutoClose()
-    }
-    if (this.escClose) {
-      element.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-          this.$emit('popup-change', false)
-        }
-      })
-    }
-    if (this.autoDestroy) {
-      element.addEventListener('transitionend', () => {
-        if (!this.open) {
-          this.loaded = false
-        }
-      })
-    }
-  },
-  methods: {
-    openHandler(e: Event) {
-      const targetElement = e.target as HTMLElement
-      const toastContainer = document.querySelector('.toast-card-container')
-      let isOutside =
-        targetElement !== this.trigger &&
-        !this.trigger?.contains(targetElement) &&
-        targetElement !== this.$el &&
-        !this.$el.contains(targetElement) &&
-        !toastContainer?.contains(targetElement)
-      if (this.autoClosePredicate) {
-        isOutside =
-          isOutside &&
-          this.autoClosePredicate({
-            target: targetElement,
-            element: this.$el,
-            trigger: this.trigger,
-          })
-      }
-      if (isOutside) {
-        this.$emit('popup-change', false)
-      }
-    },
-    setAutoClose() {
-      if (this.autoClose /*  && this.trigger !== null */) {
-        const eventTypes = ['mousedown', 'touchstart']
-        eventTypes.forEach(type => {
-          if (this.open) {
-            document.documentElement.addEventListener(type, this.openHandler)
-          } else {
-            document.documentElement.removeEventListener(type, this.openHandler)
-          }
-        })
-      }
-    },
-    toggle() {
-      this.$emit('popup-change', !this.open)
-    },
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref, useAttrs, useTemplateRef, watch } from 'vue'
+
+const {
+  closedStyle = true,
+  fixed = false,
+  triggerElement = null,
+  lazy = true,
+  autoClose = true,
+  autoDestroy = false,
+  escClose = false,
+  autoClosePredicate = null,
+} = defineProps<{
+  closedStyle?: boolean
+  fixed?: boolean
+  triggerElement?: HTMLElement | null
+  lazy?: boolean
+  autoClose?: boolean
+  autoDestroy?: boolean
+  escClose?: boolean
+  autoClosePredicate?:
+    | ((payload: {
+        target: HTMLElement
+        element: HTMLElement | null
+        trigger: HTMLElement | null
+      }) => boolean)
+    | null
+}>()
+
+const emit = defineEmits<{
+  'popup-change': [value: boolean]
+}>()
+
+const open = defineModel<boolean>({
+  default: false,
+  set: v => {
+    emit('popup-change', v)
+    return v
   },
 })
+
+const attrs = useAttrs()
+
+const rootRef = useTemplateRef('popupRef')
+
+const loaded = ref(!lazy)
+
+const trigger = computed(() => {
+  if (!triggerElement) {
+    return null
+  }
+  return triggerElement
+})
+
+const openHandler = (e: Event) => {
+  const targetElement = e.target as HTMLElement
+  const toastContainer = document.querySelector('.toast-card-container')
+  let isOutside =
+    targetElement !== trigger.value &&
+    !trigger.value?.contains(targetElement) &&
+    targetElement !== rootRef.value &&
+    !rootRef.value.contains(targetElement) &&
+    !toastContainer.contains(targetElement)
+
+  if (autoClosePredicate) {
+    isOutside =
+      isOutside &&
+      autoClosePredicate({
+        target: targetElement,
+        element: rootRef.value,
+        trigger: trigger.value,
+      })
+  }
+
+  if (isOutside) {
+    open.value = false
+  }
+}
+
+const addAutoClose = () => {
+  if (!autoClose) {
+    return
+  }
+  const eventTypes = ['mousedown', 'touchstart']
+  eventTypes.forEach(type => {
+    document.documentElement.addEventListener(type, openHandler)
+  })
+}
+
+const removeAutoClose = () => {
+  const eventTypes = ['mousedown', 'touchstart']
+  eventTypes.forEach(type => {
+    document.documentElement.removeEventListener(type, openHandler)
+  })
+}
+
+const onKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    emit('popup-change', false)
+  }
+}
+const onTransitionEnd = () => {
+  if (!open.value) {
+    loaded.value = false
+  }
+}
+
+watch(
+  () => open,
+  newVal => {
+    if (lazy && !loaded.value && newVal) {
+      loaded.value = true
+    }
+    if (newVal) {
+      addAutoClose()
+    } else {
+      removeAutoClose()
+    }
+  },
+  { immediate: true },
+)
+
+onMounted(() => {
+  if (escClose) {
+    document.addEventListener('keydown', onKeydown)
+  }
+  if (autoDestroy) {
+    rootRef.value.addEventListener('transitionend', onTransitionEnd)
+  }
+})
+
+onBeforeUnmount(() => {
+  removeAutoClose()
+  document.removeEventListener('keydown', onKeydown)
+  if (autoDestroy) {
+    rootRef.value.removeEventListener('transitionend', onTransitionEnd)
+  }
+})
+
+const toggle = () => {
+  emit('popup-change', !open.value)
+}
+
+defineExpose({ toggle, loaded, rootRef })
 </script>
 
 <style lang="scss">
 @import './common';
+
 .be-popup {
   position: absolute;
   z-index: 1;
   // @include shadow();
   @include round-corner();
+
   &.fixed {
     position: fixed;
   }
+
   &.close.closed-style {
     pointer-events: none;
     opacity: 0;
   }
+
   &.open {
     pointer-events: initial;
     opacity: 1;

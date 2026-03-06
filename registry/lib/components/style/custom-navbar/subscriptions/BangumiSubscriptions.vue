@@ -1,18 +1,11 @@
 <template>
   <SubscriptionsList type="bangumi" :filter="filter"></SubscriptionsList>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import SubscriptionsList from './SubscriptionsList.vue'
+import type { SubscriptionStatusFilter } from './types'
 
-export default Vue.extend({
-  components: {
-    SubscriptionsList,
-  },
-  props: {
-    filter: {
-      type: [Object, null],
-      default: null,
-    },
-  },
-})
+const { filter = null } = defineProps<{
+  filter?: SubscriptionStatusFilter | null
+}>()
 </script>

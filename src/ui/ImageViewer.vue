@@ -28,94 +28,94 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch, onMounted, onBeforeUnmount, useTemplateRef } from 'vue'
 import { addComponentListener } from '../core/settings'
 import { getFriendlyTitle } from '../core/utils/title'
 import { getBlob } from '../core/ajax'
 import VIcon from './icon/VIcon.vue'
 
-export default Vue.extend({
-  components: {
-    VIcon,
-  },
-  props: {
-    image: {
-      type: String,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      filename: '',
-      open: false,
-      blobUrl: '',
-      keyHandler: null,
-      copiedTimer: 0,
+const image = ref('')
+
+const viewer = useTemplateRef('viewer')
+
+const filename = ref('')
+const open = ref(false)
+const blobUrl = ref('')
+const keyHandler = ref<((e: KeyboardEvent) => void) | null>(null)
+const copiedTimer = ref(0)
+
+const updateFilename = () => {
+  const url = image.value
+  if (!url) {
+    filename.value = ''
+    return
+  }
+  filename.value =
+    getFriendlyTitle(document.URL.includes('/www.bilibili.com/bangumi/')) +
+    url.substring(url.lastIndexOf('.'))
+}
+
+watch(image, async url => {
+  if (blobUrl.value) {
+    URL.revokeObjectURL(blobUrl.value)
+  }
+  if (!url) {
+    blobUrl.value = ''
+  }
+  const blob = await getBlob(url)
+  blobUrl.value = URL.createObjectURL(blob)
+  updateFilename()
+})
+
+const copyLink = async () => {
+  await navigator.clipboard.writeText(image.value)
+  if (copiedTimer.value) {
+    window.clearTimeout(copiedTimer.value)
+  }
+  copiedTimer.value = window.setTimeout(() => {
+    copiedTimer.value = 0
+  }, 2000)
+}
+
+const newTab = () => {
+  window.open(image.value, '_blank')
+}
+
+const detectOutside = (e: MouseEvent) => {
+  const container = e.currentTarget as HTMLElement
+  const viewerEl = viewer.value
+  if (e.target === container || e.target === viewerEl) {
+    // emit('update:image', '')
+    open.value = false
+  }
+}
+
+onMounted(() => {
+  keyHandler.value = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      open.value = false
     }
-  },
-  watch: {
-    async image(url: string) {
-      if (this.blobUrl) {
-        URL.revokeObjectURL(this.blobUrl)
-      }
-      if (!url) {
-        this.blobUrl = ''
-      }
-      const blob = await getBlob(url)
-      this.blobUrl = URL.createObjectURL(blob)
-      this.updateFilename()
+  }
+  document.addEventListener('keydown', keyHandler.value)
+  addComponentListener(
+    'settingsPanel.filenameFormat',
+    () => {
+      updateFilename()
     },
-  },
-  mounted() {
-    this.keyHandler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        this.open = false
-      }
-    }
-    document.addEventListener('keydown', this.keyHandler)
-    addComponentListener(
-      'settingsPanel.filenameFormat',
-      () => {
-        this.updateFilename()
-      },
-      true,
-    )
-  },
-  beforeDestroy() {
-    document.removeEventListener('keydown', this.keyHandler)
-  },
-  methods: {
-    async copyLink() {
-      await navigator.clipboard.writeText(this.image)
-      if (this.copiedTimer) {
-        window.clearTimeout(this.copiedTimer)
-      }
-      this.copiedTimer = window.setTimeout(() => {
-        this.copiedTimer = 0
-      }, 2000)
-    },
-    newTab() {
-      window.open(this.image, '_blank')
-    },
-    detectOutside(e: MouseEvent) {
-      const container = this.$el
-      const { viewer } = this.$refs
-      if (e.target === container || e.target === viewer) {
-        // this.$emit('change', false)
-        this.open = false
-      }
-    },
-    updateFilename() {
-      const url = this.image as string
-      if (!url) {
-        this.filename = ''
-        return
-      }
-      this.filename =
-        getFriendlyTitle(document.URL.includes('/www.bilibili.com/bangumi/')) +
-        url.substring(url.lastIndexOf('.'))
-    },
-  },
+    true,
+  )
+})
+
+onBeforeUnmount(() => {
+  if (keyHandler.value) {
+    document.removeEventListener('keydown', keyHandler.value)
+  }
+})
+
+defineExpose({
+  image,
+  open,
 })
 </script>
 

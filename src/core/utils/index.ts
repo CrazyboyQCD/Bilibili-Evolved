@@ -1,5 +1,13 @@
-import { VueModule } from '../common-types'
-
+import {
+  type ComponentPublicInstance,
+  type App,
+  createApp,
+  Directive,
+  Component,
+  defineComponent,
+  h,
+} from 'vue'
+import type { ImportedType } from '@/core/common-types'
 /**
  * 当查询 video 元素且被灰度了 WasmPlayer 时, 更换为对 bwp-video 的查询, 否则会找不到 video 元素
  * @param selector 选择器
@@ -147,7 +155,7 @@ export const none = () => {
 }
 /** 页面是否使用了 Wasm 播放器 */
 export const isBwpVideo = async () => {
-  const { hasVideo } = await import('../spin-query')
+  const { hasVideo } = await import('@/core/video')
   if (!(await hasVideo())) {
     return false
   }
@@ -160,7 +168,10 @@ export const isBwpVideo = async () => {
  * 等待一定时间
  * @param time 延迟的毫秒数
  */
-export const delay = (time = 0) => new Promise<void>(r => setTimeout(() => r(), time))
+export const delay = (time = 0) =>
+  new Promise<void>(r => {
+    setTimeout(() => r(), time)
+  })
 /** 测试字符串是否包含子串或匹配正则
  * @param str 字符串
  * @param pattern 子串或正则表达式
@@ -171,6 +182,30 @@ export const matchPattern = (str: string, pattern: string | RegExp) => {
   }
   return pattern.test(str)
 }
+
+export const vHit: Directive<HTMLDivElement, (e?: KeyboardEvent | MouseEvent) => void> = {
+  mounted(el, binding) {
+    const handler = binding.value
+    if (handler && typeof handler === 'function') {
+      const wrapper = (e: KeyboardEvent | MouseEvent) => {
+        if (handler.length > 0) {
+          handler(e)
+        } else {
+          handler()
+        }
+      }
+
+      el.addEventListener('click', wrapper)
+      el.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          wrapper(e)
+        }
+      })
+    }
+  },
+}
+
 /** 以`document.URL`作为被测字符串, 移除URL查询参数并调用`matchPattern` */
 export const matchUrlPattern = (pattern: string | RegExp) =>
   matchPattern(document.URL.replace(window.location.search, ''), pattern)
@@ -178,19 +213,15 @@ export const matchUrlPattern = (pattern: string | RegExp) =>
  * @param module Vue组件模块对象
  * @param target 组件的挂载目标元素, 省略时不挂载直接返回
  */
-export const mountVueComponent = <T>(module: VueModule, target?: Element | string): Vue & T => {
-  const obj = 'default' in module ? module.default : module
-  const getInstance = (o: any) => {
-    if (o instanceof Function) {
-      // eslint-disable-next-line new-cap
-      return new o()
-    }
-    if (o.functional) {
-      return new (Vue.extend(o))()
-    }
-    return new Vue(o)
-  }
-  return getInstance(obj).$mount(target) as Vue & T
+export const mountVueComponent = <I extends ComponentPublicInstance>(
+  component: ImportedType<new () => I>,
+  rootProps?: Record<string, unknown> | null,
+): [HTMLDivElement, I, App<HTMLDivElement>] => {
+  const container = document.createElement('div')
+  const component0 = 'default' in component ? component.default : component
+  const app = createApp(component0, rootProps) as App<HTMLDivElement>
+  const instance = app.mount(container) as I
+  return [container, instance, app]
 }
 /** 是否处于其他网站的内嵌播放器中 */
 export const isEmbeddedPlayer = () =>
@@ -723,14 +754,15 @@ export const getVue2Data = (el: any) =>
  * 创建一个vue组件并动态注入 props
  *
  * 示例（脚本组件额外设置、小组件中传入参数值）：
- *   extraOptions: () => import('./Setting.vue').then(m => createComponentWithProps(m.default, { isWidget: false })),
+ *   extraOptions: defineAsyncComponent(() => import('./Setting.vue').then(m => createComponentWithProps(m.default, { isWidget: false }))),
  */
-export function createComponentWithProps(component: any, props: Record<string, any>) {
-  return Vue.extend({
-    render(h) {
-      return h(component, {
-        props,
-      })
+export function createComponentWithProps(
+  component: Component,
+  props: Record<string, any>,
+): Component {
+  return defineComponent({
+    render() {
+      return h(component, props)
     },
   })
 }

@@ -1,17 +1,17 @@
 import { mountVueComponent } from '@/core/utils'
+import type Panel from './Panel.vue'
 
-let panelVm: Vue & {
-  toggleDisplay: () => void
-}
+let panelVm: InstanceType<typeof Panel>
 
 const getPanelLoadState = () => {
   return Boolean(panelVm)
 }
 
 const mountPanel = async () => {
-  const panel = await import('./Panel.vue').then(m => m.default)
-  panelVm = mountVueComponent(panel)
-  document.body.insertAdjacentElement('beforeend', panelVm.$el)
+  const panel = await import('./Panel.vue')
+  const [el, vm] = mountVueComponent(panel)
+  panelVm = vm
+  document.body.insertAdjacentElement('beforeend', el)
 }
 
 export const loadPanel = async () => {

@@ -15,7 +15,7 @@
         type="checkbox"
         :disabled="disabled"
         :checked="checked"
-        @change.stop="$emit('change', $event.target.checked)"
+        @change.stop="emit('change', $event.target.checked)"
       />
       <div class="bar">
         <div class="thumb"></div>
@@ -24,33 +24,33 @@
   </div>
 </template>
 
-<script lang="ts">
-export default Vue.extend({
-  name: 'SwitchBox',
-  model: {
-    prop: 'checked',
-    event: 'change',
-  },
-  props: {
-    checked: {
-      type: Boolean,
-      default: false,
-    },
-    disabled: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  methods: {
-    toggle() {
-      if (this.disabled) {
-        return
-      }
-      this.$refs.input.checked = !this.$refs.input.checked
-      this.$emit('change', this.$refs.input.checked)
-    },
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+
+const emit = defineEmits<{
+  change: [value: boolean]
+}>()
+
+const checked = defineModel<boolean>({
+  default: false,
+  set: v => {
+    emit('change', v)
+    return v
   },
 })
+
+const { disabled = false } = defineProps<{
+  disabled?: boolean
+}>()
+
+const input = useTemplateRef('input')
+
+const toggle = () => {
+  if (!disabled && input.value) {
+    input.value.checked = !input.value.checked
+    emit('change', input.value.checked)
+  }
+}
 </script>
 
 <style lang="scss">

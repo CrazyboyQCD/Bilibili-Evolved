@@ -1,5 +1,6 @@
 import { childList } from '@/core/observer'
-import { hasVideo, select } from '@/core/spin-query'
+import { select } from '@/core/spin-query'
+import { hasVideo } from '@/core/video'
 
 /** 播放器右键菜单 */
 export interface PlayerContextMenu {

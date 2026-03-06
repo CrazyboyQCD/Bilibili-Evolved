@@ -29,42 +29,36 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch } from 'vue'
 import { SwitchBox, VDropdown } from '@/ui'
-import { Options } from './types'
+import { Options, OutputType } from './types'
 import { isComponentEnabled, getComponentSettings } from '@/core/settings'
+import { DownloadVideoOptions } from '../../../../components/video/download'
 
 const defaultOptions: Options = {
   muxWithMetadata: false,
   attachCover: false,
   outputType: 'auto',
 }
-const { options: storedOptions } = getComponentSettings('downloadVideo')
-const options: Options = { ...defaultOptions, ...storedOptions }
-export default Vue.extend({
-  components: {
-    SwitchBox,
-    VDropdown,
-  },
-  data() {
-    const hasMetadata = isComponentEnabled('saveVideoMetadata')
-    const hasCover = isComponentEnabled('viewCover')
-    return {
-      hasMetadata,
-      hasCover,
-      muxWithMetadata: hasMetadata && options.muxWithMetadata,
-      attachCover: hasCover && options.attachCover,
-      outputType: options.outputType,
-      outputTypes: ['auto', 'mp4', 'matroska'],
-    }
-  },
-  methods: {
-    saveOptions() {
-      options.muxWithMetadata = this.muxWithMetadata
-      options.attachCover = this.attachCover
-      options.outputType = this.outputType
-      Object.assign(storedOptions, options)
-    },
-  },
-})
+const { options: storedOptions } = getComponentSettings<DownloadVideoOptions>('downloadVideo')
+const options = { ...defaultOptions, ...storedOptions }
+
+const hasMetadata = isComponentEnabled('saveVideoMetadata')
+const hasCover = isComponentEnabled('viewCover')
+
+const muxWithMetadata = ref(hasMetadata && options.muxWithMetadata)
+const attachCover = ref(hasCover && options.attachCover)
+const outputType = ref<OutputType>(options.outputType)
+const outputTypes: OutputType[] = ['auto', 'mp4', 'matroska']
+
+const saveOptions = () => {
+  options.muxWithMetadata = muxWithMetadata.value
+  options.attachCover = attachCover.value
+  options.outputType = outputType.value
+  Object.assign(storedOptions, options)
+}
+
+// 监听响应式数据变化并自动保存
+watch([muxWithMetadata, attachCover, outputType], saveOptions)
 </script>

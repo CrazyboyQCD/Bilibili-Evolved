@@ -10,7 +10,8 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch } from 'vue'
 import { VDropdown, VIcon } from '@/ui'
 import { pageTypeInfos } from '.'
 
@@ -23,38 +24,32 @@ interface Item {
   name: string
   displayName: string
 }
-
-export default Vue.extend({
-  components: { VDropdown, VIcon },
-  model: {
-    prop: 'value',
-    event: 'change',
-  },
-  props: {
-    value: {
-      type: String,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      items: Object.values(itemsMap),
-      curItem: itemsMap[this.value],
-    }
-  },
-  watch: {
-    value(value: string) {
-      if (this.curItem.name !== value) {
-        this.curItem = itemsMap[value]
-      }
-    },
-  },
-  methods: {
-    onChange(item: string | Item) {
-      this.$emit('change', item.name)
-    },
+const emit = defineEmits<{
+  change: [value: string]
+}>()
+const value = defineModel<string>({
+  set: v => {
+    emit('change', v)
+    return v
   },
 })
+
+const items = Object.values(itemsMap)
+const curItem = ref<Item>(itemsMap[value.value])
+
+watch(
+  () => value.value,
+  newValue => {
+    if (curItem.value.name !== newValue) {
+      curItem.value = itemsMap[newValue]
+    }
+  },
+)
+
+const onChange = (item: string | Item) => {
+  const itemName = typeof item === 'string' ? item : item.name
+  emit('change', itemName)
+}
 </script>
 
 <style lang="scss">

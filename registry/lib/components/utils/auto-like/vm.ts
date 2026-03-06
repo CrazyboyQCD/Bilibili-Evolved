@@ -1,16 +1,11 @@
 import { select } from '@/core/spin-query'
 import { mountVueComponent } from '@/core/utils'
 import { getData } from '@/plugins/data'
+import type BlackList from './blackList.vue'
 
 export const BlackListDataKey = 'like-black-List.data'
 
-type SettingsVmType = Vue & {
-  toggle: () => void
-  triggerElement: HTMLElement
-  list: string[]
-  titleName: string
-}
-let blacklistVM: SettingsVmType = null
+let blacklistVM: InstanceType<typeof BlackList> | null = null
 
 export const setBlackListProps = (element: HTMLElement) => {
   if (!blacklistVM) {
@@ -22,21 +17,22 @@ export const setBlackListProps = (element: HTMLElement) => {
   blacklistVM.titleName = '黑名单'
 }
 export const loadlikeButton = async () => {
-  const LikeButton = await import('./like.vue').then(m => m.default)
+  const LikeButton = await import('./like.vue')
   const blackList = getData(BlackListDataKey)
-  const likebuttonVM: Vue & { list: string[] } = mountVueComponent(LikeButton)
+  const [el, likebuttonVM] = mountVueComponent(LikeButton)
   likebuttonVM.list = blackList[0].users
   const bg = (await select('#app')) as HTMLElement
-  bg.insertAdjacentElement('afterbegin', likebuttonVM.$el)
+  bg.insertAdjacentElement('afterbegin', el)
 }
 
 export const loadBlackList = async () => {
   if (blacklistVM) {
     return false
   }
-  const blackList = await import('./blackList.vue').then(m => m.default)
-  blacklistVM = mountVueComponent(blackList)
-  document.body.insertAdjacentElement('beforeend', blacklistVM.$el)
+  const blackList = await import('./blackList.vue')
+  const [el, vm] = mountVueComponent(blackList)
+  blacklistVM = vm
+  document.body.insertAdjacentElement('beforeend', el)
   return true
 }
 
@@ -44,5 +40,5 @@ export const toggleBlackList = async () => {
   if (!blacklistVM) {
     await loadBlackList()
   }
-  blacklistVM?.toggle()
+  blacklistVM.toggle()
 }

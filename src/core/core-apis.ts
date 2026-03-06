@@ -152,4 +152,3 @@ export const externalApis = {
     }, time)
   },
 }
-export type ExternalApis = typeof externalApis

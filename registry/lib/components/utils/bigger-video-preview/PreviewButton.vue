@@ -4,35 +4,18 @@
   </VButton>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { ref } from 'vue'
 import { VIcon, VButton } from '@/ui'
 
-export default defineComponent({
-  name: 'PreviewButton',
-  components: {
-    VIcon,
-    VButton,
-  },
-  props: {
-    btnClass: {
-      type: String,
-      required: true,
-    },
-    btnOnClickCallback: {
-      type: Function,
-      required: true,
-    },
-    enlarged: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  methods: {
-    onClick(event: MouseEvent) {
-      this.btnOnClickCallback(event)
-    },
-  },
+const { btnClass, btnOnClickCallback } = defineProps<{
+  btnClass: string
+  btnOnClickCallback: (event: MouseEvent) => void
+}>()
+const enlarged = ref(false)
+const onClick = (event: MouseEvent) => btnOnClickCallback(event)
+defineExpose({
+  enlarged,
 })
 </script>
 

@@ -1,11 +1,12 @@
-import { Executable, TestPattern, VueModule, WithName } from '@/core/common-types'
+import { type Component } from 'vue'
+import { TestPattern, WithAttrs, WithName } from '@/core/common-types'
 import { DownloadPackage, PackageEntry } from '@/core/download'
 import { formatNumber } from '@/core/utils/formatters'
 import { getFriendlyTitle } from '@/core/utils/title'
 import { VideoQuality } from '@/components/video/video-quality'
 
 interface VueInstanceInput {
-  component?: Executable<VueModule>
+  component?: Component
 }
 /** 表示一个视频输入数据 */
 export interface DownloadVideoInputItem {
@@ -74,14 +75,16 @@ export interface DownloadVideoApi extends WithName {
   /** 网址匹配规则 */
   match?: TestPattern
 }
+
 /** 表示下载时额外附带的产物, 如弹幕 / 字幕等 */
-export interface DownloadVideoAssets<AssetsParameter = any> extends VueInstanceInput, WithName {
+export interface DownloadVideoAssets<AssetsParameter = any> extends WithName {
   getAssets: (infos: DownloadVideoInfo[], instance: AssetsParameter) => Promise<PackageEntry[]>
   /** 获取可直接下载的链接 */
   getUrls?: (
     infos: DownloadVideoInfo[],
     instance: AssetsParameter,
   ) => Promise<{ name: string; url: string }[]>
+  component: WithAttrs<{ name: string }>
 }
 /** 表示视频的下载信息以及携带的额外产物 */
 export class DownloadVideoAction<AssetsParameter = any> {

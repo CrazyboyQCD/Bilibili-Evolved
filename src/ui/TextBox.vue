@@ -1,11 +1,10 @@
 <template>
-  <div class="be-textbox" role="textbox" :class="{ linear }">
+  <div ref="root" class="be-textbox" role="textbox" :class="{ linear }">
     <input
-      ref="input"
+      ref="inputRef"
       type="text"
-      v-bind="$attrs"
+      v-bind="restAttrs"
       :value="text"
-      v-on="restListeners"
       @change.stop="change"
       @input.stop="input"
       @compositionstart="compositionStart"
@@ -15,18 +14,47 @@
   </div>
 </template>
 
-<script lang="ts">
-import { textControlMixin } from './text-control'
+<script setup lang="ts">
+import { useAttrs, useTemplateRef } from 'vue'
+import { textControlProps, useTextControl } from './text-control'
 
-export default Vue.extend({
-  name: 'TextBox',
-  mixins: [textControlMixin],
-  props: {
-    linear: {
-      type: Boolean,
-      default: false,
-    },
+const emit = defineEmits<{ 'update:text': [value: string]; change: [value: string] }>()
+const value = defineModel<string>({
+  default: '',
+  set: v => {
+    emit('change', v)
+    return v
   },
+})
+
+const {
+  linear = false,
+  text = '',
+  changeOnBlur = false,
+  validator,
+} = defineProps<
+  {
+    linear?: boolean
+  } & textControlProps
+>()
+const attrs = useAttrs()
+const inputRef = useTemplateRef('inputRef')
+const { restAttrs, input, change, compositionStart, compositionEnd } = useTextControl(
+  inputRef,
+  value,
+  {
+    text,
+    changeOnBlur,
+    validator,
+  },
+  {
+    attrs,
+    emit,
+  },
+)
+defineExpose({
+  inputRef,
+  focus,
 })
 </script>
 

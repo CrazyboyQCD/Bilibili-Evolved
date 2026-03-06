@@ -10,36 +10,31 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref, useAttrs, watch } from 'vue'
 import { getComponentSettings } from '@/core/settings'
 import { VDropdown } from '@/ui'
 import { DanmakuDownloadType } from './utils'
+import { DownloadVideoOptions } from '../../download'
 
-interface Options {
+interface Options extends DownloadVideoOptions {
   danmakuType: DanmakuDownloadType | '无'
+  [k: string]: any
 }
-const options = getComponentSettings('downloadVideo').options as Options
+const { options } = getComponentSettings<Options>('downloadVideo')
 
-export default Vue.extend({
-  components: {
-    VDropdown,
-  },
-  data() {
-    return {
-      type: options.danmakuType ?? '无',
-      items: ['无', 'ass', 'json', 'xml'],
-    }
-  },
-  computed: {
-    enabled() {
-      return this.type !== '无'
-    },
-  },
-  watch: {
-    type(newValue: DanmakuDownloadType) {
-      options.danmakuType = newValue
-    },
-  },
+const type = ref<DanmakuDownloadType | '无'>(options.danmakuType ?? '无')
+const items: (DanmakuDownloadType | '无')[] = ['无', 'ass', 'json', 'xml']
+
+const enable = computed(() => type.value !== '无')
+watch(type, (newValue: DanmakuDownloadType | '无') => {
+  options.danmakuType = newValue
+})
+const attrs = useAttrs() as { name: string }
+defineExpose({
+  type,
+  enable,
+  attrs,
 })
 </script>
 <style lang="scss">

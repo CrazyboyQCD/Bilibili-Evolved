@@ -15,31 +15,16 @@
   </div>
 </template>
 
-<script lang="ts">
-import Vue from 'vue'
+<script setup lang="ts">
 import { VButton } from '@/ui'
+import { next } from './api'
 
-export default Vue.extend({
-  components: { VButton },
-  props: {
-    rouge: {
-      type: Number,
-      required: true,
-    },
-    onAbort: {
-      type: Function,
-      default: none,
-    },
-    onGood: {
-      type: Function,
-      default: none,
-    },
-    onBad: {
-      type: Function,
-      default: none,
-    },
-  },
-})
+const { rouge, onAbort, onGood, onBad } = defineProps<{
+  rouge: number
+  onAbort?: () => void
+  onGood?: () => ReturnType<typeof next>
+  onBad?: () => ReturnType<typeof next>
+}>()
 </script>
 
 <style lang="scss" scoped>

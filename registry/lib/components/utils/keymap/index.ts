@@ -1,39 +1,14 @@
+import { defineAsyncComponent } from 'vue'
 import { LaunchBarActionProvider } from '@/components/launch-bar/launch-bar-action'
 import { styledComponentEntry } from '@/components/styled-component'
-import {
-  defineComponentMetadata,
-  defineOptionsMetadata,
-  OptionsOfMetadata,
-} from '@/components/define'
+import { defineComponentMetadata } from '@/components/define'
 import { addComponentListener } from '@/core/settings'
 import { actions } from './actions'
-import { KeyBinding, KeyBindingConfig, loadKeyBindings } from './bindings'
+import { KeyBindingConfig, loadKeyBindings } from './bindings'
 import { presetBase, presets } from './presets'
-import { getNumberValidator } from '@/core/utils'
+import { options, Options } from './options'
+import { KeyBinding } from './bindings-types'
 
-const options = defineOptionsMetadata({
-  longJumpSeconds: {
-    defaultValue: 85,
-    displayName: '长跳跃秒数',
-    validator: getNumberValidator(1),
-  },
-  volumeStep: {
-    defaultValue: 10,
-    displayName: '音量调整幅度',
-    validator: getNumberValidator(1, 100),
-  },
-  customKeyBindings: {
-    defaultValue: {} as Record<string, string>,
-    displayName: '自定义键位',
-    hidden: true,
-  },
-  preset: {
-    defaultValue: 'Default',
-    displayName: '预设',
-    hidden: true,
-  },
-})
-export type Options = OptionsOfMetadata<typeof options>
 let config: KeyBindingConfig = null
 const parseBindings = (bindings: Record<string, string>): KeyBinding[] => {
   const parseBinding = (actionName: string, keyString: string) => {
@@ -83,7 +58,7 @@ export const component = defineComponentMetadata({
   description: {
     'zh-CN': '为脚本的功能和 b 站的功能启用键盘快捷键支持, 快捷键列表可在`快捷键设置`中查看和配置.',
   },
-  extraOptions: () => import('./settings/ExtraOptions.vue').then(m => m.default),
+  extraOptions: defineAsyncComponent(() => import('./settings/ExtraOptions.vue')),
   options,
   plugin: {
     displayName: '快捷键扩展 - 搜索支持',

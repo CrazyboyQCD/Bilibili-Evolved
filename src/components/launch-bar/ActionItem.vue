@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { VIcon } from '@/ui'
 
-interface Props {
+const { focused, action } = defineProps<{
   focused?: boolean
   action: {
     name: string
@@ -63,29 +63,27 @@ interface Props {
     action: () => Promise<void> | void
     deleteAction?: () => Promise<void> | void
   }
-}
-
-const props = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
-  (event: 'previous-item', currentTarget: EventTarget | null): void
-  (event: 'next-item', currentTarget: EventTarget | null): void
-  (event: 'action', currentTarget: EventTarget | null): void
-  (event: 'delete-item', currentTarget: EventTarget | null): void
+  'previous-item': [currentTarget: EventTarget | null]
+  'next-item': [currentTarget: EventTarget | null]
+  action: [currentTarget: EventTarget | null]
+  'delete-item': [currentTarget: EventTarget | null]
 }>()
 
 const performAction = async (event: KeyboardEvent | MouseEvent) => {
   const { currentTarget } = event
-  await props.action.action()
+  await action.action()
   emit('action', currentTarget)
 }
 
 const performDelete = async (event: KeyboardEvent | MouseEvent) => {
   const { currentTarget } = event
-  if (!props.action.deleteAction) {
+  if (!action.deleteAction) {
     return
   }
-  await props.action.deleteAction()
+  await action.deleteAction()
   emit('delete-item', currentTarget)
 }
 </script>

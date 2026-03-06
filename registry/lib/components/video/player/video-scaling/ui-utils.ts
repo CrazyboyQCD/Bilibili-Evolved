@@ -1,5 +1,8 @@
 import { TOAST_CLASS_NAME } from './constants'
-import { ToastWithTimeout } from './types'
+// 为Toast元素添加超时ID类型
+export interface ToastWithTimeout extends HTMLDivElement {
+  timeoutId?: number
+}
 
 // 统一的错误处理函数
 export function handleError(operation: string, error: unknown): void {

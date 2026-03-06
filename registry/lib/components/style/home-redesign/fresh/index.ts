@@ -20,8 +20,8 @@ export const component = defineComponentMetadata({
     )
     contentLoaded(async () => {
       const FreshHome = await import('./FreshHome.vue')
-      const freshHome = mountVueComponent(FreshHome)
-      document.body.appendChild(freshHome.$el)
+      const [el] = mountVueComponent(FreshHome)
+      document.body.appendChild(el)
     })
   },
   options: freshHomeOptionsMetadata,

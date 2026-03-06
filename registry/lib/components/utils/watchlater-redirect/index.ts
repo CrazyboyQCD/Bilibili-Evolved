@@ -1,5 +1,9 @@
 import { ComponentEntry } from '@/components/types'
-import { defineComponentMetadata } from '@/components/define'
+import {
+  defineComponentMetadata,
+  defineOptionsMetadata,
+  OptionsOfMetadata,
+} from '@/components/define'
 import type { RawWatchlaterItem } from '@/components/video/watchlater'
 
 const getBvidFromElement = (element: Element) => {
@@ -92,21 +96,22 @@ const entry: ComponentEntry = async ({ settings }) => {
     })
   })
 }
-
+const options = defineOptionsMetadata({
+  page: {
+    displayName: '重定向页面',
+    defaultValue: true,
+  },
+  navbar: {
+    displayName: '重定向顶栏',
+    defaultValue: true,
+  },
+})
+export type WatchlaterRedirectOptionType = OptionsOfMetadata<typeof options>
 export const component = defineComponentMetadata({
   name: 'watchlaterRedirect',
   displayName: '稍后再看重定向',
   entry,
-  options: {
-    page: {
-      displayName: '重定向页面',
-      defaultValue: true,
-    },
-    navbar: {
-      displayName: '重定向顶栏',
-      defaultValue: true,
-    },
-  },
+  options,
   urlInclude: [
     'https://www.bilibili.com/watchlater/#/list',
     'https://www.bilibili.com/watchlater/list#/list',

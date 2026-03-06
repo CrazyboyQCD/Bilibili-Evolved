@@ -1,13 +1,21 @@
 <template>
   <div
+    ref="root"
     class="be-button"
     role="button"
     :aria-disabled="disabled"
     :tabindex="disabled ? -1 : 0"
-    :class="{ [type]: true, disabled, round, icon, 'no-effects': noEffects }"
-    v-on="disabled ? null : $listeners"
-    @keydown.enter.prevent="$listeners.click && $listeners.click($event)"
-    @keydown.space.prevent="$listeners.click && $listeners.click($event)"
+    :class="{
+      [type]: true,
+      disabled,
+      round: round,
+      icon: icon,
+      'no-effects': noEffects,
+    }"
+    v-bind="!disabled ? attrs : {}"
+    @click="!disabled && emit('click', $event)"
+    @keydown.enter.prevent="!disabled && emit('click', $event)"
+    @keydown.space.prevent="!disabled && emit('click', $event)"
   >
     <div class="content-container">
       <slot>Button</slot>
@@ -15,32 +23,33 @@
   </div>
 </template>
 
-<script lang="ts">
-export default Vue.extend({
-  name: 'VButton',
-  props: {
-    type: {
-      type: String,
-      default: 'light',
-    },
-    round: {
-      type: Boolean,
-      default: false,
-    },
-    icon: {
-      type: Boolean,
-      default: false,
-    },
-    noEffects: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  computed: {
-    disabled() {
-      return Boolean(this.$attrs.disabled)
-    },
-  },
+<script setup lang="ts">
+import { computed, useAttrs, useTemplateRef } from 'vue'
+
+const {
+  type = 'light',
+  round = false,
+  icon = false,
+  noEffects = false,
+} = defineProps<{
+  type?: string
+  round?: boolean
+  icon?: boolean
+  noEffects?: boolean
+}>()
+
+const emit = defineEmits<{
+  click: [event: Event]
+}>()
+
+const attrs = useAttrs()
+
+const disabled = computed(() => {
+  return Boolean(attrs.disabled)
+})
+const root = useTemplateRef('root')
+defineExpose({
+  root,
 })
 </script>
 

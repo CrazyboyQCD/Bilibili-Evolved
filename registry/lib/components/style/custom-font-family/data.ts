@@ -8,7 +8,7 @@ export const coverOptionsName = [
   { camel: 'coverIconFont', kebab: 'cover-icon-font', display: '图标字体' },
   { camel: 'coverColumn', kebab: 'cover-column', display: '专栏自定义字体' },
   { camel: 'coverScore', kebab: 'cover-score', display: '评分字体' },
-]
+] as const
 
 export const coverOptionsDefaultValue = {
   coverOrnament: false,
@@ -17,4 +17,4 @@ export const coverOptionsDefaultValue = {
   coverIconFont: false,
   coverColumn: false,
   coverScore: false,
-}
+} as const

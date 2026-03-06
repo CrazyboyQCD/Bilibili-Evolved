@@ -5,7 +5,7 @@
         v-for="cover of data.covers"
         :key="cover"
         class="cover"
-        :size="{ height: 120 }"
+        :size="120"
         :src="cover"
       ></DpiImage>
     </div>
@@ -18,24 +18,14 @@
   </a>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { DpiImage } from '@/ui'
+import { ColumnCard } from './column-card'
 
-export default Vue.extend({
-  components: {
-    DpiImage,
-  },
-  props: {
-    data: {
-      type: Object,
-      required: true,
-    },
-    isNew: {
-      type: Boolean,
-      default: false,
-    },
-  },
-})
+const { data } = defineProps<{
+  data: ColumnCard
+  // isNew?: boolean
+}>()
 </script>
 
 <style lang="scss" scoped>

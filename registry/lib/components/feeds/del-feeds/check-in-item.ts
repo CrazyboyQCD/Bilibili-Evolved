@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import { getJsonWithCredentials, postJsonWithCredentials } from '@/core/ajax'
 import { Toast } from '@/core/toast'
 import { getUID, getCsrf } from '@/core/utils'
@@ -131,4 +132,4 @@ const builtInItems: CheckInItem[] = [
   },
 ]
 
-export const [checkInItems] = registerAndGetData('deleteFeeds.items', builtInItems)
+export const [checkInItems] = registerAndGetData('deleteFeeds.items', reactive(builtInItems))

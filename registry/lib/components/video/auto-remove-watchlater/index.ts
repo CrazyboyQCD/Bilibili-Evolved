@@ -1,5 +1,5 @@
 import { defineComponentMetadata } from '@/components/define'
-import { videoChange } from '@/core/observer'
+import { videoChange } from '@/core/video'
 import { videoUrls, watchlaterUrls } from '@/core/utils/urls'
 import { playerAgent } from '@/components/video/player-agent'
 import { getWatchlaterList, toggleWatchlater } from '@/components/video/watchlater'

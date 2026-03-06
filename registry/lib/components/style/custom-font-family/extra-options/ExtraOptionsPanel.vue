@@ -7,14 +7,23 @@
       </div>
 
       <div class="be-eop-h-actions">
-        <div v-for="action in initData.header.actions" :key="action.id" class="be-eop-h-a-action">
+        <div :key="initData.header.actions[0].id" class="be-eop-h-a-action">
           <VIcon
-            :ref="`action${action.id}`"
-            :class="`action-${action.actionClassNameSuffix}`"
-            :title="action.title"
-            :icon="action.icon"
+            ref="action0"
+            :class="`action-${initData.header.actions[0].actionClassNameSuffix}`"
+            :title="initData.header.actions[0].title"
+            :icon="initData.header.actions[0].icon"
             :size="24"
-          ></VIcon>
+          />
+        </div>
+        <div :key="initData.header.actions[1].id" class="be-eop-h-a-action">
+          <VIcon
+            ref="action1"
+            :class="`action-${initData.header.actions[1].actionClassNameSuffix}`"
+            :title="initData.header.actions[1].title"
+            :icon="initData.header.actions[1].icon"
+            :size="24"
+          />
         </div>
         <div class="be-eop-h-a-action">
           <VIcon
@@ -23,7 +32,7 @@
             icon="mdi-close"
             :size="24"
             @click="popupOpen = false"
-          ></VIcon>
+          />
         </div>
       </div>
     </div>
@@ -44,31 +53,22 @@
   </VPopup>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue'
 import { VPopup, VIcon } from '@/ui'
-import { defaultInitData } from './extra-options-panel'
+import { defaultInitData, type ExtraOptionsPanelInitData } from './extra-options-panel'
 
-export default defineComponent({
-  name: 'ExtraOptionsPanel',
+const action0 = useTemplateRef('action0')
+const action1 = useTemplateRef('action1')
+const { initData = defaultInitData } = defineProps<{
+  initData?: ExtraOptionsPanelInitData
+}>()
 
-  components: {
-    VPopup,
-    VIcon,
-  },
-
-  props: {
-    initData: {
-      type: Object,
-      default: defaultInitData,
-    },
-  },
-
-  data() {
-    return {
-      popupOpen: false,
-    }
-  },
+const popupOpen = ref(false)
+defineExpose({
+  action0,
+  action1,
+  popupOpen,
 })
 </script>
 

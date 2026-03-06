@@ -1,4 +1,4 @@
-import { Package } from '..'
+import { Package } from '../types'
 
 export const pack: Package = {
   name: 'downloader',

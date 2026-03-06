@@ -1,3 +1,4 @@
+import { defineComponent, h } from 'vue'
 import { getUID } from '@/core/utils'
 import { getJson } from '@/core/ajax'
 import { LaunchBarAction, LaunchBarActionProvider } from './launch-bar-action'
@@ -24,17 +25,15 @@ export const searchProvider: LaunchBarActionProvider = {
         name: input,
         icon: 'search',
         content: async () =>
-          Vue.extend({
-            render: h => {
-              const content = h(
+          defineComponent({
+            render: () =>
+              h(
                 'div',
                 {
                   class: 'suggest-highlight',
                 },
                 [input],
-              )
-              return content
-            },
+              ),
           }),
         action: () => search(input),
       },
@@ -53,15 +52,11 @@ export const searchProvider: LaunchBarActionProvider = {
           icon: 'search',
           suggestName: result.value,
           content: async () =>
-            Vue.extend({
-              render: h => {
-                const content = h('div', {
-                  domProps: {
-                    innerHTML: result.name.replace(/suggest_high_light/g, 'suggest-highlight'),
-                  },
-                })
-                return content
-              },
+            defineComponent({
+              render: () =>
+                h('div', {
+                  innerHTML: result.name.replace(/suggest_high_light/g, 'suggest-highlight'),
+                }),
             }),
           action: () => search(result.value),
         }),

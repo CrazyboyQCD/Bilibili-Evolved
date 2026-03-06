@@ -2,7 +2,7 @@
   <div class="release-content">
     <div class="release-content-markdown" v-html="content" />
     <div class="release-content-actions">
-      <VButton @click="$emit('dialog-close')"> 取消 </VButton>
+      <VButton @click="emit('dialog-close')"> 取消 </VButton>
       <a v-if="detailsLink" :href="detailsLink" target="_blank">
         <VButton> 查看详情 </VButton>
       </a>
@@ -13,31 +13,20 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { defaultOwner } from '@/core/cdn-types'
 import { VButton } from '@/ui'
 
+const { content = '', updateUrl = '' } = defineProps<{
+  content?: string
+  updateUrl?: string
+}>()
+
+const emit = defineEmits<{
+  'dialog-close': []
+}>()
+
 const detailsLink = `https://github.com/${defaultOwner}/Bilibili-Evolved/releases`
-export default Vue.extend({
-  components: {
-    VButton,
-  },
-  props: {
-    content: {
-      type: String,
-      default: '',
-    },
-    updateUrl: {
-      type: String,
-      default: '',
-    },
-  },
-  data() {
-    return {
-      detailsLink,
-    }
-  },
-})
 </script>
 <style lang="scss">
 @import 'common';

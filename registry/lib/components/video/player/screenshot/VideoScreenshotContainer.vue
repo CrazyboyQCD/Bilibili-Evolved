@@ -16,48 +16,40 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 import { getFriendlyTitle } from '@/core/utils/title'
 import { DownloadPackage } from '@/core/download'
 import { VIcon } from '@/ui'
 import VideoScreenshot from './VideoScreenshot.vue'
 import { Screenshot } from './screenshot'
 
-export default Vue.extend({
-  components: {
-    VIcon,
-    VideoScreenshot,
-  },
-  data() {
-    return {
-      screenshots: [],
-    }
-  },
-  computed: {
-    showBatch() {
-      return this.screenshots.length >= 2
-    },
-  },
-  methods: {
-    discard(screenshot: Screenshot) {
-      this.screenshots.splice(this.screenshots.indexOf(screenshot), 1)
-      screenshot.revoke()
-    },
-    async saveAll() {
-      const pack = new DownloadPackage()
-      this.screenshots.forEach((it: Screenshot) => {
-        pack.add(it.filename, it.blob, {
-          date: new Date(it.timeStamp),
-        })
-      })
-      await pack.emit(`${getFriendlyTitle()}.zip`)
-      this.discardAll()
-    },
-    discardAll() {
-      this.screenshots.forEach((it: Screenshot) => it.revoke())
-      this.screenshots = []
-    },
-  },
+const screenshots = ref<Screenshot[]>([])
+
+const showBatch = computed(() => screenshots.value.length >= 2)
+
+const discard = (screenshot: Screenshot) => {
+  screenshots.value.splice(screenshots.value.indexOf(screenshot), 1)
+  screenshot.revoke()
+}
+
+const discardAll = () => {
+  screenshots.value.forEach((it: Screenshot) => it.revoke())
+  screenshots.value = []
+}
+
+const saveAll = async () => {
+  const pack = new DownloadPackage()
+  screenshots.value.forEach((it: Screenshot) => {
+    pack.add(it.filename, it.blob, {
+      date: new Date(it.timeStamp),
+    })
+  })
+  await pack.emit(`${getFriendlyTitle()}.zip`)
+  discardAll()
+}
+defineExpose({
+  screenshots,
 })
 </script>
 <style lang="scss">

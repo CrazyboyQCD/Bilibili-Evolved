@@ -5,7 +5,8 @@ import { logError } from '@/core/utils/log'
 import { formatTitle } from '@/core/utils/title'
 import { bangumiUrls } from '@/core/utils/urls'
 import { DownloadVideoInput } from '../../types'
-import { createEpisodesPicker, EpisodeItem } from '../episode-item'
+import { createEpisodesPicker } from '../episode-item'
+import { EpisodeItem } from '../episode-item-types'
 
 export const bangumiBatchInput: DownloadVideoInput = {
   name: 'bangumi.batch',

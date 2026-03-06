@@ -1,4 +1,4 @@
-import { componentToSettings } from '@/core/settings'
+import { componentToSettings } from '@/core/settings/helpers'
 import { isBuiltInComponent } from './built-in-components'
 import { ComponentMetadata, componentsMap } from './component'
 import * as bisector from './bisector/api'

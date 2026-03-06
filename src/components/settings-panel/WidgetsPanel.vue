@@ -24,14 +24,17 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch, nextTick, onMounted, reactive } from 'vue'
 import { Widget } from '@/components/widget'
 import { deleteValue, matchUrlPattern } from '@/core/utils'
 import { VIcon, VEmpty } from '@/ui'
 import { registerAndGetData } from '../../plugins/data'
 import { WidgetsPlugin } from '.'
 
-const allWidgets: Widget[] = []
+const allWidgets: Widget[] = reactive([])
+unsafeWindow.allWidgets = allWidgets
+
 const widgetFilter = async (w: Widget) => {
   if (w.urlExclude && w.urlExclude.some(matchUrlPattern)) {
     return false
@@ -48,39 +51,32 @@ const widgetFilter = async (w: Widget) => {
   }
   return true
 }
-export default Vue.extend({
-  components: {
-    VIcon,
-    VEmpty,
+
+const widgets = ref<Widget[]>([])
+const loading = ref(true)
+
+watch(
+  allWidgets,
+  () => {
+    widgets.value = []
+    allWidgets.forEach(async (w: Widget) => {
+      const add = await widgetFilter(w)
+      if (add) {
+        widgets.value.push(w)
+      } else {
+        deleteValue(widgets.value, (widget: Widget) => widget.name === w.name)
+      }
+    })
+    console.log('updated widgets', widgets.value)
   },
-  data() {
-    unsafeWindow.allWidgets = allWidgets
-    return {
-      allWidgets,
-      widgets: [],
-      loading: true,
-    }
+  {
+    deep: true,
   },
-  watch: {
-    allWidgets() {
-      this.widgets = []
-      this.allWidgets.forEach(async (w: Widget) => {
-        const add = await widgetFilter(w)
-        if (add) {
-          this.widgets.push(w)
-        } else {
-          deleteValue(this.widgets, (widget: Widget) => widget.name === w.name)
-        }
-      })
-      console.log('updated widgets', this.widgets)
-    },
-  },
-  created() {
-    // setTimeout(() => {
-    registerAndGetData(WidgetsPlugin, allWidgets)
-    this.$nextTick().then(() => (this.loading = false))
-    // }, 300)
-  },
+)
+
+onMounted(() => {
+  registerAndGetData(WidgetsPlugin, allWidgets)
+  nextTick().then(() => (loading.value = false))
 })
 </script>
 

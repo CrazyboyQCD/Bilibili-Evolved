@@ -22,11 +22,15 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-import { popperMixin } from '../mixins'
+<script setup lang="ts">
+import { UsePopperProps, usePopper } from '../mixins'
 
-export default Vue.extend({
-  mixins: [popperMixin],
+const popper = usePopper(defineProps<UsePopperProps>())
+
+defineExpose({
+  popupShow() {
+    popper.popupShow()
+  },
 })
 </script>
 <style lang="scss" scoped>

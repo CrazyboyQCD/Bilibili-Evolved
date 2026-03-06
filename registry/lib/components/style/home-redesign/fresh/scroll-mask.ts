@@ -37,7 +37,7 @@ export const setupScrollMask = (config: ScrollMaskConfig) => {
     newObservers.push(lastObserver)
   }
 }
-export const cleanUpScrollMask = (...containers: HTMLElement[]) => {
+export const cleanUpScrollMask = (containers: HTMLElement[]) => {
   containers.forEach(container => {
     if (observersMap.has(container)) {
       const observers = observersMap.get(container)

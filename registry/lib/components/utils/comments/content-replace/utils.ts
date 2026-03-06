@@ -1,3 +1,5 @@
+import { logError } from '@/core/utils/log'
+
 export const createEmoticonImage = (src: string, alt: string) => {
   const element = document.createElement('img')
   element.src = src
@@ -13,6 +15,7 @@ export const isUrl = (text: string) => {
     const url = new URL(text)
     return Boolean(url)
   } catch (error) {
+    logError(error)
     return false
   }
 }

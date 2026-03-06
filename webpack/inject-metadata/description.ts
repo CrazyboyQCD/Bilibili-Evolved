@@ -1,7 +1,6 @@
-import { existsSync } from 'fs'
+import { existsSync, readdirSync, readFileSync } from 'fs'
 import { dirname, join } from 'path'
-import { objectProperty, identifier } from '@babel/types'
-import { parseExpression } from '@babel/parser'
+import { objectProperty, identifier, stringLiteral } from '@babel/types'
 import { InjectMetadataAction } from './types'
 
 /**
@@ -22,28 +21,28 @@ export const injectDescription: InjectMetadataAction = ({ filename }) => {
   if (!existsSync(defaultDesc)) {
     return []
   }
-  const regex = /index\.(.+)\.md$/
-  return [
-    objectProperty(
-      identifier('description'),
-      parseExpression(
-        `
-(() => {
-  const context = require.context('./', false, ${regex})
-  return {
-    ...Object.fromEntries(context
-      .keys()
-      .map(path => {
-        const key = path.match(${regex})[1]
-        const value = context(path)
-        return [key, value]
-      })),
-    'zh-CN': () => import('./index.md').then(m => m.default),
+  // 直接读取默认描述文件
+  const defaultContent = readFileSync(defaultDesc, 'utf-8')
+
+  // 查找所有语言版本的描述文件
+  const languageFiles = []
+  const files = readdirSync(folder)
+  const regex = /^index\.(.+)\.md$/
+
+  files.forEach(file => {
+    const match = file.match(regex)
+    if (match) {
+      const lang = match[1]
+      const content = readFileSync(join(folder, file), 'utf-8')
+      languageFiles.push({ lang, content })
+    }
+  })
+
+  // 构建描述对象
+  const descriptionObj = {
+    'zh-CN': defaultContent,
+    ...Object.fromEntries(languageFiles.map(({ lang, content }) => [lang, content])),
   }
-})()
-      `,
-        { plugins: ['typescript'] },
-      ),
-    ),
-  ]
+
+  return [objectProperty(identifier('description'), stringLiteral(JSON.stringify(descriptionObj)))]
 }

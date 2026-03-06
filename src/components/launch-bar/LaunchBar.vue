@@ -36,8 +36,10 @@
           :focused="index === itemIndex"
           @delete-item="onDeleteItem()"
           @action="
-            index === actions.length - 1 && onClearHistory()
-            onAction()
+            () => {
+              index === actions.length - 1 && onClearHistory()
+              onAction()
+            }
           "
         />
       </div>
@@ -65,7 +67,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted, reactive } from 'vue'
 import Fuse from 'fuse.js'
 import { VIcon, VLoading, VEmpty } from '@/ui'
 import { registerAndGetData } from '@/plugins/data'
@@ -83,21 +85,24 @@ import { searchProvider, search } from './search-provider'
 import { historyProvider } from './history-provider'
 
 const emit = defineEmits<{
-  (event: 'close'): void
+  close: []
 }>()
 
 const input = ref<HTMLInputElement>()
 const itemIndex = ref(-1)
 
-const [actionProviders] = registerAndGetData(LaunchBarActionProviders, [
-  searchProvider,
-  historyProvider,
-]) as [LaunchBarActionProvider[]]
+const [actionProviders] = registerAndGetData(
+  LaunchBarActionProviders,
+  reactive([searchProvider, historyProvider]),
+) as [LaunchBarActionProvider[]]
 
-const [recommended] = registerAndGetData('launchBar.recommended', {
-  word: '搜索',
-  href: 'https://search.bilibili.com/',
-})
+const [recommended] = registerAndGetData(
+  'launchBar.recommended',
+  reactive({
+    word: '搜索',
+    href: 'https://search.bilibili.com/',
+  }),
+)
 
 const actions = ref<LaunchBarAction[]>([])
 const lastKeyword = ref('')

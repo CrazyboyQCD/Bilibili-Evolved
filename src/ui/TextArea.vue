@@ -3,9 +3,8 @@
     <textarea
       ref="input"
       type="text"
-      v-bind="$attrs"
+      v-bind="restAttrs"
       :value="text"
-      v-on="restListeners"
       @change.stop="change"
       @input.stop="input"
       @compositionstart="compositionStart"
@@ -13,12 +12,32 @@
     ></textarea>
   </div>
 </template>
-<script lang="ts">
-import { textControlMixin } from './text-control'
+<script setup lang="ts">
+import { useAttrs, useTemplateRef } from 'vue'
+import { textControlProps, useTextControl } from './text-control'
 
-export default Vue.extend({
-  name: 'TextArea',
-  mixins: [textControlMixin],
+const attrs = useAttrs()
+const emit = defineEmits<{ 'update:text': [value: string]; change: [value: string] }>()
+const value = defineModel<string>({
+  default: '',
+  set: v => {
+    emit('change', v)
+    return v
+  },
+})
+const { text = '', changeOnBlur = false, validator } = defineProps<textControlProps>()
+const { restAttrs, input, change, compositionStart, compositionEnd } = useTextControl(
+  useTemplateRef('input'),
+  value,
+  {
+    text,
+    changeOnBlur,
+    validator,
+  },
+  { attrs, emit },
+)
+defineExpose({
+  focus,
 })
 </script>
 <style lang="scss">

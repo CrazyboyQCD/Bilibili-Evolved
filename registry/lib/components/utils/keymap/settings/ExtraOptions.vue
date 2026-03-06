@@ -11,29 +11,20 @@
     </VButton>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
 import { VButton, VIcon } from '@/ui'
 import { loadKeymapSettings, toggleKeymapSettings } from './vm'
 
-export default Vue.extend({
-  components: {
-    VButton,
-    VIcon,
-  },
-  data() {
-    return {
-      popupOpen: false,
-    }
-  },
-  methods: {
-    async loadSettings() {
-      await loadKeymapSettings(this.$refs.button)
-    },
-    async toggleSettings() {
-      await toggleKeymapSettings(this.$refs.button)
-    },
-  },
-})
+const button = useTemplateRef('button')
+
+const loadSettings = async () => {
+  await loadKeymapSettings(button.value.root)
+}
+
+const toggleSettings = async () => {
+  await toggleKeymapSettings(button.value.root)
+}
 </script>
 <style lang="scss">
 @import 'common';

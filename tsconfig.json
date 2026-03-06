@@ -19,7 +19,7 @@
     }
   },
   "vueCompilerOptions": {
-    "target": 2.7
+    "target": 3.5
   },
   "include": [
     "src/**/*",

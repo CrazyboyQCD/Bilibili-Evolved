@@ -1,5 +1,5 @@
 import { PluginMetadata } from '@/plugins/plugin'
-import type { KeyBindingAction } from '../../../components/utils/keymap/bindings'
+import type { KeyBindingAction } from '../../../components/utils/keymap/bindings-types'
 
 export const plugin: PluginMetadata = {
   name: 'keymap.actions.darkMode',

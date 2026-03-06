@@ -9,11 +9,12 @@
     </TabControl>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, defineAsyncComponent } from 'vue'
 import { TabControl, VDropdown } from '@/ui'
 import { TabMapping, TabMappings } from '@/ui/tab-mapping'
 import { getUID } from '@/core/utils'
-import { popperMixin } from '../mixins'
+import { usePopper, UsePopperProps } from '../mixins'
 import { SubscriptionTypes } from './subscriptions'
 import { SubscriptionStatus, SubscriptionStatusFilter } from './types'
 
@@ -55,48 +56,38 @@ const filterItems: {
     displayName: '看过',
   },
 ]
-export default Vue.extend({
-  components: {
-    TabControl,
-    VDropdown,
-  },
-  mixins: [popperMixin],
-  data() {
-    const uid = getUID()
-    return {
-      uid,
-      filterItems,
-      selectedFilter: filterItems[0],
-      moreLink: (tab: TabMapping) => `https://space.bilibili.com/${uid}/${tab.name}`,
-      filter: {
-        viewAll: true,
-        status: SubscriptionStatus.Viewing,
-      } as SubscriptionStatusFilter,
-    }
-  },
-  computed: {
-    tabs(): TabMappings {
-      return [
-        {
-          name: SubscriptionTypes.Bangumi,
-          displayName: '追番',
-          activeLink: `https://space.bilibili.com/${this.uid}/bangumi`,
-          component: () => import('./BangumiSubscriptions.vue').then(m => m.default),
-          propsData: {
-            filter: this.selectedFilter.value,
-          },
-        },
-        {
-          name: SubscriptionTypes.Cinema,
-          displayName: '追剧',
-          activeLink: `https://space.bilibili.com/${this.uid}/cinema`,
-          component: () => import('./CinemaSubscriptions.vue').then(m => m.default),
-          propsData: {
-            filter: this.selectedFilter.value,
-          },
-        },
-      ]
+
+const popper = usePopper(defineProps<UsePopperProps>())
+
+const uid = getUID()
+const selectedFilter = ref(filterItems[0])
+
+const moreLink = (tab: TabMapping) => `https://space.bilibili.com/${uid}/${tab.name}`
+
+const tabs = computed<TabMappings>(() => [
+  {
+    name: SubscriptionTypes.Bangumi,
+    displayName: '追番',
+    activeLink: `https://space.bilibili.com/${uid}/bangumi`,
+    component: defineAsyncComponent(() => import('./BangumiSubscriptions.vue')),
+    propsData: {
+      filter: selectedFilter.value.value as SubscriptionStatusFilter,
     },
+  },
+  {
+    name: SubscriptionTypes.Cinema,
+    displayName: '追剧',
+    activeLink: `https://space.bilibili.com/${uid}/cinema`,
+    component: defineAsyncComponent(() => import('./CinemaSubscriptions.vue')),
+    propsData: {
+      filter: selectedFilter.value.value as SubscriptionStatusFilter,
+    },
+  },
+])
+
+defineExpose({
+  popupShow() {
+    popper.popupShow()
   },
 })
 </script>

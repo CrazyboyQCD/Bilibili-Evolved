@@ -44,71 +44,49 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { TabMappings, TabMapping } from './tab-mapping'
 
-export default Vue.extend({
-  name: 'TabControl',
-  components: {
-    VButton: () => import('./VButton.vue').then(m => m.default),
-    VIcon: () => import('./icon/VIcon.vue').then(m => m.default),
-  },
-  model: {
-    prop: 'link',
-    event: 'change',
-  },
-  props: {
-    tabs: {
-      type: Array,
-      required: true,
-      validator(mappings: TabMappings) {
-        if (mappings.length === 0) {
-          return false
-        }
-        return true
-      },
-    },
-    defaultTab: {
-      type: String,
-      required: false,
-      default: '',
-    },
-    link: {
-      type: String,
-      required: false,
-      default: null,
-    },
-    moreLink: {
-      type: [String, Function],
-      default: null,
-    },
-  },
-  data() {
-    const tabs = this.tabs as TabMappings
-    return {
-      selectedTabName:
-        tabs.find((t: TabMapping) => t.name === this.defaultTab)?.name ?? tabs[0].name,
-    }
-  },
-  computed: {
-    selectedTab() {
-      return this.tabs.find((t: TabMapping) => t.name === this.selectedTabName)
-    },
-  },
-  mounted() {
-    this.$emit('change', this.selectedTab.activeLink)
-  },
-  methods: {
-    selectTab(tab: TabMapping) {
-      if (this.selectedTabName !== tab.name) {
-        this.selectedTabName = tab.name
-        tab.count = 0
-        this.$emit('change', this.selectedTab.activeLink)
-      } else if (tab.activeLink) {
-        window.open(tab.activeLink, '_blank')
-      }
-    },
-  },
+const VButton = defineAsyncComponent(() => import('./VButton.vue'))
+const VIcon = defineAsyncComponent(() => import('./icon/VIcon.vue'))
+
+const {
+  tabs,
+  defaultTab = '',
+  // link = null,
+  moreLink = null,
+} = defineProps<{
+  tabs: TabMappings
+  defaultTab?: string
+  link?: string
+  moreLink?: string | ((tab: TabMapping) => string)
+}>()
+
+const emit = defineEmits<{
+  change: [value: string]
+}>()
+
+const selectedTabName = ref(
+  tabs.find((t: TabMapping) => t.name === defaultTab)?.name ?? tabs[0].name,
+)
+
+const selectedTab = computed(() => {
+  return tabs.find((t: TabMapping) => t.name === selectedTabName.value)
+})
+
+const selectTab = (tab: TabMapping) => {
+  if (selectedTabName.value !== tab.name) {
+    selectedTabName.value = tab.name
+    tab.count = 0
+    emit('change', selectedTab.value?.activeLink ?? '')
+  } else if (tab.activeLink) {
+    window.open(tab.activeLink, '_blank')
+  }
+}
+
+onMounted(() => {
+  emit('change', selectedTab.value?.activeLink ?? '')
 })
 </script>
 

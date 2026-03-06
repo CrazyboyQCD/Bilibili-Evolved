@@ -15,48 +15,37 @@
     </transition-group>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import { VLoading, VEmpty, DpiImage } from '@/ui'
 import { responsiveGetPages, getJsonWithCredentials } from '@/core/ajax'
-import { LiveFeedItem } from './live-feed-item'
+import type { LiveFeedItem } from './live-feed-item'
 
-export default Vue.extend({
-  components: {
-    VLoading,
-    VEmpty,
-    DpiImage,
-  },
-  data() {
-    return {
-      loading: true,
-      rawItems: [],
-      hasMorePage: true,
-    }
-  },
-  computed: {
-    cards(): LiveFeedItem[] {
-      const parseLiveCard = (card: any) => ({
-        id: card.roomid,
-        title: card.title,
-        upFaceUrl: card.face,
-        upName: card.uname,
-        url: card.link,
-      })
-      return (this.rawItems as any[]).map(parseLiveCard)
-    },
-  },
-  async created() {
-    const [responsive] = responsiveGetPages({
-      api: page =>
-        getJsonWithCredentials(
-          `https://api.live.bilibili.com/relation/v1/feed/feed_list?page=${page}&pagesize=24`,
-        ),
-      getList: json => lodash.get(json, 'data.list', []),
-      getTotal: json => lodash.get(json, 'data.results', 0),
-    })
-    this.rawItems = await responsive
-    this.loading = false
-  },
+const loading = ref(true)
+const rawItems = ref<any[]>([])
+
+const cards = computed<LiveFeedItem[]>(() => {
+  const parseLiveCard = (card: any) => ({
+    id: card.roomid,
+    title: card.title,
+    upFaceUrl: card.face,
+    upName: card.uname,
+    url: card.link,
+  })
+  return rawItems.value.map(parseLiveCard)
+})
+
+onMounted(async () => {
+  const [responsive] = responsiveGetPages({
+    api: page =>
+      getJsonWithCredentials(
+        `https://api.live.bilibili.com/relation/v1/feed/feed_list?page=${page}&pagesize=24`,
+      ),
+    getList: json => lodash.get(json, 'data.list', []),
+    getTotal: json => lodash.get(json, 'data.results', 0),
+  })
+  rawItems.value = await responsive
+  loading.value = false
 })
 </script>
 <style lang="scss">

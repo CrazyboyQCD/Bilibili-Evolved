@@ -2,17 +2,12 @@
 import { computed, reactive, ref } from 'vue'
 import { VLoading, VButton } from '@/ui'
 import { bilibiliApi, getJsonWithCredentials, postTextWithCredentials } from '@/core/ajax'
-import { CustomNavbarItem } from '../custom-navbar-item'
-import { usePopper } from '../mixins'
+import { usePopper, UsePopperProps } from '../mixins'
 import { type MatchInfo, type MatchPreviewItem, MatchHotItemStatus } from './types'
 import { getCsrf } from '@/core/utils'
 import { logError } from '@/core/utils/log'
 
-const props = defineProps<{
-  item: CustomNavbarItem
-  container: HTMLElement
-}>()
-const popper = usePopper(props)
+const popper = usePopper(defineProps<UsePopperProps>())
 
 const loading = ref(true)
 const matchInfo = ref<MatchInfo | undefined>(undefined)

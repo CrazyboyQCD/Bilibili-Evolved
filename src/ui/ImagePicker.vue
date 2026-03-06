@@ -6,7 +6,7 @@
     <VPopup
       v-model="popupOpen"
       class="popup"
-      :trigger-element="$refs.pickButton"
+      :trigger-element="pickButton.root"
       @keydown.esc="cancel()"
     >
       <transition-group name="image-list" tag="div" class="images" tabindex="-1">
@@ -29,7 +29,7 @@
           tabindex="-1"
           class="add-image-popup"
           :lazy="false"
-          :trigger-element="$refs.addButton"
+          :trigger-element="addButton.root"
         >
           <div class="add-image-row">
             名称:
@@ -47,8 +47,10 @@
             <VButton
               :disabled="!addImagePopupOpen"
               @click="
-                addImagePopupOpen = false
-                clearNewImage()
+                () => {
+                  addImagePopupOpen = false
+                  clearNewImage()
+                }
               "
             >
               取消
@@ -57,9 +59,11 @@
               :disabled="!newImage.url || !newImage.name"
               type="primary"
               @click="
-                addImage(newImage)
-                addImagePopupOpen = false
-                clearNewImage()
+                () => {
+                  addImage(newImage)
+                  addImagePopupOpen = false
+                  clearNewImage()
+                }
               "
             >
               确定
@@ -83,8 +87,10 @@
         <VButton
           :disabled="!selectedImage.name"
           @click="
-            removeImage(selectedImage)
-            clearImage()
+            () => {
+              removeImage(selectedImage)
+              clearImage()
+            }
           "
         >
           删除
@@ -99,71 +105,65 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { defineAsyncComponent, nextTick, ref, useTemplateRef } from 'vue'
 import { ImageItem, getEmptyImage, images, addImage, removeImage } from './image-store'
+import { vHit } from '@/core/utils'
 
-export default Vue.extend({
-  name: 'ImagePicker',
-  components: {
-    VButton: () => import('./VButton.vue').then(m => m.default),
-    VPopup: () => import('./VPopup.vue').then(m => m.default),
-    TextBox: () => import('./TextBox.vue').then(m => m.default),
-  },
-  model: {
-    prop: 'image',
-    event: 'change',
-  },
-  props: {
-    image: {
-      type: Object,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      images,
-      popupOpen: false,
-      addImagePopupOpen: false,
-      selectedImage: getEmptyImage(),
-      newImage: getEmptyImage(),
-    }
-  },
-  methods: {
-    addImage,
-    removeImage,
-    ok() {
-      this.$emit('change', this.selectedImage)
-      this.popupOpen = false
-    },
-    cancel() {
-      this.selectedImage = this.image
-      this.popupOpen = false
-    },
-    selectImage(image: ImageItem) {
-      if (this.selectedImage.name === image.name) {
-        this.selectedImage = getEmptyImage()
-      } else {
-        this.selectedImage = image
-      }
-    },
-    clearImage() {
-      this.selectedImage = getEmptyImage()
-    },
-    clearNewImage() {
-      this.newImage = getEmptyImage()
-    },
-    editImage() {
-      this.newImage = this.selectedImage
-      // this.$refs.addButton.$el.click()
-      this.openAddImagePopup()
-    },
-    async openAddImagePopup() {
-      this.addImagePopupOpen = !this.addImagePopupOpen
-      await this.$nextTick()
-      this.$refs.addImageInput.$refs.input.focus()
-    },
-  },
-})
+const VButton = defineAsyncComponent(() => import('./VButton.vue'))
+const VPopup = defineAsyncComponent(() => import('./VPopup.vue'))
+const TextBox = defineAsyncComponent(() => import('./TextBox.vue'))
+
+const emit = defineEmits<{
+  change: [image: ImageItem]
+}>()
+
+const { image } = defineProps<{
+  image: ImageItem
+}>()
+
+const popupOpen = ref(false)
+const addImagePopupOpen = ref(false)
+const selectedImage = ref(getEmptyImage())
+const newImage = ref(getEmptyImage())
+
+const pickButton = useTemplateRef('pickButton')
+const addButton = useTemplateRef('addButton')
+const addImageInputRef = useTemplateRef('addImageInput')
+
+const ok = () => {
+  emit('change', selectedImage.value)
+  popupOpen.value = false
+}
+const cancel = () => {
+  selectedImage.value = image
+  popupOpen.value = false
+}
+const selectImage = (img: ImageItem) => {
+  if (selectedImage.value.name === img.name) {
+    selectedImage.value = getEmptyImage()
+  } else {
+    selectedImage.value = img
+  }
+}
+const clearImage = () => {
+  selectedImage.value = getEmptyImage()
+}
+const clearNewImage = () => {
+  newImage.value = getEmptyImage()
+}
+
+const openAddImagePopup = async () => {
+  addImagePopupOpen.value = !addImagePopupOpen.value
+  await nextTick()
+  addImageInputRef.value.inputRef.focus()
+}
+
+const editImage = () => {
+  newImage.value = selectedImage.value
+  // addButton.$el.click()
+  openAddImagePopup()
+}
 </script>
 
 <style lang="scss" scoped>

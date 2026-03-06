@@ -1,19 +1,24 @@
 <template>
   <transition-group class="toast-card-container" name="toast-card-container" tag="div">
-    <ToastCard v-for="card of cards" :key="card.key" :data-key="card.key" :card="card"></ToastCard>
+    <ToastCard
+      v-for="card of cards"
+      :key="card.key"
+      :data-key="card.key"
+      :card="card as Toast"
+    ></ToastCard>
   </transition-group>
 </template>
 
-<script lang="ts">
-export default Vue.extend({
-  components: {
-    ToastCard: () => import('./ToastCard.vue').then(m => m.default),
-  },
-  data() {
-    return {
-      cards: [],
-    }
-  },
+<script setup lang="ts">
+import { ref, defineAsyncComponent } from 'vue'
+import { Toast } from '@/core/toast'
+
+const ToastCard = defineAsyncComponent(() => import('./ToastCard.vue'))
+
+const cards = ref<Toast[]>([])
+
+defineExpose({
+  cards,
 })
 </script>
 

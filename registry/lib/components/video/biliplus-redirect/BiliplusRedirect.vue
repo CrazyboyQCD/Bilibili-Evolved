@@ -4,11 +4,12 @@
   </a>
 </template>
 
-<script lang="ts">
-import { videoChange } from '@/core/observer'
+<script setup lang="ts">
+import { ref } from 'vue'
+import { videoChange } from '@/core/video'
 import { DefaultWidget } from '@/ui'
 
-const videoRegex = /\/(video|medialist\/play)\/([^\/]+\/)?(av[\d]+|BV.+)/i
+const videoRegex = /\/(video|medialist\/play)\/([^/]+\/)?(av[\d]+|BV.+)/i
 interface BiliplusRedirectProvider {
   condition: () => boolean
   getUrl: (host: string, updateUrl: (url: string) => void) => string
@@ -50,26 +51,17 @@ const redirectProviders: BiliplusRedirectProvider[] = [
     },
   },
 ]
-export default Vue.extend({
-  components: {
-    DefaultWidget,
-  },
-  data() {
-    return {
-      url: '',
-    }
-  },
-  created() {
-    const host = 'www.biliplus.com'
-    const updateUrl = (url: string) => (this.url = url)
-    const provider = redirectProviders.find(p => p.condition())
-    if (provider) {
-      updateUrl(provider.getUrl(host, updateUrl))
-    } else {
-      videoChange(() => {
-        this.url = document.URL.replace(window.location.host, host)
-      })
-    }
-  },
-})
+
+const url = ref('')
+
+const host = 'www.biliplus.com'
+const updateUrl = (newUrl: string) => (url.value = newUrl)
+const provider = redirectProviders.find(p => p.condition())
+if (provider) {
+  updateUrl(provider.getUrl(host, updateUrl))
+} else {
+  videoChange(() => {
+    updateUrl(document.URL.replace(window.location.host, host))
+  })
+}
 </script>

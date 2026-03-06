@@ -1,5 +1,5 @@
 <template>
-  <div class="be-mini-toast-wrapper">
+  <div ref="root" class="be-mini-toast-wrapper">
     <div ref="content" class="be-mini-toast-content">
       <slot />
     </div>
@@ -8,61 +8,70 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch, onMounted, useTemplateRef, useAttrs } from 'vue'
+import { Placement } from 'tippy.js'
 import { createMiniToast } from './mini'
 
 const containerMap: Record<string, HTMLElement | (() => HTMLElement)> = {
   body: () => document.body,
   local: undefined,
 }
-export default Vue.extend({
-  model: {
-    prop: 'show',
-    event: 'change',
+const emit = defineEmits<{
+  change: [value: boolean]
+}>()
+
+const show = defineModel<boolean>({
+  default: false,
+  set: v => {
+    emit('change', v)
+    return v
   },
-  props: {
-    show: {
-      type: Boolean,
-      default: false,
-    },
-    container: {
-      type: String,
-      default: 'local',
-    },
-    placement: {
-      type: String,
-      default: undefined,
-    },
-  },
-  data() {
-    return {
-      toast: null,
+})
+
+const { container = 'local', placement } = defineProps<{
+  container?: string
+  placement?: Placement
+}>()
+
+const attrs = useAttrs()
+
+const root = useTemplateRef('root')
+const content = useTemplateRef('content')
+const toast = useTemplateRef('toast')
+
+defineExpose({
+  root,
+})
+
+const toastInstance = ref<ReturnType<typeof createMiniToast> | null>(null)
+
+watch(
+  () => placement,
+  newValue => {
+    if (newValue && toastInstance.value) {
+      toastInstance.value.placement = newValue
     }
   },
-  watch: {
-    placement(newValue: string) {
-      if (newValue && this.toast) {
-        this.toast.placement = newValue
-      }
+)
+
+onMounted(async () => {
+  await new Promise(resolve => {
+    setTimeout(resolve, 0)
+  })
+  const appendTarget = containerMap[container]
+  toastInstance.value = createMiniToast(toast.value, content.value, {
+    placement,
+    showOnCreate: show.value,
+    trigger: 'mouseenter focusin',
+    onHide: () => {
+      emit('change', false)
     },
-  },
-  async mounted() {
-    await this.$nextTick()
-    const appendTarget = containerMap[this.container]
-    this.toast = createMiniToast(this.$refs.toast, this.$refs.content, {
-      placement: this.placement,
-      showOnCreate: this.show,
-      trigger: 'mouseenter focusin',
-      onHide: () => {
-        this.$emit('change', false)
-      },
-      onShow: () => {
-        this.$emit('change', true)
-      },
-      appendTo: typeof appendTarget === 'function' ? appendTarget() : appendTarget,
-      // ...(lodash.omit(this.$props, 'show', 'container')),
-      ...this.$attrs,
-    })
-  },
+    onShow: () => {
+      emit('change', true)
+    },
+    appendTo: typeof appendTarget === 'function' ? appendTarget() : appendTarget,
+    ...attrs,
+  })
 })
 </script>

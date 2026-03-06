@@ -25,7 +25,7 @@
       ref="widgetsPanelPopup"
       v-model="widgetsOpened"
       class="widgets-panel-popup"
-      :trigger-element="$refs.widgetsIcon"
+      :trigger-element="widgetsIcon"
       :fixed="true"
     >
       <WidgetsPanel />
@@ -34,7 +34,7 @@
       ref="settingsPanelPopup"
       v-model="settingsOpened"
       class="settings-panel-popup"
-      :trigger-element="$refs.settingsIcon"
+      :trigger-element="settingsIcon"
       :auto-close-predicate="settingsPanelClosePredicate"
       :fixed="true"
     >
@@ -43,63 +43,58 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, onMounted, defineAsyncComponent, useTemplateRef } from 'vue'
 import { VPopup, VIcon } from '@/ui'
 import { externalApis } from '@/core/core-apis'
 
-export default {
-  name: 'SettingsContainer',
-  components: {
-    VPopup,
-    VIcon,
-    SettingsPanel: () => import('./SettingsPanel.vue').then(m => m.default),
-    WidgetsPanel: () => import('./WidgetsPanel.vue').then(m => m.default),
-  },
-  data() {
-    return {
-      settingsOpened: false,
-      widgetsOpened: false,
-    }
-  },
-  mounted() {
-    GM_registerMenuCommand('功能', () => {
-      this.loadPanel('widgetsPanelPopup')
-      this.widgetsOpened = true
-      this.settingsOpened = false
-    })
-    GM_registerMenuCommand('设置', () => {
-      this.loadPanel('settingsPanelPopup')
-      this.widgetsOpened = false
-      this.settingsOpened = true
-    })
-  },
-  methods: {
-    theWorld() {
-      externalApis.theWorld(0)
-    },
-    settingsPanelClosePredicate(data: {
-      target: HTMLElement
-      element: HTMLElement
-      trigger: HTMLElement
-    }) {
-      if (
-        dqa('.be-settings-extra-options').some(c => c === data.target || c.contains(data.target))
-      ) {
-        return false
-      }
-      return true
-    },
-    loadPanel(refName: string) {
-      const popup = this.$refs[refName]
-      if (!popup) {
-        return
-      }
-      if (!(popup?.loaded ?? true)) {
-        popup.loaded = true
-      }
-    },
-  },
+const SettingsPanel = defineAsyncComponent(() => import('./SettingsPanel.vue'))
+const WidgetsPanel = defineAsyncComponent(() => import('./WidgetsPanel.vue'))
+
+const settingsOpened = ref(false)
+const widgetsOpened = ref(false)
+const widgetsIcon = useTemplateRef('widgetsIcon')
+const settingsIcon = useTemplateRef('settingsIcon')
+const widgetsPanelPopup = useTemplateRef('widgetsPanelPopup')
+const settingsPanelPopup = useTemplateRef('settingsPanelPopup')
+
+const theWorld = () => {
+  externalApis.theWorld(0)
 }
+
+const settingsPanelClosePredicate = (data: {
+  target: HTMLElement
+  element: HTMLElement
+  trigger: HTMLElement
+}) => {
+  if (dqa('.be-settings-extra-options').some(c => c === data.target || c.contains(data.target))) {
+    return false
+  }
+  return true
+}
+
+const loadPanel = (refName: string) => {
+  const popup = refName === 'widgetsPanelPopup' ? widgetsPanelPopup.value : settingsPanelPopup.value
+  if (!popup) {
+    return
+  }
+  if (!(popup.loaded ?? true)) {
+    popup.loaded = true
+  }
+}
+
+onMounted(() => {
+  GM_registerMenuCommand('功能', () => {
+    loadPanel('widgetsPanelPopup')
+    widgetsOpened.value = true
+    settingsOpened.value = false
+  })
+  GM_registerMenuCommand('设置', () => {
+    loadPanel('settingsPanelPopup')
+    widgetsOpened.value = false
+    settingsOpened.value = true
+  })
+})
 </script>
 
 <style lang="scss">

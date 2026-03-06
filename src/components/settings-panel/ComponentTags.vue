@@ -55,64 +55,68 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Executable, VueModule } from '@/core/common-types'
+<script setup lang="ts">
+import { ref, onMounted, nextTick, Component } from 'vue'
 import { ascendingSort } from '@/core/utils/sort'
 import VIcon from '@/ui/icon/VIcon.vue'
 import VPopup from '@/ui/VPopup.vue'
-import { components, ComponentTag } from '../component'
+import { ComponentMetadata, components, ComponentTag } from '../component'
 import { subPages } from './sub-pages'
 import { SettingsTag, tagFilters } from './tag-filter'
 
-export default Vue.extend({
-  components: { VIcon, VPopup },
-  data() {
-    return {
-      tags: [],
-      selectedTagName: '',
-      subPages,
-      selectedSubPage: null,
-      selectedSubPageOpen: false,
-      selectedSubPageTrigger: null,
+// 标签数据
+const tags = ref<SettingsTag[]>([])
+const selectedTagName = ref('')
+
+const selectedSubPage = ref<Component | null>(null)
+const selectedSubPageOpen = ref(false)
+const selectedSubPageTrigger = ref<HTMLElement | null>(null)
+
+const emit = defineEmits<{
+  change: [(components: ComponentMetadata[]) => ComponentMetadata[]]
+}>()
+
+const refreshTags = () => {
+  const renderedComponents = components.filter(c => !c.hidden)
+  const newTags = tagFilters.flatMap(f => {
+    if (typeof f === 'function') {
+      return f({ components, renderedComponents })
     }
-  },
-  created() {
-    this.refreshTags()
-    this.reset()
-  },
-  mounted() {
-    this.selectTag(this.tags[0])
-  },
-  methods: {
-    refreshTags() {
-      const renderedComponents = components.filter(c => !c.hidden)
-      const tags = tagFilters.flatMap(f => {
-        if (typeof f === 'function') {
-          return f({ components, renderedComponents })
-        }
-        return f
-      })
-      this.tags = tags.sort(ascendingSort(it => it.order))
-    },
-    reset() {
-      this.selectedTagName = this.tags[0].name
-    },
-    selectTag(tag: ComponentTag) {
-      this.selectedTagName = tag.name
-      const { filter } = (this.tags as SettingsTag[]).find(t => t.name === tag.name)
-      this.$emit('change', filter)
-    },
-    async openSubPage(e: MouseEvent, component: Executable<VueModule>) {
-      if (this.selectedSubPage === component) {
-        this.selectedSubPageOpen = !this.selectedSubPageOpen
-        return
-      }
-      this.selectedSubPage = component
-      this.selectedSubPageTrigger = e.currentTarget
-      await this.$nextTick()
-      this.selectedSubPageOpen = true
-    },
-  },
+    return f
+  })
+  tags.value = newTags.sort(ascendingSort(it => it.order))
+}
+
+const reset = () => {
+  selectedTagName.value = tags.value[0].name
+}
+
+const selectTag = (tag: ComponentTag) => {
+  selectedTagName.value = tag.name
+  const { filter } = tags.value.find(t => t.name === tag.name)
+  emit('change', filter)
+}
+
+const openSubPage = async (e: MouseEvent, component: Component) => {
+  if (selectedSubPage.value === component) {
+    selectedSubPageOpen.value = !selectedSubPageOpen.value
+    return
+  }
+  selectedSubPage.value = component
+  selectedSubPageTrigger.value = e.currentTarget as HTMLElement
+  await nextTick()
+  selectedSubPageOpen.value = true
+}
+
+refreshTags()
+reset()
+
+defineExpose({
+  refreshTags,
+})
+
+onMounted(() => {
+  selectTag(tags.value[0])
 })
 </script>
 

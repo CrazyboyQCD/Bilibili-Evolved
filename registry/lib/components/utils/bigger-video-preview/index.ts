@@ -1,29 +1,26 @@
-import Vue from 'vue'
 import { ComponentEntry } from '@/components/types'
 import { defineComponentMetadata } from '@/components/define'
 import { childListSubtree } from '@/core/observer'
 import { select } from '@/core/spin-query'
 import { useScopedConsole } from '@/core/utils/log'
 import PreviewButton from './PreviewButton.vue'
+import { mountVueComponent } from '@/core/utils'
+import VideoContainer from './VideoContainer.vue'
 
 const logger = useScopedConsole('biggerVideoPreview')
 
 const entry: ComponentEntry = async ({ settings }) => {
   // 预览容器
-  let videoContainer = null
+  let videoContainer: InstanceType<typeof VideoContainer> | null = null
 
   // #region functions
   /**
    * 初始化预览容器
    */
   async function initPreviewContainer() {
-    const VideoContainerModule = await import('./VideoContainer.vue')
-    const VideoContainer = VideoContainerModule.default
-
-    const ModalClass = Vue.extend(VideoContainer)
-    videoContainer = new ModalClass()
-    videoContainer.$mount()
-    document.body.appendChild(videoContainer.$el)
+    const [el, vm] = mountVueComponent(await import('./VideoContainer.vue'))
+    videoContainer = vm
+    document.body.appendChild(el)
   }
 
   /**
@@ -38,7 +35,7 @@ const entry: ComponentEntry = async ({ settings }) => {
      * @param show 是否显示预览
      * @param btn 预览按钮实例
      */
-    const toggleButtonIcon = (show: boolean, btn: any) => {
+    const toggleButtonIcon = (show: boolean, btn: InstanceType<typeof PreviewButton>) => {
       btn.enlarged = show
     }
 
@@ -127,59 +124,53 @@ const entry: ComponentEntry = async ({ settings }) => {
     // #endregion
 
     // 创建 Vue 实例
-    const ComponentClass = Vue.extend(PreviewButton)
-    const instance = new ComponentClass({
-      propsData: {
-        btnClass: className,
-        btnOnClickCallback: (e: MouseEvent) => {
-          e.preventDefault()
+    const [el, vm] = mountVueComponent(PreviewButton, {
+      btnClass: className,
+      btnOnClickCallback: (e: MouseEvent) => {
+        e.preventDefault()
 
-          if (!videoContainer) {
-            return
-          }
+        if (!videoContainer) {
+          return
+        }
 
-          const movingDom = instance.$el.parentElement.closest(
-            '.bili-video-card__image--wrap,.pic-box',
-          )
+        const movingDom = el.parentElement.closest(
+          '.bili-video-card__image--wrap,.pic-box',
+        ) as HTMLElement
 
-          // 监听弹窗状态变化事件
-          if (!popupChangeHandler) {
-            popupChangeHandler = (show: boolean) => {
-              // 切换按钮图标
-              toggleButtonIcon(show, instance)
+        // 监听弹窗状态变化事件
+        if (!popupChangeHandler) {
+          popupChangeHandler = (show: boolean) => {
+            // 切换按钮图标
+            toggleButtonIcon(show, vm)
 
-              // 切换鼠标移出事件监听
-              toggleMouseExitHandler(show, movingDom)
+            // 切换鼠标移出事件监听
+            toggleMouseExitHandler(show, movingDom)
 
-              // 切换视频控件显示
-              toggleVideoControls(movingDom, show)
+            // 切换视频控件显示
+            toggleVideoControls(movingDom, show)
 
-              // 切换预览时长限制
-              togglePreviewTimeLimit(movingDom)
+            // 切换预览时长限制
+            togglePreviewTimeLimit(movingDom)
 
-              if (!show) {
-                videoContainer.$off('popup-change', popupChangeHandler)
-              }
+            if (!show) {
+              videoContainer.popupChangeHandler = null
             }
           }
+        }
 
-          // 根据当前状态切换预览
-          if (instance.enlarged) {
-            videoContainer.closePopup()
-          } else {
-            videoContainer.$el.style.width = `${settings.options.popupWidth}%`
+        // 根据当前状态切换预览
+        if (vm.enlarged) {
+          videoContainer.closePopup()
+        } else {
+          videoContainer.popup.rootRef.style.width = `${settings.options.popupWidth}%`
 
-            videoContainer.$off('popup-change', popupChangeHandler)
-            videoContainer.$on('popup-change', popupChangeHandler)
-            videoContainer.openPopup(movingDom)
-          }
-        },
+          videoContainer.popupChangeHandler = popupChangeHandler
+          videoContainer.openPopup(movingDom)
+        }
       },
-    }) as Vue & { enlarged: boolean }
+    })
 
-    instance.$mount()
-
-    return instance.$el as HTMLElement
+    return el
   }
 
   /**

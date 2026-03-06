@@ -7,7 +7,7 @@
     </ManagePanel>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import { isUserPlugin } from '@/core/settings'
 import { getHook } from '@/plugins/hook'
 import { installPlugin, PluginMetadata, plugins, uninstallPlugin } from '@/plugins/plugin'
@@ -51,20 +51,6 @@ const getItemConfig = (item: PluginMetadata): ManageItem<PluginMetadata> => ({
     await before()
     uninstallPlugin(it.name)
     await after()
-  },
-})
-export default Vue.extend({
-  components: {
-    ManagePanel,
-    UserItem,
-  },
-  data() {
-    return {
-      config,
-    }
-  },
-  methods: {
-    getItemConfig,
   },
 })
 </script>

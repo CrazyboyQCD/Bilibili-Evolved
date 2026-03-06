@@ -9,31 +9,29 @@
     ></DefaultWidget>
   </div>
 </template>
-<script lang="ts">
-let panel: { open: boolean } & Vue
-export default Vue.extend({
-  components: {
-    DefaultWidget: coreApis.ui.DefaultWidget,
-  },
-  methods: {
-    async createDownloadPanel() {
-      if (!panel) {
-        const holder = document.createElement('div')
-        document.body.appendChild(holder)
-        const DownloadVideoPanel = await import('./DownloadVideo.vue').then(m => m.default)
-        panel = new DownloadVideoPanel({
-          propsData: {
-            triggerElement: this.$refs.button,
-          },
-        }).$mount(holder)
-      }
-    },
-    async toggleDownloadPanel() {
-      if (!panel) {
-        return
-      }
-      panel.open = !panel.open
-    },
-  },
-})
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+import { mountVueComponent } from '@/core/utils'
+import { DefaultWidget } from '@/ui'
+
+import type DownloadVideo from './DownloadVideo.vue'
+
+const button = useTemplateRef('button')
+
+let panel: InstanceType<typeof DownloadVideo> | undefined
+const createDownloadPanel = async () => {
+  if (!panel) {
+    const [el, vm] = mountVueComponent(await import('./DownloadVideo.vue'), {
+      triggerElement: button.value,
+    })
+    panel = vm
+    document.body.appendChild(el)
+  }
+}
+const toggleDownloadPanel = () => {
+  if (!panel) {
+    return
+  }
+  panel.open = !panel.open
+}
 </script>

@@ -13,40 +13,31 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 import { TextArea } from '@/ui'
 
-export default Vue.extend({
-  components: {
-    TextArea,
-  },
-  data() {
-    return {
-      inputText: '',
-    }
-  },
-  computed: {
-    ids() {
-      const input: string = this.inputText
-      const maxDownloadCount = 36
-      const idRegex = /(BV.+)|av(\d+)/i
-      return input
-        .split(/\n| /)
-        .map(it => {
-          const trimmed = it.trim()
-          if (/^\d+$/.test(trimmed)) {
-            return `av${trimmed}`
-          }
-          return trimmed
-        })
-        .filter(it => idRegex.test(it))
-        .map(it => {
-          const match = it.match(idRegex)
-          return match[1] ?? match[2]
-        })
-        .slice(0, maxDownloadCount)
-    },
-  },
+const inputText = ref('')
+
+const ids = computed(() => {
+  const input: string = inputText.value
+  const maxDownloadCount = 36
+  const idRegex = /(BV.+)|av(\d+)/i
+  return input
+    .split(/\n| /)
+    .map(it => {
+      const trimmed = it.trim()
+      if (/^\d+$/.test(trimmed)) {
+        return `av${trimmed}`
+      }
+      return trimmed
+    })
+    .filter(it => idRegex.test(it))
+    .map(it => {
+      const match = it.match(idRegex)
+      return match[1] ?? match[2]
+    })
+    .slice(0, maxDownloadCount)
 })
 </script>
 <style lang="scss">

@@ -24,45 +24,45 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script
+  lang="ts"
+  setup
+  generic="ItemType extends {
+    displayName: string
+    name: string
+  }"
+>
+import { ref, onMounted, useTemplateRef } from 'vue'
 import { Toast } from '@/core/toast'
 import { VIcon } from '@/ui'
 import VButton from '@/ui/VButton.vue'
+import { ManageItem } from './manage-panel'
 
-export default Vue.extend({
-  components: {
-    VIcon,
-    VButton,
-  },
-  props: {
-    config: {
-      type: Object,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      removeConfirm: false,
-      settings: {},
-    }
-  },
-  mounted() {
-    if (this.config.getSettings) {
-      this.settings = this.config.getSettings(this.config.item)
-    }
-    if (this.config.isUserItem) {
-      Toast.mini(this.$refs.removeConfirmTemplate, this.$refs.removeIcon, {
-        trigger: 'click',
-        hideOnClick: true,
-      })
-    }
-  },
-  methods: {
-    async removeItem() {
-      await this.config.onItemRemove(this.config.item)
-      this.removeConfirm = false
-    },
-  },
+const { config } = defineProps<{
+  config: ManageItem<ItemType>
+}>()
+
+const removeIcon = useTemplateRef('removeIcon')
+const removeConfirmTemplate = useTemplateRef('removeConfirmTemplate')
+
+const removeConfirm = ref(false)
+const settings = ref({})
+
+const removeItem = async () => {
+  await config.onItemRemove(config.item)
+  removeConfirm.value = false
+}
+
+onMounted(() => {
+  if (config.getSettings) {
+    settings.value = config.getSettings(config.item)
+  }
+  if (config.isUserItem) {
+    Toast.mini(removeConfirmTemplate.value, removeIcon.value, {
+      trigger: 'click',
+      hideOnClick: true,
+    })
+  }
 })
 </script>
 <style lang="scss">

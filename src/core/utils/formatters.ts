@@ -146,4 +146,4 @@ export const formatDateTime = (date: Date) => `${formatDate(date)} ${formatTime(
  * @param replacement 填充字符, 被过滤掉的字符将用此填充字符替代, 默认为空
  */
 export const formatFilename = (filename: string, replacement = '') =>
-  filename.replace(/[\/\\:\*\?"<>\|]/g, replacement)
+  filename.replace(/[/\\:*?"<>|]/g, replacement)

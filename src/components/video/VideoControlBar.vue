@@ -19,18 +19,14 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue'
 import { VIcon } from '@/ui'
+import { VideoControlBarItem } from './common'
 
-export default Vue.extend({
-  components: {
-    VIcon,
-  },
-  data() {
-    return {
-      items: [],
-    }
-  },
+const items = ref<VideoControlBarItem[]>([])
+defineExpose({
+  items,
 })
 </script>
 <style lang="scss">

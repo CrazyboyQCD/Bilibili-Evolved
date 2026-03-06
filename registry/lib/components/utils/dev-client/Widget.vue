@@ -21,43 +21,45 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
 import { AsyncButton, VIcon } from '@/ui'
 import type { DevClient } from './client'
 import { DevClientEvents } from './client'
 
-export default Vue.extend({
-  components: {
-    AsyncButton,
-    VIcon,
-  },
-  data() {
-    return {
-      client: null,
-      isConnected: false,
-    }
-  },
-  async created() {
-    const { devClient } = await import('./client')
-    this.client = devClient
-    this.updateConnectionStatus()
-    devClient.addEventListener(DevClientEvents.ServerChange, this.updateConnectionStatus)
-  },
-  beforeDestroy() {
-    const devClient = this.client as DevClient
-    devClient.removeEventListener(DevClientEvents.ServerChange, this.updateConnectionStatus)
-  },
-  methods: {
-    async connect() {
-      return this.client.createSocket(true)
-    },
-    disconnect() {
-      this.client.closeSocket()
-    },
-    updateConnectionStatus() {
-      this.isConnected = this.client.isConnected
-    },
-  },
+const client = ref<DevClient | null>(null)
+const isConnected = ref(false)
+
+const updateConnectionStatus = () => {
+  if (client.value) {
+    isConnected.value = client.value.isConnected
+  }
+}
+
+const connect = () => {
+  if (client.value) {
+    return client.value.createSocket(true)
+  }
+  return Promise.resolve()
+}
+
+const disconnect = () => {
+  if (client.value) {
+    client.value.closeSocket()
+  }
+}
+
+onMounted(async () => {
+  const { devClient } = await import('./client')
+  client.value = devClient
+  updateConnectionStatus()
+  devClient.addEventListener(DevClientEvents.ServerChange, updateConnectionStatus)
+})
+
+onUnmounted(() => {
+  if (client.value) {
+    client.value.removeEventListener(DevClientEvents.ServerChange, updateConnectionStatus)
+  }
 })
 </script>
 <style lang="scss" scoped>

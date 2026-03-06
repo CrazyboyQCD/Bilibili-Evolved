@@ -1,5 +1,6 @@
 import commonMeta from '@/client/common.meta.json'
 import { cdnRoots } from './cdn-types'
+import { compilationInfo } from './compilationInfo'
 
 commonMeta.copyright = commonMeta.copyright.replace(
   /\[year\]/g,
@@ -11,7 +12,6 @@ export const branches = {
   stableCdn: 'master-cdn',
   preview: 'preview',
 }
-const compilationInfo = webpackCompilationInfo
 /**
  * 脚本元数据
  */

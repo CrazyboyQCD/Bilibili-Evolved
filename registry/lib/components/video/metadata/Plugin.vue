@@ -10,35 +10,29 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { computed, ref, useAttrs, watch } from 'vue'
 import { VDropdown } from '@/ui'
 import { getComponentSettings } from '@/core/settings'
 import { MetadataType } from './types'
+import { DownloadVideoOptions } from '../download'
 
-interface Options {
-  metadataType: MetadataType | '无'
-}
-const options = getComponentSettings('downloadVideo').options as Options
+const { options } = getComponentSettings<
+  DownloadVideoOptions & {
+    metadataType: MetadataType | '无'
+  }
+>('downloadVideo')
 
-export default Vue.extend({
-  components: {
-    VDropdown,
-  },
-  data() {
-    return {
-      type: options.metadataType ?? '无',
-      items: ['无', 'ffmetadata', 'ogm'],
-    }
-  },
-  computed: {
-    enabled() {
-      return this.type !== '无'
-    },
-  },
-  watch: {
-    type(value: MetadataType) {
-      options.metadataType = value
-    },
-  },
+const type = ref(options.metadataType ?? '无')
+const items = ['无', 'ffmetadata', 'ogm']
+const enabled = computed(() => type.value !== '无')
+watch(type, value => {
+  options.metadataType = value
+})
+const attrs = useAttrs() as { name: string }
+defineExpose({
+  type,
+  enabled,
+  attrs,
 })
 </script>

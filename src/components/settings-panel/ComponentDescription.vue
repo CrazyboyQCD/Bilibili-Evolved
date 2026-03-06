@@ -2,27 +2,25 @@
   <div class="component-description" v-html="html"></div>
 </template>
 
-<script lang="ts">
-import { getComponentSettings } from '@/core/settings'
-import { getDescriptionHTML } from '../description'
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { getDescriptionHTML, ItemWithDescription } from '../description'
 
-export default Vue.extend({
-  props: {
-    componentData: {
-      type: Object,
-      required: true,
-    },
+const { componentData } = defineProps<{
+  componentData: ItemWithDescription
+}>()
+
+const html = ref('')
+
+watch(
+  () => componentData.description,
+  async () => {
+    html.value = await getDescriptionHTML(componentData)
   },
-  data() {
-    return {
-      settings: getComponentSettings(this.componentData),
-      html: '',
-    }
+  {
+    immediate: true,
   },
-  async created() {
-    this.html = await getDescriptionHTML(this.componentData)
-  },
-})
+)
 </script>
 
 <style lang="scss">

@@ -53,6 +53,11 @@ module.exports = {
     'vue/require-prop-types': 'off',
     'vue/one-component-per-file': 'off',
     'vue/singleline-html-element-content-newline': 'off',
+    // vue 3 要求在template中使用v-for时必须使用key
+    'vue/no-v-for-template-key': 'off',
+    'vue/no-v-for-template-key-on-child': 'error',
+    // vue 3.5+ props解构后会保留响应性 https://blog.vuejs.org/posts/vue-3-5#reactive-props-destructure
+    'vue/no-setup-props-destructure': 'off',
 
     // 使用 @typescript-eslint/no-unused-vars, 否则 interface 都是 unused
     'no-unused-vars': 'off',

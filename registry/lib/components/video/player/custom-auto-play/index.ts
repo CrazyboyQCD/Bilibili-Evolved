@@ -1,12 +1,11 @@
 import { defineComponentMetadata } from '@/components/define'
 import { ComponentEntry } from '@/components/types'
 import { bangumiUrls, videoUrls } from '@/core/utils/urls'
-import { useScopedConsole } from '@/core/utils/log'
 import { select } from '@/core/spin-query'
 import { playerReady } from '@/core/utils'
 import { addComponentListener } from '@/core/settings'
 import { childListSubtree } from '@/core/observer'
-import { BaseAutoplayHandler } from './handlers/BaseAutoplayHandler'
+import { BaseAutoplayHandler, logger } from './handlers/BaseAutoplayHandler'
 import { AutoplayActionType } from './AutoplayActionType'
 import { BangumiAutoplayHandler } from './handlers/BangumiAutoplayHandler'
 import { FavoriteAutoplayHandler } from './handlers/FavoriteAutoplayHandler'
@@ -15,8 +14,6 @@ import { RecommendAutoplayHandler } from './handlers/RecommendAutoplayHandler'
 import { WatchLaterAutoplayHandler } from './handlers/WatchLaterAutoplayHandler'
 import { MultipartAutoplayHandler } from './handlers/MultipartAutoplayHandler'
 import { RecommendListAutoplayHandler } from './handlers/RecommendListAutoplayHandler'
-
-export const logger = useScopedConsole('定制自动连播行为')
 
 const entry: ComponentEntry = async ({ metadata, settings }) => {
   /** 每次视频切换时的初始化逻辑 */

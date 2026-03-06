@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from 'vue'
 import { getJson, monkey, postJson } from '@/core/ajax'
 import { Toast } from '@/core/toast'
 import { UserAgent } from '@/core/utils/constants'
@@ -205,5 +206,5 @@ export const aria2Rpc: DownloadVideoOutput = {
       )
     }
   },
-  component: () => import('./RpcConfig.vue').then(m => m.default),
+  component: defineAsyncComponent(() => import('./RpcConfig.vue')),
 }

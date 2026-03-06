@@ -45,70 +45,62 @@
     </div>
   </VPopup>
 </template>
-<script lang="ts">
-import { VPopup, TextBox, VIcon, VButton } from '@/ui'
+<script setup lang="ts">
+import { ref, watch, onMounted, useTemplateRef } from 'vue'
+import { VPopup, TextBox, VIcon, VButton, VLoading } from '@/ui'
 
-export default Vue.extend({
-  components: {
-    VPopup,
-    TextBox,
-    VIcon,
-    VButton,
-  },
-  props: {
-    triggerElement: {
-      type: HTMLElement,
-      default: null,
-    },
-    list: {
-      type: Array,
-      default: null,
-    },
-    save: {
-      type: Function,
-      default: undefined,
-    },
-    titleName: {
-      type: String,
-      default: '',
-    },
-  },
-  data() {
-    return {
-      open: false,
-      loaded: false,
-      name: '',
+const popup = useTemplateRef('popup')
+
+const triggerElement = ref<HTMLElement | null>(null)
+const list = ref<string[] | null>(null)
+const save = ref<((items: string[]) => void) | null>(null)
+const titleName = ref('')
+const open = ref(false)
+const loaded = ref(false)
+const name = ref('')
+
+watch(open, (newVal: boolean) => {
+  if (!newVal && save.value && list.value) {
+    save.value(list.value)
+  }
+})
+
+onMounted(() => {
+  loaded.value = true
+})
+
+const toggle = () => {
+  popup.value.toggle()
+}
+
+const changeName = (val: string) => {
+  name.value = val
+}
+
+const add = () => {
+  if (list.value) {
+    list.value.push(name.value)
+    list.value = lodash.uniq(list.value)
+    name.value = ''
+  }
+}
+
+const toggleVisible = (item: string) => {
+  if (list.value) {
+    const index = list.value.indexOf(item)
+    if (index > -1) {
+      list.value.splice(index, 1)
     }
-  },
-  watch: {
-    open(newVal: boolean) {
-      if (!newVal) {
-        this.save(this.list)
-      }
-    },
-  },
-  async mounted() {
-    this.loaded = true
-  },
-  methods: {
-    toggle() {
-      this.$refs.popup.toggle()
-    },
-    changeName(val: string) {
-      this.name = val
-    },
-    add() {
-      // eslint-disable-next-line vue/no-mutating-props
-      this.list.push(this.name)
-      // eslint-disable-next-line vue/no-mutating-props
-      this.list = lodash.uniq(this.list)
-      this.name = ''
-    },
-    toggleVisible(item: any) {
-      // eslint-disable-next-line vue/no-mutating-props
-      this.list.splice(this.list.indexOf(item), 1)
-    },
-  },
+  }
+}
+
+defineExpose({
+  triggerElement,
+  list,
+  save,
+  titleName,
+  open,
+  toggle,
 })
 </script>
 <style lang="scss">

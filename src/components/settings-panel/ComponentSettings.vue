@@ -1,5 +1,5 @@
 <template>
-  <div class="component-settings" :class="{ virtual }">
+  <div ref="rootRef" class="component-settings" :class="{ virtual }">
     <template v-if="!virtual">
       <div class="component-settings-row">
         <TagRing :tags="componentData.tags" />
@@ -13,67 +13,58 @@
   </div>
 </template>
 
-<script lang="ts">
-import marked from 'marked'
+<script setup lang="ts">
+import { ref, onMounted, useTemplateRef } from 'vue'
+// import marked from 'marked'
 import { getComponentSettings } from '@/core/settings'
 import SwitchBox from '@/ui/SwitchBox.vue'
 import VIcon from '@/ui/icon/VIcon.vue'
 import { visibleInside } from '@/core/observer'
 import { dq } from '@/core/utils'
 import TagRing from './TagRing.vue'
-import { getSelectedLanguage } from '../i18n/helpers'
+// import { getSelectedLanguage } from '../i18n/helpers'
 import { ComponentMetadata } from '../component'
 
-export default Vue.extend({
-  components: {
-    SwitchBox,
-    TagRing,
-    VIcon,
-  },
-  props: {
-    componentData: {
-      type: Object,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      settings: getComponentSettings(this.componentData),
-      virtual: false,
-    }
-  },
-  async mounted() {
-    const element = this.$el as HTMLElement
-    const container = dq('.settings-panel-content .main') as HTMLElement
-    if (!container) {
-      console.log('settings container not found, virtual scroll will be disabled!')
-      return
-    }
-    visibleInside(element, container, '150% 0px', records => {
-      records.forEach(record => {
-        this.virtual = !record.isIntersecting
-      })
+const { componentData } = defineProps<{
+  componentData: ComponentMetadata
+}>()
+
+const rootRef = useTemplateRef('rootRef')
+
+const settings = ref(getComponentSettings(componentData))
+const virtual = ref(false)
+
+// const markdown = (input: string) => {
+//   return marked(input)
+// }
+
+// const descriptionI18n = (component: ComponentMetadata) => {
+//   const { description, options } = component
+//   if (!description) {
+//     if (options && Object.keys(options).length > 0) {
+//       const count = Object.keys(options).length
+//       return `${count}个选项`
+//     }
+//     return '暂无说明'
+//   }
+//   if (typeof description === 'string') {
+//     return description
+//   }
+//   return description[getSelectedLanguage()] || description['zh-CN']
+// }
+
+onMounted(() => {
+  const element = rootRef.value as HTMLElement
+  const container = dq('.settings-panel-content .main') as HTMLElement
+  if (!container) {
+    console.log('settings container not found, virtual scroll will be disabled!')
+    return
+  }
+  visibleInside(element, container, '150% 0px', records => {
+    records.forEach(record => {
+      virtual.value = !record.isIntersecting
     })
-  },
-  methods: {
-    markdown(input: string) {
-      return marked(input)
-    },
-    descriptionI18n(component: ComponentMetadata) {
-      const { description, options } = component
-      if (!description) {
-        if (options && Object.keys(options).length > 0) {
-          const count = Object.keys(options).length
-          return `${count}个选项`
-        }
-        return '暂无说明'
-      }
-      if (typeof description === 'string') {
-        return description
-      }
-      return description[getSelectedLanguage()] || description['zh-CN']
-    },
-  },
+  })
 })
 </script>
 

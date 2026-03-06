@@ -15,8 +15,8 @@
   </ExtraOptionsPanel>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { ref, watch, onMounted, useTemplateRef } from 'vue'
 import { TextArea } from '@/ui'
 import SwitchOptionsMin from './SwitchOptionsMin.vue'
 import { SwitchMetadataOption } from '@/components/switch-options'
@@ -27,6 +27,7 @@ import { delay } from '@/core/utils'
 import { useScopedConsole } from '@/core/utils/log'
 import { fontFamilyDefaultValue, coverOptionsName, coverOptionsDefaultValue } from '../data'
 import { ExtraOptionsPanelInitData } from './extra-options-panel'
+import { CustomFontFamilyOptions } from '..'
 
 const initData: ExtraOptionsPanelInitData = {
   header: {
@@ -89,91 +90,85 @@ for (const coverOptionName of coverOptionsName) {
 
 const console = useScopedConsole('自定义字体')
 
-export default defineComponent({
-  components: {
-    ExtraOptionsPanel,
-    TextArea,
-    SwitchOptionsMin,
-  },
+const extraOptionsPanel = useTemplateRef('extraOptionsPanel')
 
-  data() {
-    return {
-      isPeeking: false,
-      isMouseOverPeekIcon: false,
-      initData,
-      // 设置 inputFontFamily 初始值为组件 fontFamily 选项的值
-      inputFontFamily: getComponentSettings('customFontFamily').options.fontFamily,
-      switchOptionsComponentOptions,
-    }
-  },
+const isPeeking = ref(false)
+const isMouseOverPeekIcon = ref(false)
+// 设置 inputFontFamily 初始值为组件 fontFamily 选项的值
+const inputFontFamily = ref(
+  getComponentSettings<CustomFontFamilyOptions>('customFontFamily').options.fontFamily,
+)
 
-  watch: {
-    // 监听 inputFontFamily 修改动作，实时修改组件 fontFamily 选项为 inputFontFamily 修改后的新值，并拥有 1000ms 防抖
-    inputFontFamily: lodash.debounce(value => {
-      getComponentSettings('customFontFamily').options.fontFamily = value
-    }, 1000),
+// 监听 inputFontFamily 修改动作，实时修改组件 fontFamily 选项为 inputFontFamily 修改后的新值，并拥有 1000ms 防抖
+const debouncedFontFamilyUpdate = lodash.debounce((value: string) => {
+  getComponentSettings<CustomFontFamilyOptions>('customFontFamily').options.fontFamily = value
+}, 1000)
 
-    async isMouseOverPeekIcon(value: boolean) {
-      if (!value) {
-        this.isPeeking = false
-        return
-      }
-      if (value) {
-        await delay(200)
-      }
-      if (this.isMouseOverPeekIcon) {
-        this.isPeeking = true
-      }
-    },
-  },
+watch(inputFontFamily, debouncedFontFamilyUpdate)
 
-  mounted() {
-    // 当在 v-for 中使用模板引用时，相应的引用中包含的值是一个数组
-    // 但 ref 数组并不保证与源数组相同的顺序，所以统一命名且不加用以区分的后缀，仅靠数组选择元素是不现实的
-    // https://cn.vuejs.org/guide/essentials/template-refs.html#refs-inside-v-for
+watch(isMouseOverPeekIcon, async (value: boolean) => {
+  if (!value) {
+    isPeeking.value = false
+    return
+  }
+  if (value) {
+    await delay(200)
+  }
+  if (isMouseOverPeekIcon.value) {
+    isPeeking.value = true
+  }
+})
 
-    const action0Reset = this.$refs.extraOptionsPanel.$refs.action0[0].$el as HTMLElement
-    action0Reset.addEventListener('click', this.confirmResetOptions)
+const toggleDisplay = () => {
+  extraOptionsPanel.value.popupOpen = !extraOptionsPanel.value.popupOpen
+}
 
-    const action1Peek = this.$refs.extraOptionsPanel.$refs.action1[0].$el as HTMLElement
-    action1Peek.addEventListener('mouseover', this.setIsMouseOverPeekIconToTrue)
-    action1Peek.addEventListener('mouseout', this.setIsMouseOverPeekIconToFalse)
-  },
+const setIsMouseOverPeekIconToTrue = () => {
+  isMouseOverPeekIcon.value = true
+}
 
-  methods: {
-    toggleDisplay() {
-      this.$refs.extraOptionsPanel.popupOpen = !this.$refs.extraOptionsPanel.popupOpen
-    },
+const setIsMouseOverPeekIconToFalse = () => {
+  isMouseOverPeekIcon.value = false
+}
 
-    setIsMouseOverPeekIconToTrue() {
-      this.isMouseOverPeekIcon = true
-    },
+const resetOptions = () => {
+  // 重置字体选项
+  getComponentSettings<CustomFontFamilyOptions>('customFontFamily').options.fontFamily =
+    fontFamilyDefaultValue
+  inputFontFamily.value = fontFamilyDefaultValue
 
-    setIsMouseOverPeekIconToFalse() {
-      this.isMouseOverPeekIcon = false
-    },
+  // 重置覆盖选项
+  for (const coverOptionName of coverOptionsName) {
+    const defaultValue = coverOptionsDefaultValue[coverOptionName.camel]
+    getComponentSettings<CustomFontFamilyOptions>('customFontFamily').options[
+      coverOptionName.camel
+    ] = defaultValue
+  }
 
-    confirmResetOptions() {
-      if (confirm('确定将面板中的所有选项重置为默认值吗？')) {
-        this.resetOptions()
-      }
-    },
+  Toast.success('更多选项面板中的所有选项已成功被重置为默认值', '自定义字体', 2000)
+  console.log('更多选项面板中的所有选项已成功被重置为默认值')
+}
 
-    resetOptions() {
-      // 重置字体选项
-      getComponentSettings('customFontFamily').options.fontFamily = fontFamilyDefaultValue
-      this.inputFontFamily = fontFamilyDefaultValue
+const confirmResetOptions = () => {
+  if (confirm('确定将面板中的所有选项重置为默认值吗？')) {
+    resetOptions()
+  }
+}
 
-      // 重置覆盖选项
-      for (const coverOptionName of coverOptionsName) {
-        const defaultValue = coverOptionsDefaultValue[coverOptionName.camel]
-        getComponentSettings('customFontFamily').options[coverOptionName.camel] = defaultValue
-      }
+onMounted(() => {
+  // 当在 v-for 中使用模板引用时，相应的引用中包含的值是一个数组
+  // 但 ref 数组并不保证与源数组相同的顺序，所以统一命名且不加用以区分的后缀，仅靠数组选择元素是不现实的
+  // https://cn.vuejs.org/guide/essentials/template-refs.html#refs-inside-v-for
 
-      Toast.success('更多选项面板中的所有选项已成功被重置为默认值', '自定义字体', 2000)
-      console.log('更多选项面板中的所有选项已成功被重置为默认值')
-    },
-  },
+  const action0Reset = extraOptionsPanel.value.action0.root
+  action0Reset.addEventListener('click', confirmResetOptions)
+
+  const action1Peek = extraOptionsPanel.value.action1.root
+  action1Peek.addEventListener('mouseover', setIsMouseOverPeekIconToTrue)
+  action1Peek.addEventListener('mouseout', setIsMouseOverPeekIconToFalse)
+})
+defineExpose({
+  toggleDisplay,
 })
 </script>
 

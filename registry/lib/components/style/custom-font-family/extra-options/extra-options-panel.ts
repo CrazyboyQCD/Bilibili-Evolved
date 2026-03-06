@@ -1,3 +1,14 @@
+export interface ExtraOptionsPanelAcction {
+  /** 动作序号，从 0 开始增长，重复将会导致渲染异常 */
+  id: number
+  /** 动作标题 */
+  title: string
+  /** 动作图标 */
+  icon: string
+  /** 动作类名的后缀，前缀是 action- */
+  actionClassNameSuffix: string
+}
+
 export interface ExtraOptionsPanelInitData {
   header: {
     title: {
@@ -6,16 +17,7 @@ export interface ExtraOptionsPanelInitData {
       /** 标题图标 */
       icon: string
     }
-    actions: {
-      /** 动作序号，从 0 开始增长，重复将会导致渲染异常 */
-      id: number
-      /** 动作标题 */
-      title: string
-      /** 动作图标 */
-      icon: string
-      /** 动作类名的后缀，前缀是 action- */
-      actionClassNameSuffix: string
-    }[]
+    actions: [ExtraOptionsPanelAcction, ExtraOptionsPanelAcction]
   }
   content: {
     options: {

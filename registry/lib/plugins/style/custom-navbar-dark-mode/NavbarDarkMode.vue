@@ -30,20 +30,16 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { getComponentSettings, addComponentListener } from '@/core/settings'
 
-export default Vue.extend({
-  data() {
-    return {
-      dark: getComponentSettings('darkMode').enabled,
-    }
-  },
-  created() {
-    addComponentListener('darkMode', (value: boolean) => {
-      this.dark = value
-    })
-  },
+const dark = ref(getComponentSettings('darkMode').enabled)
+
+onMounted(() => {
+  addComponentListener('darkMode', (value: boolean) => {
+    dark.value = value
+  })
 })
 </script>
 <style lang="scss">

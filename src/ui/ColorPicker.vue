@@ -1,5 +1,5 @@
 <template>
-  <div class="be-color-picker">
+  <div ref="root" class="be-color-picker">
     <div
       ref="button"
       v-hit="() => (popupOpened = !popupOpened)"
@@ -15,7 +15,7 @@
       class="picker"
       :class="{ compact }"
       :style="{ '--offset': popupOffset + 'px' }"
-      :trigger-element="$refs.button"
+      :trigger-element="button"
     >
       <div class="item-group">
         <div class="item-title">预设颜色</div>
@@ -210,104 +210,93 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch, useTemplateRef, defineAsyncComponent } from 'vue'
 import Color from 'color'
 import palette from '@/core/theme-color/palette.json'
 import { createColorWrapper } from './color-picker-wrapper'
+import { vHit } from '@/core/utils'
 
-export default Vue.extend({
-  name: 'ColorPicker',
-  components: {
-    TextBox: () => import('./TextBox.vue').then(m => m.default),
-    VSlider: () => import('./VSlider.vue').then(m => m.default),
-    VButton: () => import('./VButton.vue').then(m => m.default),
-    VPopup: () => import('./VPopup.vue').then(m => m.default),
-  },
-  model: {
-    prop: 'color',
-    event: 'change',
-  },
-  props: {
-    color: {
-      type: String,
-      default: '#000000',
-      required: true,
-    },
-    size: {
-      type: Number,
-      default: 24,
-      required: false,
-    },
-    compact: {
-      type: Boolean,
-      default: false,
-    },
-    popupOffset: {
-      type: Number,
-      default: 0,
-    },
-  },
-  data() {
-    return {
-      popupOpened: false,
-      wrapper: createColorWrapper(this.color),
-      colors: palette,
-      isRGB: false,
-    }
-  },
-  watch: {
-    popupOpened(value: boolean) {
-      if (value) {
-        document.body.addEventListener('mousedown', e => {
-          if (!this.$el.contains(e.target) && this.$el !== e.target) {
-            document.body.addEventListener(
-              'mouseup',
-              () => {
-                // this.reset()
-                this.popupOpened = false
-              },
-              { once: true },
-            )
-          }
-        })
-        document.body.addEventListener('touchstart', e => {
-          if (e.touches.length === 1 && !this.$el.contains(e.target) && this.$el !== e.target) {
-            document.body.addEventListener(
-              'touchend',
-              () => {
-                // this.reset()
-                this.popupOpened = false
-              },
-              { once: true },
-            )
-          }
-        })
+const TextBox = defineAsyncComponent(() => import('./TextBox.vue'))
+const VSlider = defineAsyncComponent(() => import('./VSlider.vue'))
+const VButton = defineAsyncComponent(() => import('./VButton.vue'))
+const VPopup = defineAsyncComponent(() => import('./VPopup.vue'))
+
+const {
+  color = '#000000',
+  size = 24,
+  compact = false,
+  popupOffset = 0,
+} = defineProps<{
+  color?: string
+  size?: number
+  compact?: boolean
+  popupOffset?: number
+}>()
+
+const emit = defineEmits<{
+  change: [color: string]
+}>()
+
+const button = useTemplateRef('button')
+const root = useTemplateRef('root')
+
+const popupOpened = ref(false)
+const wrapper = ref(createColorWrapper(color))
+const colors = palette
+const isRGB = ref(false)
+
+watch(popupOpened, value => {
+  if (value) {
+    document.body.addEventListener('mousedown', e => {
+      if (!root.value.contains(e.target as Node) && root.value !== e.target) {
+        document.body.addEventListener(
+          'mouseup',
+          () => {
+            // reset()
+            popupOpened.value = false
+          },
+          { once: true },
+        )
       }
-    },
-  },
-  methods: {
-    ok() {
-      this.$emit('change', this.wrapper.hex)
-    },
-    reset() {
-      this.wrapper.color = new Color(this.color)
-    },
-    selectHexColor(hex: string) {
-      try {
-        const newColor = new Color(hex, 'hex')
-        this.wrapper.color = newColor
-      } catch (error) {
-        // Do nothing
+    })
+    document.body.addEventListener('touchstart', e => {
+      if (
+        e.touches.length === 1 &&
+        !root.value.contains(e.target as Node) &&
+        root.value !== e.target
+      ) {
+        document.body.addEventListener(
+          'touchend',
+          () => {
+            // reset()
+            popupOpened.value = false
+          },
+          { once: true },
+        )
       }
-    },
-    fixed(num: number) {
-      return (Math.round(num * 10) / 10).toString()
-    },
-    int(num: number) {
-      return Math.round(num).toString()
-    },
-  },
+    })
+  }
 })
+
+const ok = () => emit('change', wrapper.value.hex)
+
+const reset = () => {
+  wrapper.value.color = new Color(color)
+}
+
+const selectHexColor = (hex: string) => {
+  try {
+    const newColor = new Color(hex, 'hex')
+    wrapper.value.color = newColor
+  } catch {
+    // Do nothing
+  }
+}
+
+const fixed = (num: number) => (Math.round(num * 10) / 10).toString()
+
+const int = (num: number) => Math.round(num).toString()
 </script>
 
 <style lang="scss" scoped>

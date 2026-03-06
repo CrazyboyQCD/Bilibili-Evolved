@@ -44,59 +44,51 @@
     </div>
   </VPopup>
 </template>
-<script lang="ts">
-import { VPopup, TextBox, VIcon, VButton } from '@/ui'
+<script setup lang="ts">
+import { ref, onMounted, useTemplateRef } from 'vue'
+import { VPopup, TextBox, VIcon, VButton, VLoading } from '@/ui'
 
-export default Vue.extend({
-  components: {
-    VPopup,
-    TextBox,
-    VIcon,
-    VButton,
-  },
-  props: {
-    triggerElement: {
-      type: HTMLElement,
-      default: null,
-    },
-    list: {
-      type: Array,
-      default: null,
-    },
-    titleName: {
-      type: String,
-      default: '',
-    },
-  },
-  data() {
-    return {
-      isOpen: false,
-      isLoaded: false,
-      name: '',
-    }
-  },
-  async mounted() {
-    this.isLoaded = true
-  },
-  methods: {
-    toggle() {
-      this.$refs.popup.toggle()
-    },
-    changeName(val: string) {
-      this.name = val
-    },
-    add() {
-      if (this.name.length && !this.list.includes(this.name)) {
-        // eslint-disable-next-line vue/no-mutating-props
-        this.list.push(this.name)
-      }
-      this.name = ''
-    },
-    toggleVisible(item: string) {
-      // eslint-disable-next-line vue/no-mutating-props
-      this.list.splice(this.list.indexOf(item), 1)
-    },
-  },
+const popup = useTemplateRef('popup')
+
+const triggerElement = ref<HTMLElement | null>(null)
+const list = ref<string[]>([])
+const titleName = ref('')
+const isOpen = ref(false)
+const isLoaded = ref(false)
+const name = ref('')
+
+onMounted(() => {
+  isLoaded.value = true
+})
+
+const toggle = () => {
+  popup.value.toggle()
+}
+
+const changeName = (val: string) => {
+  name.value = val
+}
+
+const add = () => {
+  if (name.value.length && !list.value.includes(name.value)) {
+    list.value.push(name.value)
+  }
+  name.value = ''
+}
+
+const toggleVisible = (item: string) => {
+  const index = list.value.indexOf(item)
+  if (index > -1) {
+    list.value.splice(index, 1)
+  }
+}
+
+defineExpose({
+  triggerElement,
+  list,
+  titleName,
+  isOpen,
+  toggle,
 })
 </script>
 

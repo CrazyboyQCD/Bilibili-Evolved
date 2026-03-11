@@ -2,7 +2,7 @@
   <div class="wasm-output-config">
     <div class="download-video-config-item" style="flex-wrap: wrap">
       <div class="download-video-config-title">输出格式：</div>
-      <VDropdown v-model="outputType" :items="outputTypes" @change="saveOptions">
+      <VDropdown :value="outputType" :items="outputTypes" @change="outputType = $event">
         <template #item="{ item }">
           {{ item }}
         </template>
@@ -14,14 +14,14 @@
     </div>
     <div v-if="hasMetadata" class="download-video-config-item" style="flex-wrap: wrap">
       <div class="download-video-config-title">写入元数据：</div>
-      <SwitchBox v-model="muxWithMetadata" @change="saveOptions" />
+      <SwitchBox :checked="muxWithMetadata" @change="muxWithMetadata = $event" />
       <div class="download-video-config-description" style="width: 100%">
         支持元数据类型「ffmetadata」
       </div>
     </div>
     <div v-if="hasCover" class="download-video-config-item" style="flex-wrap: wrap">
       <div class="download-video-config-title">附加封面：</div>
-      <SwitchBox v-model="attachCover" @change="saveOptions" />
+      <SwitchBox :checked="attachCover" @change="attachCover = $event" />
       <div v-if="hasMetadata" class="download-video-config-description" style="width: 100%">
         附加封面至 MP4 格式会导致元数据自定义字段失效
       </div>
@@ -29,42 +29,36 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch } from 'vue'
 import { SwitchBox, VDropdown } from '@/ui'
-import { Options } from './types'
+import { Options, OutputType } from './types'
 import { isComponentEnabled, getComponentSettings } from '@/core/settings'
+import { DownloadVideoOptions } from '../../../../components/video/download'
 
 const defaultOptions: Options = {
   muxWithMetadata: false,
   attachCover: false,
   outputType: 'auto',
 }
-const { options: storedOptions } = getComponentSettings('downloadVideo')
-const options: Options = { ...defaultOptions, ...storedOptions }
-export default Vue.extend({
-  components: {
-    SwitchBox,
-    VDropdown,
+const { options: storedOptions } = getComponentSettings<DownloadVideoOptions>('downloadVideo')
+const options = { ...defaultOptions, ...storedOptions }
+
+const hasMetadata = isComponentEnabled('saveVideoMetadata')
+const hasCover = isComponentEnabled('viewCover')
+
+const muxWithMetadata = ref(hasMetadata && options.muxWithMetadata)
+const attachCover = ref(hasCover && options.attachCover)
+const outputType = ref<OutputType>(options.outputType)
+const outputTypes: OutputType[] = ['auto', 'mp4', 'matroska']
+
+watch(
+  [muxWithMetadata, attachCover, outputType],
+  ([_muxWithMetadata, _attachCover, _outputType]) => {
+    options.muxWithMetadata = _muxWithMetadata
+    options.attachCover = _attachCover
+    options.outputType = _outputType
+    Object.assign(storedOptions, options)
   },
-  data() {
-    const hasMetadata = isComponentEnabled('saveVideoMetadata')
-    const hasCover = isComponentEnabled('viewCover')
-    return {
-      hasMetadata,
-      hasCover,
-      muxWithMetadata: hasMetadata && options.muxWithMetadata,
-      attachCover: hasCover && options.attachCover,
-      outputType: options.outputType,
-      outputTypes: ['auto', 'mp4', 'matroska'],
-    }
-  },
-  methods: {
-    saveOptions() {
-      options.muxWithMetadata = this.muxWithMetadata
-      options.attachCover = this.attachCover
-      options.outputType = this.outputType
-      Object.assign(storedOptions, options)
-    },
-  },
-})
+)
 </script>

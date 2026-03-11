@@ -10,42 +10,30 @@
     {{ item.displayName }}
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue'
 import { VIcon } from '@/ui'
+import { ComponentConfigAction } from './types'
+import { ComponentMetadata } from '../../types'
 
-export default Vue.extend({
-  components: {
-    VIcon,
-  },
-  props: {
-    item: {
-      type: Object,
-      required: true,
-    },
-    component: {
-      type: Object,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      disabled: false,
-    }
-  },
-  methods: {
-    async handleClick() {
-      if (this.disabled) {
-        return
-      }
-      try {
-        this.disabled = true
-        await this.item.action(this.component)
-      } finally {
-        this.disabled = false
-      }
-    },
-  },
-})
+const { item, component } = defineProps<{
+  item: ComponentConfigAction
+  component: ComponentMetadata
+}>()
+
+const disabled = ref(false)
+
+const handleClick = async () => {
+  if (disabled.value) {
+    return
+  }
+  try {
+    disabled.value = true
+    await item.action(component)
+  } finally {
+    disabled.value = false
+  }
+}
 </script>
 <style lang="scss">
 @import 'common';

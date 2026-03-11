@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from 'vue'
 import { defineComponentMetadata } from '@/components/define'
 import { getUID } from '@/core/utils'
 import { liveUrls } from '@/core/utils/urls'
@@ -14,7 +15,7 @@ export const component = defineComponentMetadata({
   },
   tags: [componentsTags.live],
   widget: {
-    component: () => import('./BadgeKeepalive.vue').then(m => m.default),
+    component: defineAsyncComponent(() => import('./BadgeKeepalive.vue')),
     condition: () => Boolean(getUID()),
   },
   urlInclude: liveUrls,

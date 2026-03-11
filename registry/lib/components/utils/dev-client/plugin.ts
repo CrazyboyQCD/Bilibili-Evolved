@@ -1,5 +1,5 @@
 import { PluginSetupParameters } from '@/plugins/plugin'
-import { ComponentAction } from '@/components/settings-panel/component-actions/component-actions'
+import { ComponentAction } from '@/components/settings-panel/component-actions/types'
 import { isIframe } from '@/core/utils'
 import { LaunchBarAction, LaunchBarActionProvider } from '@/components/launch-bar/launch-bar-action'
 import { autoUpdateOptions } from './options'

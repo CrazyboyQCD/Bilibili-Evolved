@@ -17,11 +17,12 @@
         :class="{ 'pattern-disabled': !p.enabled }"
       >
         <TextBox
-          v-model="p.pattern"
+          :text="p.pattern"
           placeholder="支持正则表达式 /^xxx$/"
           type="text"
           @blur="savePatternConfig()"
           @keydown.enter="savePatternConfig()"
+          @change="p.pattern = $event"
         />
         <div class="pattern-actions">
           <VIcon
@@ -41,10 +42,11 @@
     </div>
     <div class="add-pattern">
       <TextBox
-        v-model="newPattern"
+        :text="newPattern"
         placeholder="支持正则表达式 /^xxx$/"
         type="text"
         @keydown.enter="addPattern(newPattern)"
+        @change="newPattern = $event"
       />
       <VButton type="transparent" @click.native="addPattern(newPattern)">
         <VIcon title="添加" icon="mdi-plus" :size="18" />

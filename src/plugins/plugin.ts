@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import { ComponentMetadata, FeatureBase } from '@/components/component'
 import { deleteValue } from '@/core/utils'
 import { CoreApis } from '@/core/core-apis'
@@ -34,19 +35,21 @@ export const pluginsMap: { [name: string]: PluginMetadata } = {}
 const getBuiltInPlugins = lodash.once(() => {
   const context = require.context('@/plugins', true, /index\.ts$/)
   const pluginPaths = context.keys()
-  return pluginPaths
-    .map(path => {
-      const m = context(path)
-      if ('plugin' in m) {
-        const plugin = m.plugin as PluginMetadata
-        pluginsMap[plugin.name] = plugin
-        return plugin
-      }
-      return undefined
-    })
-    .filter(it => it !== undefined) as PluginMetadata[]
+  return reactive(
+    pluginPaths
+      .map(path => {
+        const m = context(path)
+        if ('plugin' in m) {
+          const plugin = m.plugin as PluginMetadata
+          pluginsMap[plugin.name] = plugin
+          return plugin
+        }
+        return undefined
+      })
+      .filter(it => it !== undefined) as PluginMetadata[],
+  )
 })
-/** 包含所有插件的数组 */
+/** 包含所有插件的响应式数组 */
 export const plugins: PluginMetadata[] = getBuiltInPlugins()
 
 /**

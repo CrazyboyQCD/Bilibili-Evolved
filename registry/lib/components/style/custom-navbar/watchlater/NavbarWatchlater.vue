@@ -3,7 +3,7 @@
     <div class="header">
       <div class="watchlater-list-summary">共 {{ filteredCards.length }} 个</div>
       <div class="search">
-        <TextBox v-model="search" linear placeholder="搜索"></TextBox>
+        <TextBox :text="search" linear placeholder="搜索" @change="search = $event" />
       </div>
       <a
         class="operation"
@@ -11,27 +11,23 @@
         href="https://www.bilibili.com/medialist/play/watchlater"
       >
         <VButton class="round-button" title="播放全部" round>
-          <VIcon icon="mdi-play" :size="18"></VIcon>
+          <VIcon icon="mdi-play" :size="18" />
         </VButton>
       </a>
       <a class="operation" target="_blank" href="https://www.bilibili.com/watchlater/#/list">
         <VButton class="round-button" title="查看更多" round>
-          <VIcon icon="mdi-dots-horizontal" :size="18"></VIcon>
+          <VIcon icon="mdi-dots-horizontal" :size="18" />
         </VButton>
       </a>
     </div>
-    <VLoading v-if="loading"></VLoading>
-    <VEmpty v-else-if="!loading && cards.length === 0"></VEmpty>
+    <VLoading v-if="loading" />
+    <VEmpty v-else-if="!loading && cards.length === 0" />
     <transition-group v-else name="cards" tag="div" class="watchlater-list-content">
       <div v-for="(card, index) of filteredCards" :key="card.aid" class="watchlater-card">
         <a class="watchlater-cover-container" target="_blank" :href="card.href">
-          <DpiImage
-            class="cover"
-            :src="card.coverUrl"
-            :size="{ width: 130, height: 85 }"
-          ></DpiImage>
+          <DpiImage class="cover" :src="card.coverUrl" :size="{ width: 130, height: 85 }" />
           <div class="floating remove" title="移除" @click.prevent="remove(card.aid, index)">
-            <VIcon icon="mdi-close" :size="16"></VIcon>
+            <VIcon icon="mdi-close" :size="16" />
           </div>
           <div class="floating duration">{{ card.durationText }}</div>
           <div v-if="card.totalPages > 1" class="floating pages">
@@ -47,7 +43,7 @@
             :href="'https://space.bilibili.com/' + card.upID"
             :title="card.upName"
           >
-            <DpiImage class="face" :src="card.upFaceUrl" :size="20"></DpiImage>
+            <DpiImage class="face" :src="card.upFaceUrl" :size="20" />
             <div class="name">{{ card.upName }}</div>
           </a>
           <div v-if="card.complete" class="viewed">已观看</div>
@@ -56,17 +52,18 @@
     </transition-group>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch, useTemplateRef } from 'vue'
 import { getComponentSettings } from '@/core/settings'
 import { formatDuration } from '@/core/utils/formatters'
 import {
-  watchlaterList,
   getWatchlaterList,
   RawWatchlaterItem,
   toggleWatchlater,
 } from '@/components/video/watchlater'
 import { VLoading, VEmpty, TextBox, VButton, VIcon, DpiImage } from '@/ui'
-import { popperMixin } from '../mixins'
+import { usePopper, UsePopperProps } from '../mixins'
+import { WatchlaterRedirectOptionType } from '../../../utils/watchlater-redirect'
 
 interface WatchlaterCard {
   aid: number
@@ -83,104 +80,106 @@ interface WatchlaterCard {
   totalPages: number
   percent: number
 }
-export default Vue.extend({
-  components: {
-    VLoading,
-    VEmpty,
-    TextBox,
-    VButton,
-    VIcon,
-    DpiImage,
-  },
-  mixins: [popperMixin],
-  data() {
-    const redirect = getComponentSettings('watchlaterRedirect')
-    return {
-      watchlaterList,
-      loading: true,
-      cards: [],
-      filteredCards: [],
-      search: '',
-      redirect: redirect.enabled && redirect.options.navbar,
-    }
-  },
-  watch: {
-    search() {
-      this.updateFilteredCards()
-    },
-  },
-  async created() {
-    try {
-      await this.updateList()
-    } finally {
-      this.loading = false
-    }
-  },
-  methods: {
-    toggleWatchlater,
-    popupRefresh() {
-      this.updateList()
-    },
-    async updateList() {
-      const rawList = await getWatchlaterList(true)
-      if (!rawList) {
-        this.cards = []
-        return
-      }
-      const getLink = (item: RawWatchlaterItem) => {
-        if (this.redirect) {
-          return `https://www.bilibili.com/video/${item.bvid}/`
-        }
-        return `https://www.bilibili.com/list/watchlater?bvid=${item.bvid}`
-      }
-      const cards = rawList.map(item => {
-        const currentPage = item.pages?.find(p => p.cid === item.cid)
-        const duration = currentPage?.duration ?? item.duration
-        const href = (() => {
-          if (!currentPage || !this.redirect) {
-            return getLink(item)
-          }
-          const { page } = currentPage
-          return page <= 1 ? getLink(item) : `${getLink(item)}?p=${page}`
-        })()
-        const percent = Math.round((1000 * item.progress) / duration) / 1000
 
-        return {
-          aid: item.aid,
-          href,
-          coverUrl: item.pic.replace('http:', 'https:'),
-          durationText: formatDuration(duration),
-          duration,
-          complete: item.progress < 0 || percent > 0.95, // 进度过95%算看完, -1值表示100%
-          title: item.title,
-          upName: item.owner.name,
-          upFaceUrl: item.owner.face.replace('http:', 'https:'),
-          upID: item.owner.mid,
-          currentPage: currentPage?.page,
-          totalPages: item.videos,
-          percent,
-        } as WatchlaterCard
-      })
-      this.cards = cards
-      if (this.search) {
-        this.updateFilteredCards()
-      } else {
-        this.filteredCards = cards
+const popper = usePopper(defineProps<UsePopperProps>())
+
+const redirectSetting = getComponentSettings<WatchlaterRedirectOptionType>('watchlaterRedirect')
+const redirect = redirectSetting.enabled && redirectSetting.options.navbar
+
+const loading = ref(true)
+const cards = ref<WatchlaterCard[]>([])
+const filteredCards = ref<WatchlaterCard[]>([])
+const search = ref('')
+const root = useTemplateRef('root')
+
+const updateFilteredCards = lodash.debounce(() => {
+  const searchLower = search.value.toLowerCase()
+  const cardsList = root.value?.querySelector('.watchlater-list-content') as HTMLElement
+  if (cardsList) {
+    cardsList.scrollTo(0, 0)
+  }
+  filteredCards.value = cards.value.filter(
+    card =>
+      card.title.toLowerCase().includes(searchLower) ||
+      card.upName.toLowerCase().includes(searchLower),
+  )
+}, 100)
+
+const updateList = async () => {
+  const rawList = await getWatchlaterList(true)
+  if (!rawList) {
+    cards.value = []
+    return
+  }
+  const getLink = (item: RawWatchlaterItem) => {
+    if (redirect) {
+      return `https://www.bilibili.com/video/${item.bvid}/`
+    }
+    return `https://www.bilibili.com/list/watchlater?bvid=${item.bvid}`
+  }
+  const newCards = rawList.map(item => {
+    const currentPage = item.pages?.find(p => p.cid === item.cid)
+    const duration = currentPage?.duration ?? item.duration
+    const href = (() => {
+      if (!currentPage || !redirect) {
+        return getLink(item)
       }
-    },
-    async remove(aid: number, index: number) {
-      this.cards.splice(index, 1)
-      await this.toggleWatchlater(aid)
-    },
-    updateFilteredCards: lodash.debounce(function updateFilteredCards() {
-      const search = this.search.toLowerCase()
-      const cardsList = this.$el.querySelector('.watchlater-list-content') as HTMLElement
-      cardsList.scrollTo(0, 0)
-      this.filteredCards = (this.cards as WatchlaterCard[]).filter(
-        card =>
-          card.title.toLowerCase().includes(search) || card.upName.toLowerCase().includes(search),
-      )
-    }, 100),
+      const { page } = currentPage
+      return page <= 1 ? getLink(item) : `${getLink(item)}?p=${page}`
+    })()
+    const percent = Math.round((1000 * item.progress) / duration) / 1000
+
+    return {
+      aid: item.aid,
+      href,
+      coverUrl: item.pic.replace('http:', 'https:'),
+      durationText: formatDuration(duration),
+      duration,
+      complete: item.progress < 0 || percent > 0.95, // 进度过95%算看完, -1值表示100%
+      title: item.title,
+      upName: item.owner.name,
+      upFaceUrl: item.owner.face.replace('http:', 'https:'),
+      upID: item.owner.mid,
+      currentPage: currentPage?.page,
+      totalPages: item.videos,
+      percent,
+    } as WatchlaterCard
+  })
+  cards.value = newCards
+  if (search.value) {
+    updateFilteredCards()
+  } else {
+    filteredCards.value = newCards
+  }
+}
+
+watch(search, () => {
+  updateFilteredCards()
+})
+
+const popupRefresh = () => {
+  updateList()
+}
+
+const remove = async (aid: number, index: number) => {
+  cards.value.splice(index, 1)
+  await toggleWatchlater(aid)
+}
+
+const init = async () => {
+  try {
+    await updateList()
+  } finally {
+    loading.value = false
+  }
+}
+
+init()
+
+defineExpose({
+  popupRefresh,
+  popupShow() {
+    popper.popupShow()
   },
 })
 </script>

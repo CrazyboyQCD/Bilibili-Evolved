@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import { registerAndGetData } from '@/plugins/data'
 import { getComponentSettings } from '@/core/settings'
 import { CommentContentReplaceHandler } from './types'
@@ -25,7 +26,7 @@ const defaultHandler: CommentContentReplaceHandler = ({ content }) => {
   const { replaceMap } = options
   const [finalReplaceMap] = registerAndGetData(
     CommentContentReplaceDefaultHandlerReplaceMap,
-    replaceMap,
+    reactive(replaceMap),
   )
   const replaceNodes = (nodes: Node[]) => {
     nodes.forEach(node => {
@@ -46,4 +47,7 @@ const defaultHandler: CommentContentReplaceHandler = ({ content }) => {
 }
 
 export const CommentContentReplaceHandlers = 'commentContentReplace.handlers'
-export const handlers = registerAndGetData(CommentContentReplaceHandlers, [defaultHandler])
+export const handlers = registerAndGetData(
+  CommentContentReplaceHandlers,
+  reactive([defaultHandler]),
+)

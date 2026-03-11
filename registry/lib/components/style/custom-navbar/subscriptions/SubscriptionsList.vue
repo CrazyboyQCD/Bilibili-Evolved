@@ -1,7 +1,7 @@
 <template>
   <div class="subscription-list">
-    <VLoading v-if="loading"></VLoading>
-    <VEmpty v-else-if="!loading && cards.length === 0"></VEmpty>
+    <VLoading v-if="loading" />
+    <VEmpty v-else-if="!loading && cards.length === 0" />
     <template v-else>
       <div class="subscription-content">
         <a
@@ -12,7 +12,7 @@
           target="_blank"
         >
           <div class="subscriptions-cover-container">
-            <DpiImage class="cover" :src="card.coverUrl" :size="64"></DpiImage>
+            <DpiImage class="cover" :src="card.coverUrl" :size="64" />
           </div>
           <div class="card-info">
             <h1 class="title" :title="card.title">{{ card.title }}</h1>
@@ -27,20 +27,21 @@
               >
                 {{ card.progress }} | {{ card.latest }}
               </div>
-              <div v-else class="progress" :title="card.latest">{{ card.latest }}</div>
+              <div v-else class="progress" :title="String(card.latest)">{{ card.latest }}</div>
               <a class="info" :href="card.mediaUrl" target="_blank" title="详细信息">
-                <VIcon icon="mdi-information-outline" :size="16"></VIcon>
+                <VIcon icon="mdi-information-outline" :size="16" />
               </a>
             </div>
           </div>
         </a>
       </div>
-      <ScrollTrigger v-if="hasMorePage" @trigger="nextPage()"></ScrollTrigger>
+      <ScrollTrigger v-if="hasMorePage" @trigger="nextPage()" />
     </template>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch } from 'vue'
 import { getUID } from '@/core/utils'
 import { logError } from '@/core/utils/log'
 import { DpiImage, VLoading, VEmpty, VIcon, ScrollTrigger } from '@/ui'
@@ -53,12 +54,13 @@ const getStatusText = (status: SubscriptionStatus) => {
     case SubscriptionStatus.ToView:
       return '想看'
     case SubscriptionStatus.Viewing:
-    default:
-      return '在看'
     case SubscriptionStatus.Viewed:
       return '看过'
+    default:
+      return '在看'
   }
 }
+
 const subscriptionSorter = (a: SubscriptionItem, b: SubscriptionItem) => {
   let statusA = a.status
   if (statusA !== SubscriptionStatus.Viewed) {
@@ -70,89 +72,71 @@ const subscriptionSorter = (a: SubscriptionItem, b: SubscriptionItem) => {
   }
   return statusA - statusB
 }
-export default Vue.extend({
-  components: {
-    DpiImage,
-    VLoading,
-    VEmpty,
-    VIcon,
-    ScrollTrigger,
-  },
-  props: {
-    filter: {
-      type: [Object, null],
-      default: null,
-    },
-    type: {
-      type: String,
-      default: SubscriptionTypes.Bangumi,
-    },
-  },
-  data() {
-    return {
-      loading: true,
-      hasMorePage: true,
-      cards: [],
-      page: 1,
+
+const { filter = null, type = SubscriptionTypes.Bangumi } = defineProps<{
+  filter?: SubscriptionStatusFilter | null
+  type?: string
+}>()
+
+const loading = ref(true)
+const hasMorePage = ref(true)
+const cards = ref<SubscriptionItem[]>([])
+const page = ref(1)
+
+const nextPage = async () => {
+  try {
+    const followStatus = filter?.viewAll ? 0 : (filter?.status as number)
+    const params = new URLSearchParams({
+      type: type !== SubscriptionTypes.Bangumi ? '2' : '1',
+      pn: page.value.toString(),
+      ps: '16',
+      vmid: getUID(),
+      follow_status: followStatus.toString(),
+    })
+    const json = await getJsonWithCredentials(
+      `https://api.bilibili.com/x/space/bangumi/follow/list?${params}`,
+    )
+    if (json.code !== 0) {
+      logError(`加载番剧信息失败：${json.message}`)
+      return
     }
+    const newCards: SubscriptionItem[] = lodash
+      .uniqBy(
+        (lodash.get(json, 'data.list') as any[]).map(
+          (item): SubscriptionItem => ({
+            title: item.title,
+            coverUrl: item.square_cover.replace('http:', 'https:'),
+            latest: item.new_ep.index_show,
+            progress: item.progress,
+            id: item.season_id,
+            status: item.follow_status,
+            statusText: getStatusText(item.follow_status),
+            playUrl: `https://www.bilibili.com/bangumi/play/ss${item.season_id}`,
+            mediaUrl: `https://www.bilibili.com/bangumi/media/md${item.media_id}`,
+          }),
+        ),
+        card => card.id,
+      )
+      .sort(subscriptionSorter)
+    page.value++
+    cards.value = cards.value.concat(newCards)
+    hasMorePage.value = cards.value.length < json.data.total
+  } finally {
+    loading.value = false
+  }
+}
+
+watch(
+  () => filter,
+  () => {
+    cards.value = []
+    loading.value = true
+    page.value = 1
+    nextPage()
   },
-  watch: {
-    filter() {
-      this.cards = []
-      this.loading = true
-      this.page = 1
-      this.nextPage()
-    },
-  },
-  async created() {
-    this.nextPage()
-  },
-  methods: {
-    async nextPage() {
-      try {
-        const filter = this.filter as SubscriptionStatusFilter
-        const followStatus = filter.viewAll ? 0 : (filter.status as number)
-        const params = new URLSearchParams({
-          type: this.type !== SubscriptionTypes.Bangumi ? '2' : '1',
-          pn: this.page,
-          ps: '16',
-          vmid: getUID(),
-          follow_status: followStatus.toString(),
-        })
-        const json = await getJsonWithCredentials(
-          `https://api.bilibili.com/x/space/bangumi/follow/list?${params}`,
-        )
-        if (json.code !== 0) {
-          logError(`加载番剧信息失败: ${json.message}`)
-          return
-        }
-        const newCards: SubscriptionItem[] = lodash
-          .uniqBy(
-            (lodash.get(json, 'data.list') as any[]).map(
-              (item): SubscriptionItem => ({
-                title: item.title,
-                coverUrl: item.square_cover.replace('http:', 'https:'),
-                latest: item.new_ep.index_show,
-                progress: item.progress,
-                id: item.season_id,
-                status: item.follow_status,
-                statusText: getStatusText(item.follow_status),
-                playUrl: `https://www.bilibili.com/bangumi/play/ss${item.season_id}`,
-                mediaUrl: `https://www.bilibili.com/bangumi/media/md${item.media_id}`,
-              }),
-            ),
-            card => card.id,
-          )
-          .sort(subscriptionSorter)
-        this.page++
-        this.cards = this.cards.concat(newCards)
-        this.hasMorePage = this.cards.length < json.data.total
-      } finally {
-        this.loading = false
-      }
-    },
-  },
-})
+)
+
+nextPage()
 </script>
 
 <style lang="scss">

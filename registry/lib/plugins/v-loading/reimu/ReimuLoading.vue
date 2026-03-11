@@ -1,6 +1,6 @@
 <template>
   <div class="reimu-loading">
-    <div class="reimu-icon"></div>
+    <div class="reimu-icon" />
     少女祈祷中...
   </div>
 </template>

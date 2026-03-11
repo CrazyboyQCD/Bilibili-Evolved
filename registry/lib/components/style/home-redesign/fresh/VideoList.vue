@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="root"
     class="fresh-home-video-list scroll-top scroll-bottom"
     :class="{ 'not-empty': videos.length > 0 }"
   >
@@ -12,76 +13,70 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { watch, onMounted, onBeforeUnmount, useTemplateRef, nextTick } from 'vue'
 import { VEmpty, VLoading } from '@/ui'
 import { enableHorizontalScroll } from '@/core/horizontal-scroll'
 import { addComponentListener } from '@/core/settings'
 import VideoCardWrapper from './VideoCardWrapper.vue'
 import { setupScrollMask, cleanUpScrollMask } from './scroll-mask'
 
-export default Vue.extend({
-  components: {
-    VEmpty,
-    VLoading,
-    VideoCardWrapper,
+const { videos = [], loading = true } = defineProps<{
+  videos?: any[]
+  loading?: boolean
+}>()
+
+const content = useTemplateRef('content')
+const cards = useTemplateRef('cards')
+const root = useTemplateRef('root')
+
+const setupIntersection = async () => {
+  await nextTick()
+  setupScrollMask({
+    container: root.value,
+    items: cards.value.map(c => c.root),
+  })
+}
+
+watch(
+  () => videos,
+  () => {
+    setupIntersection()
   },
-  props: {
-    videos: {
-      type: Array,
-      default: () => [],
-    },
-    loading: {
-      type: Boolean,
-      default: true,
-    },
-  },
-  watch: {
-    videos() {
-      this.setupIntersection()
-    },
-    loaded() {
-      if (this.loaded) {
-        this.setupIntersection()
+)
+
+onBeforeUnmount(() => {
+  cleanUpScrollMask([root.value])
+})
+
+onMounted(() => {
+  const container = content.value
+  let cancel: () => void
+  addComponentListener(
+    'freshHome.horizontalWheelScroll',
+    (scroll: boolean) => {
+      if (scroll) {
+        cancel = enableHorizontalScroll(container)
+      } else {
+        cancel?.()
       }
     },
-  },
-  beforeDestroy() {
-    cleanUpScrollMask(this.$el)
-  },
-  mounted() {
-    const container = this.$refs.content as HTMLElement
-    let cancel: () => void
-    addComponentListener(
-      'freshHome.horizontalWheelScroll',
-      (scroll: boolean) => {
-        if (scroll) {
-          cancel = enableHorizontalScroll(container)
-        } else {
-          cancel?.()
-        }
-      },
-      true,
-    )
-  },
-  methods: {
-    async setupIntersection() {
-      await this.$nextTick()
-      setupScrollMask({
-        container: this.$el,
-        items: this.$refs.cards.map((c: Vue) => c.$el),
-      })
-    },
-    offsetPage(offset: number) {
-      const container = this.$refs.content as HTMLElement
-      const style = getComputedStyle(container)
-      const containerWidth = container.clientWidth
-      const wrapperWidth =
-        parseFloat(style.getPropertyValue('--card-width')) +
-        parseFloat(style.getPropertyValue('--card-padding'))
-      const pageWidth = Math.trunc(containerWidth / wrapperWidth) * wrapperWidth
-      container.scrollBy(offset * pageWidth, 0)
-    },
-  },
+    true,
+  )
+})
+
+const offsetPage = (offset: number) => {
+  const container = content.value
+  const style = getComputedStyle(container)
+  const containerWidth = container.clientWidth
+  const wrapperWidth =
+    parseFloat(style.getPropertyValue('--card-width')) +
+    parseFloat(style.getPropertyValue('--card-padding'))
+  const pageWidth = Math.trunc(containerWidth / wrapperWidth) * wrapperWidth
+  container.scrollBy(offset * pageWidth, 0)
+}
+defineExpose({
+  offsetPage,
 })
 </script>
 <style lang="scss">

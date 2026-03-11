@@ -1,7 +1,7 @@
 <template>
-  <div class="home-popup" role="list">
+  <div ref="root" class="home-popup" role="list">
     <div
-      v-for="[name, data] of Object.entries(categories)"
+      v-for="[name, data] of Object.entries(categoriesRef.value) as [string, Category][]"
       :key="name"
       role="listitem"
       class="category-item"
@@ -29,52 +29,58 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, onMounted, useTemplateRef, nextTick } from 'vue'
 import { categories, Category } from '@/components/utils/categories/data'
-import { popperMixin } from '../mixins'
+import { usePopper, UsePopperProps } from '../mixins'
 
 const clone = lodash.cloneDeep(categories)
-Object.values(clone).forEach((data: any) => {
+Object.values(clone).forEach(data => {
   data.count = null
 })
+
 let regionCountFetched = false
-export default Vue.extend({
-  mixins: [popperMixin],
-  data() {
-    return {
-      categories: clone,
-    }
-  },
-  async created() {
-    if (regionCountFetched) {
-      return
-    }
-    regionCountFetched = true
-    const { bilibiliApi, getJson } = await import('@/core/ajax')
-    const { addCategoryIcons } = await import('@/components/utils/categories/data')
-    addCategoryIcons()
-    const { region_count = {} } = await bilibiliApi(
-      getJson('https://api.bilibili.com/x/web-interface/online'),
-      '[自定义顶栏] 分区投稿信息获取失败',
-    )
-    Object.values(this.categories).forEach((data: Category) => {
-      if (data.code) {
-        if (Array.isArray(data.code)) {
-          data.count = lodash.sum(data.code.map(c => region_count[c]))
-        } else {
-          data.count = region_count[data.code]
-        }
+const categoriesRef = ref(clone)
+const root = useTemplateRef('root')
+const popper = usePopper(defineProps<UsePopperProps>())
+
+const init = async () => {
+  if (regionCountFetched) {
+    return
+  }
+  regionCountFetched = true
+  const { bilibiliApi, getJson } = await import('@/core/ajax')
+  const { addCategoryIcons } = await import('@/components/utils/categories/data')
+  addCategoryIcons()
+  const { region_count = {} } = await bilibiliApi(
+    getJson('https://api.bilibili.com/x/web-interface/online'),
+    '[自定义顶栏] 分区投稿信息获取失败',
+  )
+  Object.values(categoriesRef.value).forEach((data: Category) => {
+    if (data.code) {
+      if (Array.isArray(data.code)) {
+        data.count = lodash.sum(data.code.map(c => region_count[c]))
+      } else {
+        data.count = region_count[data.code]
       }
-    })
-  },
-  mounted() {
-    // 火狐浏览器似乎无法按预期地计算 NavbarHome 外层容器的大小
-    // 通过某些方法迫使其重新计算似乎就能得到正确的值。如这里的方法，以及改变视口大小等
-    // 上述结论来自实验，其原理未知
-    this.$el.style.maxHeight = 'inherit'
-    this.$nextTick(() => {
-      this.$el.style.maxHeight = ''
-    })
+    }
+  })
+}
+
+init()
+
+onMounted(async () => {
+  // 火狐浏览器似乎无法按预期地计算 NavbarHome 外层容器的大小
+  // 通过某些方法迫使其重新计算似乎就能得到正确的值。如这里的方法，以及改变视口大小等
+  // 上述结论来自实验，其原理未知
+  root.value.style.maxHeight = 'inherit'
+  await nextTick()
+  root.value.style.maxHeight = ''
+})
+
+defineExpose({
+  popupShow() {
+    popper.popupShow()
   },
 })
 </script>

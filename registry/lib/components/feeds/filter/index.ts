@@ -20,7 +20,7 @@ const entry = async () => {
   }
   const FeedsFilterCard = await import('./FeedsFilterCard.vue')
   const { mountVueComponent } = await import('@/core/utils')
-  leftPanel.insertAdjacentElement('afterbegin', mountVueComponent(FeedsFilterCard).$el)
+  leftPanel.insertAdjacentElement('afterbegin', mountVueComponent(FeedsFilterCard, {})[0])
 }
 
 export const component = defineComponentMetadata({

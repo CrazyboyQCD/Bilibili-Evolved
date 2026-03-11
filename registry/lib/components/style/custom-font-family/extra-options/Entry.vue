@@ -1,27 +1,14 @@
 <template>
   <div class="custom-font-family-extra-options-entry">
     <VButton @mouseover="loadPanel()" @click="togglePanelDisplay()">
-      更多选项<VIcon icon="right-arrow" :size="16"></VIcon>
+      更多选项<VIcon icon="right-arrow" :size="16" />
     </VButton>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
 import { VIcon, VButton } from '@/ui'
 import { loadPanel, togglePanelDisplay } from './vm'
-
-export default defineComponent({
-  components: {
-    VIcon,
-    VButton,
-  },
-
-  methods: {
-    loadPanel,
-    togglePanelDisplay,
-  },
-})
 </script>
 
 <style lang="scss">

@@ -8,78 +8,73 @@
   </VPopup>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { ref, nextTick, useTemplateRef } from 'vue'
 import { VPopup } from '@/ui'
 
-export default defineComponent({
-  name: 'VideoContainer',
-  components: {
-    VPopup,
-  },
-  model: {
-    prop: 'showPopup',
-    event: 'popup-change',
-  },
-  data() {
-    return {
-      showPopup: false,
-      movedDom: null as HTMLElement | null,
-      originalParent: null as Node | null,
-      originalNextSibling: null as Node | null,
+const popup = useTemplateRef('popup')
+const popupChangeHandler = ref<((val: boolean) => void) | null>(null)
+
+const showPopup = ref(false)
+const movedDom = ref<HTMLElement | null>(null)
+const originalParent = ref<Node | null>(null)
+const originalNextSibling = ref<Node | null>(null)
+
+const restoreDom = () => {
+  if (movedDom.value && originalParent.value) {
+    if (originalNextSibling.value) {
+      originalParent.value.insertBefore(movedDom.value, originalNextSibling.value)
+    } else {
+      originalParent.value.appendChild(movedDom.value)
     }
-  },
-  methods: {
-    openPopup(dom: HTMLElement) {
-      this.restoreDom()
-      if (!dom) {
-        return
-      }
+    movedDom.value = null
+    originalParent.value = null
+    originalNextSibling.value = null
+  }
+}
 
-      // 保存原父节点和下一个兄弟节点
-      this.originalParent = dom.parentNode
-      this.originalNextSibling = dom.nextSibling
+const togglePopup = () => {
+  // 调用VPopup的toggle方法
+  popup.value.toggle()
+}
 
-      this.togglePopup()
-      // 移动到popup
-      this.$nextTick(() => {
-        const popup = this.$refs.popup as any
-        if (popup && dom.parentNode !== popup) {
-          popup.$el.appendChild(dom)
-          this.movedDom = dom
-        }
-      })
-    },
-    closePopup() {
-      this.restoreDom()
-      this.togglePopup()
-    },
-    restoreDom() {
-      if (this.movedDom && this.originalParent) {
-        if (this.originalNextSibling) {
-          this.originalParent.insertBefore(this.movedDom, this.originalNextSibling)
-        } else {
-          this.originalParent.appendChild(this.movedDom)
-        }
-        this.movedDom = null
-        this.originalParent = null
-        this.originalNextSibling = null
-      }
-    },
-    onPopupChange(val: boolean) {
-      if (!val) {
-        this.restoreDom()
-      }
-      this.$emit('popup-change', val)
-    },
-    togglePopup() {
-      // 调用VPopup的toggle方法
-      const popup = this.$refs.popup as any
-      if (popup && typeof popup.toggle === 'function') {
-        popup.toggle()
-      }
-    },
-  },
+const openPopup = (dom: HTMLElement) => {
+  restoreDom()
+  if (!dom) {
+    return
+  }
+
+  // 保存原父节点和下一个兄弟节点
+  originalParent.value = dom.parentNode
+  originalNextSibling.value = dom.nextSibling
+
+  togglePopup()
+  // 移动到popup
+  nextTick(() => {
+    if (popup.value && dom.parentNode !== popup.value.root) {
+      popup.value.root.appendChild(dom)
+      movedDom.value = dom
+    }
+  })
+}
+
+const closePopup = () => {
+  restoreDom()
+  togglePopup()
+}
+
+const onPopupChange = (val: boolean) => {
+  if (!val) {
+    restoreDom()
+  }
+  popupChangeHandler.value?.(val)
+}
+
+defineExpose({
+  openPopup,
+  closePopup,
+  popupChangeHandler,
+  popup,
 })
 </script>
 

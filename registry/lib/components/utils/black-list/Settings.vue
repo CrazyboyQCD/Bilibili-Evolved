@@ -2,17 +2,18 @@
   <div>
     <div class="custom-black-list-extra-options">
       <VButton ref="button" @mouseover="loadNameBlackListSettings()" @click="toggleNameSettings()">
-        精确匹配列表<VIcon icon="right-arrow" :size="16"></VIcon>
+        精确匹配列表<VIcon icon="right-arrow" :size="16" />
       </VButton>
     </div>
     <div class="custom-black-list-extra-options">
       <VButton @mouseover="loadRegexBlackListSettings()" @click="toggleRegexSettings()">
-        正则匹配列表<VIcon icon="right-arrow" :size="16"></VIcon>
+        正则匹配列表<VIcon icon="right-arrow" :size="16" />
       </VButton>
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
 import { VIcon, VButton } from '@/ui'
 import {
   loadNameSettings,
@@ -23,30 +24,23 @@ import {
   toggleRegexSettings,
 } from './vm'
 
-export default Vue.extend({
-  components: {
-    VIcon,
-    VButton,
-  },
-  methods: {
-    async loadNameBlackListSettings() {
-      const isFirstLoad = await loadNameSettings()
-      if (isFirstLoad) {
-        const triggerButton = this.$refs.button.$el as HTMLElement
-        setNameProps(triggerButton)
-      }
-    },
-    toggleNameSettings,
-    async loadRegexBlackListSettings() {
-      const isFirstLoad = await loadRegexSettings()
-      if (isFirstLoad) {
-        const triggerButton = this.$refs.button.$el as HTMLElement
-        setRegexProps(triggerButton)
-      }
-    },
-    toggleRegexSettings,
-  },
-})
+const button = useTemplateRef('button')
+
+const loadNameBlackListSettings = async () => {
+  const isFirstLoad = await loadNameSettings()
+  if (isFirstLoad) {
+    const triggerButton = button.value.root
+    setNameProps(triggerButton)
+  }
+}
+
+const loadRegexBlackListSettings = async () => {
+  const isFirstLoad = await loadRegexSettings()
+  if (isFirstLoad) {
+    const triggerButton = button.value.root
+    setRegexProps(triggerButton)
+  }
+}
 </script>
 <style lang="scss">
 .custom-black-list-extra-options {

@@ -28,10 +28,10 @@
         <VButton icon title="刷新" @click="reload">
           <VIcon icon="mdi-refresh" :size="18" />
         </VButton>
-        <VButton icon title="上一页" @click="$refs.videoList.offsetPage(-1)">
+        <VButton icon title="上一页" @click="videoList.offsetPage(-1)">
           <VIcon icon="left-arrow" :size="20" />
         </VButton>
-        <VButton icon title="下一页" @click="$refs.videoList.offsetPage(1)">
+        <VButton icon title="下一页" @click="videoList.offsetPage(1)">
           <VIcon icon="right-arrow" :size="20" />
         </VButton>
         <a
@@ -51,7 +51,8 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue'
 import { getVideoFeeds } from '@/components/feeds/api'
 import { VideoCard } from '@/components/feeds/video-card'
 import { ArrayContent } from '@/core/common-types'
@@ -74,41 +75,31 @@ const tabs = [
   },
 ]
 type TabType = ArrayContent<typeof tabs>
-export default Vue.extend({
-  components: {
-    VButton,
-    VIcon,
-    VideoList,
-  },
-  data() {
-    return {
-      tabs,
-      selectedTab: tabs[0],
-      videos: [],
-      loading: true,
-    }
-  },
-  created() {
-    this.reload()
-  },
-  methods: {
-    selectTab(tab: TabType) {
-      if (this.selectedTab === tab) {
-        window.open(tab.href, '_blank')
-        return
-      }
-      this.selectedTab = tab
-      this.reload()
-    },
-    async reload() {
-      this.loading = true
-      this.videos = []
-      this.videos = await this.selectedTab.api().finally(() => {
-        this.loading = false
-      })
-    },
-  },
-})
+
+const selectedTab = ref<TabType>(tabs[0])
+const videos = ref<VideoCard[]>([])
+const loading = ref(true)
+
+const videoList = useTemplateRef('videoList')
+
+const reload = async () => {
+  loading.value = true
+  videos.value = []
+  videos.value = await selectedTab.value.api().finally(() => {
+    loading.value = false
+  })
+}
+
+const selectTab = (tab: TabType) => {
+  if (selectedTab.value === tab) {
+    window.open(tab.href, '_blank')
+    return
+  }
+  selectedTab.value = tab
+  reload()
+}
+
+reload()
 </script>
 <style lang="scss">
 @import 'common';

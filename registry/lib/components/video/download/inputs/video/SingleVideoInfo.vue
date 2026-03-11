@@ -4,22 +4,16 @@
     <img v-if="imageUrl" :src="imageUrl" />
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue'
 import { getVideoCoverUrlByAid } from '@/components/video/video-cover'
-import { videoChange } from '@/core/observer'
+import { videoChange } from '@/core/video'
 
-export default Vue.extend({
-  data() {
-    return {
-      imageUrl: '',
-    }
-  },
-  created() {
-    videoChange(async () => {
-      const { aid } = unsafeWindow
-      this.imageUrl = await getVideoCoverUrlByAid(aid)
-    })
-  },
+const imageUrl = ref('')
+
+videoChange(async () => {
+  const { aid } = unsafeWindow
+  imageUrl.value = await getVideoCoverUrlByAid(aid)
 })
 </script>
 <style lang="scss">

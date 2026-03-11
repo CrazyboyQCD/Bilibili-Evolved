@@ -1,4 +1,4 @@
-import VueLoaderPlugin from 'vue-loader/lib/plugin'
+import { VueLoaderPlugin } from 'vue-loader'
 import TerserPlugin from 'terser-webpack-plugin'
 import webpack, { Configuration } from 'webpack'
 import path from 'path'
@@ -27,6 +27,7 @@ export const getDefaultConfig = (src = relativePath('src')): Configuration => {
       alias: {
         '@': relativePath('src'),
         'fuse.js$': 'fuse.js/dist/fuse.basic.esm.min.js',
+        vue: 'vue/dist/vue.esm-bundler.js',
       },
     },
     performance: {
@@ -113,6 +114,9 @@ export const getDefaultConfig = (src = relativePath('src')): Configuration => {
         webpackCompilationInfo: [relativePath('webpack/compilation-info'), 'compilationInfo'],
       }),
       new webpack.DefinePlugin({
+        __VUE_OPTIONS_API__: true,
+        __VUE_PROD_DEVTOOLS__: false,
+        __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: true,
         webpackGitInfo: JSON.stringify(gitInfo),
       }),
       // new WebpackBar(),
@@ -131,7 +135,7 @@ export const getDefaultConfig = (src = relativePath('src')): Configuration => {
 }
 
 const replaceVariables = (text: string) => {
-  return text.replace(/\[([^\[\]]+)\]/g, match => {
+  return text.replace(/\[([^[\]]+)\]/g, match => {
     const value = get(runtimeInfo, match)
     if (value !== undefined) {
       return value

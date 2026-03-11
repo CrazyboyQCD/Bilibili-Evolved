@@ -12,7 +12,7 @@
     </div>
     <template v-if="loaded">
       <div v-if="firstItem" class="fresh-home-rank-list-first-item animation">
-        <div class="fresh-home-rank-list-rank-item"></div>
+        <div class="fresh-home-rank-list-rank-item" />
         <a
           class="fresh-home-rank-list-rank-item-title"
           target="_blank"
@@ -37,10 +37,10 @@
           </UpInfo>
           <div class="fresh-home-rank-list-stats">
             <VIcon icon="play" :size="16" />
-            {{ firstItem.playCount | formatCount }}
+            {{ formatCount(firstItem.playCount) }}
           </div>
         </a>
-        <div class="fresh-home-rank-list-laser" data-number="1"></div>
+        <div class="fresh-home-rank-list-laser" data-number="1" />
       </div>
       <div v-if="secondItem" class="fresh-home-rank-list-second-item animation">
         <a class="fresh-home-rank-list-rank-item" target="_blank" :href="secondItem.videoHref">
@@ -58,9 +58,9 @@
           </UpInfo>
           <div class="fresh-home-rank-list-stats">
             <VIcon icon="play" :size="16" />
-            {{ secondItem.playCount | formatCount }}
+            {{ formatCount(secondItem.playCount) }}
             <VIcon icon="danmaku" :size="16" />
-            {{ secondItem.danmakuCount | formatCount }}
+            {{ formatCount(secondItem.danmakuCount) }}
           </div>
         </a>
         <a class="fresh-home-rank-list-cover" target="_blank" :href="secondItem.videoHref">
@@ -69,7 +69,7 @@
             :size="{ width: ui.secondCoverWidth, height: ui.secondCoverHeight }"
           />
         </a>
-        <div class="fresh-home-rank-list-laser" data-number="2"></div>
+        <div class="fresh-home-rank-list-laser" data-number="2" />
       </div>
       <div v-if="thirdItem" class="fresh-home-rank-list-third-item animation">
         <a class="fresh-home-rank-list-rank-item" target="_blank" :href="thirdItem.videoHref">
@@ -87,9 +87,9 @@
           </UpInfo>
           <div class="fresh-home-rank-list-stats">
             <VIcon icon="play" :size="16" />
-            {{ thirdItem.playCount | formatCount }}
+            {{ formatCount(thirdItem.playCount) }}
             <VIcon icon="danmaku" :size="16" />
-            {{ thirdItem.danmakuCount | formatCount }}
+            {{ formatCount(thirdItem.danmakuCount) }}
           </div>
         </a>
         <a class="fresh-home-rank-list-cover" target="_blank" :href="thirdItem.videoHref">
@@ -98,68 +98,52 @@
             :size="{ width: ui.thirdCoverWidth, height: ui.thirdCoverHeight }"
           />
         </a>
-        <div class="fresh-home-rank-list-laser" data-number="3"></div>
+        <div class="fresh-home-rank-list-laser" data-number="3" />
       </div>
     </template>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { computed } from 'vue'
 import UpInfo from '@/components/feeds/UpInfo.vue'
 import { formatCount } from '@/core/utils/formatters'
 import { DpiImage, VIcon, VLoading, VEmpty, VButton } from '@/ui'
-import { requestMixin, cssVariableMixin } from '../../../../mixin'
-import { rankListCssVars } from './rank-list'
+import { useCssVariable, useRequest } from '../../../../mixin'
+import { rankListCssVars, RankListCard } from './rank-list'
 
-export default Vue.extend({
-  components: {
-    DpiImage,
-    UpInfo,
-    VIcon,
-    VLoading,
-    VEmpty,
-    VButton,
-  },
-  filters: {
-    formatCount,
-  },
-  mixins: [requestMixin(), cssVariableMixin(rankListCssVars)],
-  props: {
-    parseJson: {
-      type: Function,
-      required: true,
-    },
-    bangumiMode: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  computed: {
-    firstItem() {
-      return this.items[0]
-    },
-    secondItem() {
-      return this.items[1]
-    },
-    thirdItem() {
-      return this.items[2]
-    },
-    upInfoProps() {
-      return {
-        size: 18,
-        icon: this.bangumiMode ? 'mdi-television-classic' : 'up-outline',
-        style: {
-          transform: this.bangumiMode ? 'translateY(-1px)' : 'none',
-        },
-      }
-    },
-    firstRow() {
-      return this.items.slice(3, 6)
-    },
-    secondRow() {
-      return this.items.slice(6, 10)
-    },
-  },
+const {
+  parseJson,
+  bangumiMode = false,
+  api,
+} = defineProps<{
+  parseJson: (json: any) => RankListCard[]
+  bangumiMode?: boolean
+  api: string
+}>()
+
+const { items, loading, error, reload } = useRequest<RankListCard>({
+  api,
+  parseJson,
 })
+
+const { ui } = useCssVariable(rankListCssVars)
+
+const loaded = computed(() => !loading.value && !error.value)
+
+const firstItem = computed(() => items.value[0])
+const secondItem = computed(() => items.value[1])
+const thirdItem = computed(() => items.value[2])
+
+const upInfoProps = computed(() => ({
+  size: 18,
+  icon: bangumiMode ? 'mdi-television-classic' : 'up-outline',
+  style: {
+    transform: bangumiMode ? 'translateY(-1px)' : 'none',
+  },
+}))
+
+// const firstRow = computed(() => items.value.slice(3, 6))
+// const secondRow = computed(() => items.value.slice(6, 10))
 </script>
 <style lang="scss">
 @import 'common';

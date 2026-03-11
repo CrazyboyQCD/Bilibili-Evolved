@@ -1,6 +1,6 @@
 import { defineComponentMetadata } from '@/components/define'
 import { videoAndBangumiUrls } from '@/core/utils/urls'
-import { videoChange } from '@/core/observer'
+import { videoChange } from '@/core/video'
 import { select, sq } from '@/core/spin-query'
 import { addStyle, removeStyle } from '@/core/style'
 import style from './full-description.scss'

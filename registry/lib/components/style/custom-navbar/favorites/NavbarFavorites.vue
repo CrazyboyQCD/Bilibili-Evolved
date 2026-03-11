@@ -1,32 +1,28 @@
 <template>
   <div class="favorites-list">
     <div class="header">
-      <FavoritesFolderSelect v-model="folder"></FavoritesFolderSelect>
+      <FavoritesFolderSelect v-model="folder" />
       <div class="search">
-        <TextBox v-model="search" linear placeholder="搜索"></TextBox>
+        <TextBox :text="search" linear placeholder="搜索" @change="search = $event" />
       </div>
       <a class="operation" :href="playLink" title="播放全部" target="_blank">
         <VButton round class="play-all">
-          <VIcon icon="mdi-play" :size="18"></VIcon>
+          <VIcon icon="mdi-play" :size="18" />
         </VButton>
       </a>
       <a class="operation" :href="moreLink" title="查看更多" target="_blank">
         <VButton round class="more-info">
-          <VIcon icon="mdi-dots-horizontal" :size="18"></VIcon>
+          <VIcon icon="mdi-dots-horizontal" :size="18" />
         </VButton>
       </a>
     </div>
     <div class="content">
-      <VLoading v-if="loading && !searching"></VLoading>
-      <VEmpty v-else-if="!loading && !canLoadMore && filteredCards.length === 0"></VEmpty>
+      <VLoading v-if="loading && !searching" />
+      <VEmpty v-else-if="!loading && !canLoadMore && filteredCards.length === 0" />
       <transition-group v-else name="cards" tag="div" class="cards">
         <div v-for="card of filteredCards" :key="card.id" class="favorite-card">
           <a class="favorites-cover-container" target="_blank" :href="getItemPlayLink(card)">
-            <DpiImage
-              class="cover"
-              :src="card.coverUrl"
-              :size="{ width: 130, height: 85 }"
-            ></DpiImage>
+            <DpiImage class="cover" :src="card.coverUrl" :size="{ width: 130, height: 85 }" />
             <div class="floating duration">{{ card.durationText }}</div>
             <div class="floating favorite-time">{{ card.favoriteTime }}</div>
           </a>
@@ -40,23 +36,20 @@
             :href="'https://space.bilibili.com/' + card.upID"
             :title="card.upName"
           >
-            <DpiImage placeholder-image class="face" :src="card.upFaceUrl" :size="20"></DpiImage>
+            <DpiImage placeholder-image class="face" :src="card.upFaceUrl" :size="20" />
             <div class="name">{{ card.upName }}</div>
           </a>
           <div v-else class="description">
             {{ card.description }}
           </div>
         </div>
-        <ScrollTrigger
-          v-if="canLoadMore"
-          key="scroll-trigger"
-          @trigger="scrollTrigger()"
-        ></ScrollTrigger>
+        <ScrollTrigger v-if="canLoadMore" key="scroll-trigger" @trigger="scrollTrigger()" />
       </transition-group>
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
 import { VLoading, VEmpty, VIcon, VButton, TextBox, DpiImage, ScrollTrigger } from '@/ui'
 import { formatDate, formatDuration } from '@/core/utils/formatters'
 import { getUID } from '@/core/utils'
@@ -66,26 +59,31 @@ import { VideoCard } from '@/components/feeds/video-card'
 import { getComponentSettings } from '@/core/settings'
 import { notSelectedFolder } from './favorites-folder'
 import FavoritesFolderSelect from './FavoritesFolderSelect.vue'
-import { popperMixin } from '../mixins'
+import { usePopper, UsePopperProps } from '../mixins'
+import { CustomNavbarOptions } from '..'
 
 /*
 新版收藏夹 API
 https://api.bilibili.com/x/v3/fav/resource/list?media_id=media_id&pn=1&ps=20&keyword=keyword&order=mtime&type=0&tid=0&platform=web
 */
 
-const navbarOptions = getComponentSettings('customNavbar').options
+const navbarOptions = getComponentSettings<CustomNavbarOptions>('customNavbar').options
+
 interface FavoritesItemInfo extends Omit<VideoCard, 'type'> {
   type: number
   favoriteTimestamp: number
   favoriteTime: string
 }
+
 const MaxPageSize = 20
+
 const favoriteItemFilter = (item: any): boolean => {
   if (navbarOptions.showDeadVideos) {
     return true
   }
   return item.attr !== 9 && item.attr !== 1 // 过滤掉已失效视频
 }
+
 const favoriteItemMapper = (item: any): FavoritesItemInfo => ({
   type: item.type,
   id: item.id,
@@ -107,173 +105,165 @@ const favoriteItemMapper = (item: any): FavoritesItemInfo => ({
   upFaceUrl: item.upper.face.replace('http:', 'https:'),
   upID: item.upper.mid,
 })
-async function searchAllList() {
-  if (!this.searching) {
+
+const popper = usePopper(defineProps<UsePopperProps>())
+
+const loading = ref(true)
+const cards = ref<FavoritesItemInfo[]>([])
+const filteredCards = ref<FavoritesItemInfo[]>([])
+const page = ref(1)
+const hasMorePage = ref(true)
+const searchPage = ref(1)
+const hasMoreSearchPage = ref(true)
+const search = ref('')
+const folder = ref(notSelectedFolder)
+
+const searching = computed(() => search.value !== '')
+
+const moreLink = computed(() => {
+  const { id } = folder.value
+  return id === 0
+    ? `https://space.bilibili.com/${getUID()}/favlist`
+    : `https://space.bilibili.com/${getUID()}/favlist?fid=${id}&ftype=create`
+})
+
+const playLink = computed(() => {
+  const { id } = folder.value
+  return id === 0 ? undefined : `https://www.bilibili.com/medialist/play/ml${id}`
+})
+
+const canLoadMore = computed(() => {
+  if (searching.value) {
+    return hasMoreSearchPage.value
+  }
+  return hasMorePage.value
+})
+
+const getCards = async () => {
+  const url = `https://api.bilibili.com/x/v3/fav/resource/list?media_id=${folder.value.id}&pn=${page.value}&ps=${MaxPageSize}&keyword=&order=mtime&type=0&tid=0&platform=web`
+  const json = await getJsonWithCredentials(url)
+  if (json.code !== 0) {
+    throw new Error(`加载收藏夹内容失败: ${json.message}`)
+  }
+  if (!json.data.medias) {
+    // 超过最后一页后返回空数组
+    return []
+  }
+  return json.data.medias.filter(favoriteItemFilter).map(favoriteItemMapper)
+}
+
+const changeList = async () => {
+  if (folder.value.id === 0) {
     return
   }
   try {
-    this.loading = true
+    search.value = ''
+    cards.value = []
+    loading.value = true
+    searchPage.value = 1
+    hasMoreSearchPage.value = true
+    page.value = 1
+    hasMorePage.value = true
+    cards.value = await getCards()
+    filteredCards.value = cards.value
+  } catch (error) {
+    logError(error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadNextPage = async () => {
+  try {
+    page.value++
+    const newCards = await getCards()
+    cards.value.push(...newCards)
+    hasMorePage.value = newCards.length !== 0 || cards.value.length < folder.value.count
+  } catch (error) {
+    logError(error)
+  }
+}
+
+const searchAllList = async () => {
+  if (!searching.value) {
+    return
+  }
+  try {
+    loading.value = true
     const jsonCurrent = await getJsonWithCredentials(
-      `https://api.bilibili.com/x/v3/fav/resource/list?media_id=${this.folder.id}&pn=${this.searchPage}&ps=${MaxPageSize}&keyword=${this.search}&order=mtime&type=0&tid=0&platform=web`,
+      `https://api.bilibili.com/x/v3/fav/resource/list?media_id=${folder.value.id}&pn=${searchPage.value}&ps=${MaxPageSize}&keyword=${search.value}&order=mtime&type=0&tid=0&platform=web`,
     )
     const jsonAll = await getJsonWithCredentials(
-      `https://api.bilibili.com/x/v3/fav/resource/list?media_id=${this.folder.id}&pn=${this.searchPage}&ps=${MaxPageSize}&keyword=${this.search}&order=mtime&type=1&tid=0&platform=web`,
+      `https://api.bilibili.com/x/v3/fav/resource/list?media_id=${folder.value.id}&pn=${searchPage.value}&ps=${MaxPageSize}&keyword=${search.value}&order=mtime&type=1&tid=0&platform=web`,
     )
     if (jsonCurrent.code !== 0 && jsonAll.code !== 0) {
       return
     }
     const currentItems = lodash.get(jsonCurrent, 'data.medias', []) || []
     const allItems = lodash.get(jsonAll, 'data.medias', []) || []
-    this.searchPage++
+    searchPage.value++
     const results = lodash.uniqBy(
-      this.filteredCards.concat(
+      filteredCards.value.concat(
         currentItems.filter(favoriteItemFilter).map(favoriteItemMapper),
         allItems.filter(favoriteItemFilter).map(favoriteItemMapper),
       ),
       (card: FavoritesItemInfo) => card.id,
     )
-    this.filteredCards = results
+    filteredCards.value = results
     const noNewItems = currentItems.length + allItems.length === 0
     const lessThanPageSize = allItems.length < MaxPageSize
     if (noNewItems || lessThanPageSize) {
-      this.hasMoreSearchPage = false
-      return
+      hasMoreSearchPage.value = false
     }
   } catch (error) {
     console.error(error)
   } finally {
-    this.loading = false
+    loading.value = false
   }
 }
-export default Vue.extend({
-  components: {
-    FavoritesFolderSelect,
-    VLoading,
-    VEmpty,
-    VIcon,
-    VButton,
-    TextBox,
-    DpiImage,
-    ScrollTrigger,
-  },
-  mixins: [popperMixin],
-  data() {
-    return {
-      loading: true,
-      cards: [],
-      filteredCards: [],
-      page: 1,
-      hasMorePage: true,
-      searchPage: 1,
-      hasMoreSearchPage: true,
-      search: '',
-      folder: notSelectedFolder,
+
+const debounceSearchAllList = lodash.debounce(searchAllList, 200)
+
+const scrollTrigger = () => {
+  if (searching.value) {
+    debounceSearchAllList()
+  } else {
+    loadNextPage()
+  }
+}
+
+const getItemPlayLink = (item: FavoritesItemInfo) => {
+  switch (item.type) {
+    case 12: {
+      return `https://www.bilibili.com/audio/au${item.id}/`
     }
-  },
-  computed: {
-    searching() {
-      return this.search !== ''
-    },
-    moreLink() {
-      const { id } = this.folder
-      if (id === 0) {
-        return `https://space.bilibili.com/${getUID()}/favlist`
-      }
-      return `https://space.bilibili.com/${getUID()}/favlist?fid=${id}&ftype=create`
-    },
-    playLink() {
-      const { id } = this.folder
-      if (id === 0) {
-        return undefined
-      }
-      return `https://www.bilibili.com/medialist/play/ml${id}`
-    },
-    canLoadMore() {
-      if (this.searching) {
-        return this.hasMoreSearchPage
-      }
-      return this.hasMorePage
-    },
-  },
-  watch: {
-    folder() {
-      this.changeList()
-    },
-    search(keyword: string) {
-      if (keyword === '') {
-        this.filteredCards = this.cards
-        return
-      }
-      keyword = keyword.toLowerCase()
-      this.hasMoreSearchPage = true
-      this.searchPage = 1
-      this.filteredCards = (this.cards as FavoritesItemInfo[]).filter(
-        it => it.title.toLowerCase().includes(keyword) || it.upName.toLowerCase().includes(keyword),
-      )
-    },
-  },
-  methods: {
-    async getCards() {
-      const url = `https://api.bilibili.com/x/v3/fav/resource/list?media_id=${this.folder.id}&pn=${this.page}&ps=${MaxPageSize}&keyword=&order=mtime&type=0&tid=0&platform=web`
-      const json = await getJsonWithCredentials(url)
-      if (json.code !== 0) {
-        throw new Error(`加载收藏夹内容失败: ${json.message}`)
-      }
-      if (!json.data.medias) {
-        // 超过最后一页后返回空数组
-        return []
-      }
-      return json.data.medias.filter(favoriteItemFilter).map(favoriteItemMapper)
-    },
-    async changeList() {
-      if (this.folder.id === 0) {
-        return
-      }
-      try {
-        this.search = ''
-        this.cards = []
-        this.loading = true
-        this.searchPage = 1
-        this.hasMoreSearchPage = true
-        this.page = 1
-        this.hasMorePage = true
-        this.cards = await this.getCards()
-        this.filteredCards = this.cards
-      } catch (error) {
-        logError(error)
-      } finally {
-        this.loading = false
-      }
-    },
-    async loadNextPage() {
-      try {
-        this.page++
-        const cards = await this.getCards()
-        this.cards.push(...cards)
-        this.hasMorePage = cards.length !== 0 || this.cards.length < this.folder.count
-      } catch (error) {
-        logError(error)
-      }
-    },
-    debounceSearchAllList: lodash.debounce(searchAllList, 200),
-    scrollTrigger() {
-      if (this.searching) {
-        this.debounceSearchAllList()
-      } else {
-        this.loadNextPage()
-      }
-    },
-    getItemPlayLink(item: FavoritesItemInfo) {
-      switch (item.type) {
-        default:
-        case 2: {
-          return `https://www.bilibili.com/video/${item.bvid}/`
-        }
-        case 12: {
-          return `https://www.bilibili.com/audio/au${item.id}/`
-        }
-      }
-    },
+    case 2:
+    default: {
+      return `https://www.bilibili.com/video/${item.bvid}/`
+    }
+  }
+}
+
+watch(folder, () => {
+  changeList()
+})
+
+watch(search, (keyword: string) => {
+  if (keyword === '') {
+    filteredCards.value = cards.value
+    return
+  }
+  keyword = keyword.toLowerCase()
+  hasMoreSearchPage.value = true
+  searchPage.value = 1
+  filteredCards.value = cards.value.filter(
+    it => it.title.toLowerCase().includes(keyword) || it.upName.toLowerCase().includes(keyword),
+  )
+})
+
+defineExpose({
+  popupShow() {
+    popper.popupShow()
   },
 })
 </script>

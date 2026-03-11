@@ -3,25 +3,25 @@
     <div class="header">
       <div class="header-row">
         <div class="search">
-          <TextBox v-model="search" placeholder="搜索" linear></TextBox>
+          <TextBox :text="search" placeholder="搜索" linear @change="search = $event" />
         </div>
         <div class="operations">
           <div class="operation">
             <VButton title="刷新" round @click="reloadHistoryItems()">
-              <VIcon icon="mdi-refresh" :size="16"></VIcon>
+              <VIcon icon="mdi-refresh" :size="16" />
             </VButton>
           </div>
           <div class="operation" @click="toggleHistoryPause">
             <VButton v-if="!paused" title="暂停记录历史" round>
-              <VIcon icon="mdi-pause" :size="14"></VIcon>
+              <VIcon icon="mdi-pause" :size="14" />
             </VButton>
             <VButton v-else title="继续记录历史" round>
-              <VIcon icon="mdi-play" :size="14"></VIcon>
+              <VIcon icon="mdi-play" :size="14" />
             </VButton>
           </div>
           <a class="operation" target="_blank" href="https://www.bilibili.com/history">
             <VButton title="查看更多" round>
-              <VIcon icon="mdi-dots-horizontal" :size="18"></VIcon>
+              <VIcon icon="mdi-dots-horizontal" :size="18" />
             </VButton>
           </a>
         </div>
@@ -43,8 +43,8 @@
       </div>
     </div>
     <div class="content">
-      <VLoading v-if="loading"></VLoading>
-      <VEmpty v-else-if="!loading && groups.length === 0"></VEmpty>
+      <VLoading v-if="loading" />
+      <VEmpty v-else-if="!loading && groups.length === 0" />
       <transition-group v-else name="cards" tag="div" class="cards">
         <div v-for="g of groups" :key="g.name" class="time-group">
           <div class="time-group-name">
@@ -58,12 +58,12 @@
                   :src="h.cover"
                   :size="{ width: 160, height: 110 }"
                   placeholder-image
-                ></DpiImage>
+                />
                 <div
                   v-if="h.progress"
                   class="progress"
                   :style="{ width: h.progress * 100 + '%' }"
-                ></div>
+                />
                 <div v-if="h.pages !== undefined && h.pages > 1" class="floating pages">
                   {{ h.page }}P / {{ h.pages }}P
                 </div>
@@ -77,12 +77,7 @@
                 :href="h.type === 'pgc' ? h.url : 'https://space.bilibili.com/' + h.upID"
                 :title="h.upName"
               >
-                <DpiImage
-                  v-if="h.upFaceUrl"
-                  class="up-face"
-                  :size="18"
-                  :src="h.upFaceUrl"
-                ></DpiImage>
+                <DpiImage v-if="h.upFaceUrl" class="up-face" :size="18" :src="h.upFaceUrl" />
                 <div class="up-name">{{ h.upName }}</div>
               </a>
               <div class="history-info">
@@ -108,16 +103,13 @@
             </div>
           </transition-group>
         </div>
-        <ScrollTrigger
-          v-if="canNextPage"
-          key="scroll-trigger"
-          @trigger="nextPage()"
-        ></ScrollTrigger>
+        <ScrollTrigger v-if="canNextPage" key="scroll-trigger" @trigger="nextPage()" />
       </transition-group>
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
 import { bilibiliApi, getJsonWithCredentials, postTextWithCredentials } from '@/core/ajax'
 import { getCsrf } from '@/core/utils'
 import { descendingSort } from '@/core/utils/sort'
@@ -131,7 +123,7 @@ import {
   ScrollTrigger,
   DpiImage,
 } from '@/ui'
-import { popperMixin } from '../mixins'
+import { usePopper, UsePopperProps } from '../mixins'
 import {
   navbarFilterTypes,
   TypeFilter,
@@ -141,123 +133,117 @@ import {
   HistoryType,
 } from './types'
 
-export default Vue.extend({
-  components: {
-    VButton,
-    VIcon,
-    RadioButton,
-    TextBox,
-    VLoading,
-    VEmpty,
-    ScrollTrigger,
-    DpiImage,
-  },
-  mixins: [popperMixin],
-  data() {
-    return {
-      types: navbarFilterTypes,
-      search: '',
-      viewTime: 0,
-      cards: [],
-      groups: [],
-      loading: true,
-      hasMorePage: true,
-      paused: false,
-    }
-  },
-  computed: {
-    canNextPage() {
-      return this.search === '' && !this.loading && this.hasMorePage
-    },
-  },
-  watch: {
-    search: lodash.debounce(function search() {
-      this.reloadHistoryItems()
-    }, 200),
-  },
-  async created() {
-    try {
-      await Promise.all([this.nextPage(), this.updateHistoryPauseState()])
-    } finally {
-      this.loading = false
-    }
-  },
-  methods: {
-    toggleTypeFilter(typeFilter: TypeFilter) {
-      navbarFilterTypes.forEach(t => (t.checked = t.name === typeFilter.name))
-      this.reloadHistoryItems()
-    },
-    async reloadHistoryItems() {
-      this.cards = []
-      this.viewTime = 0
-      this.hasMorePage = true
-      this.loading = true
-      try {
-        await this.nextPage()
-      } finally {
-        this.loading = false
-      }
-    },
-    filterFunc(item: HistoryItem) {
-      const isAllType = navbarFilterTypes.find(it => it.name === HistoryType.All).checked
-      if (!isAllType && navbarFilterTypes.some(t => t.name === item.type && !t.checked)) {
-        return false
-      }
-      if (
-        !item.title.toLowerCase().includes(this.search.toLowerCase()) &&
-        !item.upName.toLowerCase().includes(this.search.toLowerCase())
-      ) {
-        return false
-      }
-      return true
-    },
-    updateGroups() {
-      this.groups = group(this.cards.filter(this.filterFunc))
-    },
-    async nextPage() {
-      const items = await getHistoryItems(
-        this.viewTime,
-        navbarFilterTypes.find(t => t.checked),
-      )
-      const cards: HistoryItem[] = lodash.uniqBy(
-        this.cards.concat(items).sort(descendingSort((item: HistoryItem) => item.viewAt)),
-        item => item.id,
-      )
-      this.cards = cards
-      this.updateGroups()
-      if (cards.length > 0) {
-        this.viewTime = lodash.last(cards).viewAt
-      }
-      this.hasMorePage = items.length !== 0
-      if (this.hasMorePage && this.groups.length === 0) {
-        await this.nextPage()
-      }
-    },
-    async updateHistoryPauseState() {
-      const result = await bilibiliApi(
-        getJsonWithCredentials('https://api.bilibili.com/x/v2/history/shadow'),
-      )
-      /*
-        result == true: 暂停
-        result == {}: 没暂停
-      */
-      this.paused = result === true
-    },
-    async toggleHistoryPause() {
-      const targetState = !this.paused
-      try {
-        this.paused = targetState
-        await postTextWithCredentials(
-          'https://api.bilibili.com/x/v2/history/shadow/set',
-          new URLSearchParams({
-            csrf: getCsrf(),
-            switch: targetState.toString(),
-          }).toString(),
-        )
-      } catch (error) {
-        this.paused = !targetState
-      }
-    },
+const popper = usePopper(defineProps<UsePopperProps>())
+
+const types = ref(navbarFilterTypes)
+const search = ref('')
+const viewTime = ref(0)
+const cards = ref<HistoryItem[]>([])
+const groups = ref<{ name: string; items: HistoryItem[] }[]>([])
+const loading = ref(true)
+const hasMorePage = ref(true)
+const paused = ref(false)
+
+const filterFunc = (item: HistoryItem) => {
+  const isAllType = navbarFilterTypes.find(it => it.name === HistoryType.All).checked
+  if (!isAllType && navbarFilterTypes.some(t => t.name === item.type && !t.checked)) {
+    return false
+  }
+  const content = search.value.toLowerCase()
+  return item.title.toLowerCase().includes(content) || item.upName.toLowerCase().includes(content)
+}
+
+const updateGroups = () => {
+  groups.value = group(cards.value.filter(filterFunc))
+}
+
+const nextPage = async () => {
+  const items = await getHistoryItems(
+    viewTime.value,
+    navbarFilterTypes.find(t => t.checked),
+  )
+  const newCards: HistoryItem[] = lodash.uniqBy(
+    cards.value.concat(items).sort(descendingSort((item: HistoryItem) => item.viewAt)),
+    item => item.id,
+  )
+  cards.value = newCards
+  updateGroups()
+  if (newCards.length > 0) {
+    viewTime.value = lodash.last(newCards).viewAt
+  }
+  hasMorePage.value = items.length !== 0
+  if (hasMorePage.value && groups.value.length === 0) {
+    await nextPage()
+  }
+}
+
+const reloadHistoryItems = async () => {
+  cards.value = []
+  viewTime.value = 0
+  hasMorePage.value = true
+  loading.value = true
+  try {
+    await nextPage()
+  } finally {
+    loading.value = false
+  }
+}
+
+const toggleTypeFilter = (typeFilter: TypeFilter) => {
+  navbarFilterTypes.forEach(t => (t.checked = t.name === typeFilter.name))
+  reloadHistoryItems()
+}
+
+const canNextPage = computed(() => {
+  return search.value === '' && !loading.value && hasMorePage.value
+})
+
+const updateHistoryPauseState = async () => {
+  const result = await bilibiliApi(
+    getJsonWithCredentials('https://api.bilibili.com/x/v2/history/shadow'),
+  )
+  /*
+    result == true: 暂停
+    result == {}: 没暂停
+  */
+  paused.value = result === true
+}
+
+const toggleHistoryPause = async () => {
+  const targetState = !paused.value
+  try {
+    paused.value = targetState
+    await postTextWithCredentials(
+      'https://api.bilibili.com/x/v2/history/shadow/set',
+      new URLSearchParams({
+        csrf: getCsrf(),
+        switch: targetState.toString(),
+      }).toString(),
+    )
+  } catch (error) {
+    paused.value = !targetState
+  }
+}
+
+const debounceReloadHistoryItems = lodash.debounce(reloadHistoryItems, 200)
+
+watch(search, () => {
+  debounceReloadHistoryItems()
+})
+
+const init = async () => {
+  try {
+    await Promise.all([nextPage(), updateHistoryPauseState()])
+  } finally {
+    loading.value = false
+  }
+}
+
+init()
+
+defineExpose({
+  popupShow() {
+    popper.popupShow()
   },
 })
 </script>

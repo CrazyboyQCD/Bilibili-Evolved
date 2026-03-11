@@ -6,7 +6,7 @@
       :text="roomid"
       :change-on-blur="true"
       @change="handleRoomIdChange"
-    ></TextBox>
+    />
     <AsyncButton @click="handleKeepAliveRequest">点亮!</AsyncButton>
   </div>
 </template>

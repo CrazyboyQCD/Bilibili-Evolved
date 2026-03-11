@@ -16,41 +16,30 @@
     </svg>
   </div>
 </template>
-<script lang="ts">
-export default Vue.extend({
-  props: {
-    tags: {
-      type: Array,
-      required: true,
-    },
-    size: {
-      type: Number,
-      default: 18,
-    },
-    stroke: {
-      type: Number,
-      default: 3,
-    },
-  },
-  data() {
-    const radius = this.size / 2 - this.stroke
-    const circumference = radius * 2 * Math.PI
+<script setup lang="ts">
+import { computed } from 'vue'
+import { ComponentTag } from '../types'
 
-    return {
-      radius,
-      circumference,
-    }
-  },
-  methods: {
-    getStyle(tag: { color: string }, index: number) {
-      const strokeDashoffset = (index / this.tags.length) * this.circumference
-      return {
-        strokeDashoffset,
-        stroke: tag.color,
-      }
-    },
-  },
-})
+const {
+  tags,
+  size = 18,
+  stroke = 3,
+} = defineProps<{
+  tags: ComponentTag[]
+  size?: number
+  stroke?: number
+}>()
+
+const radius = computed(() => size / 2 - stroke)
+const circumference = computed(() => radius.value * 2 * Math.PI)
+
+const getStyle = (tag: { color: string }, index: number) => {
+  const strokeDashoffset = (index / tags.length) * circumference.value
+  return {
+    strokeDashoffset,
+    stroke: tag.color,
+  }
+}
 </script>
 <style lang="scss">
 .tag-ring {

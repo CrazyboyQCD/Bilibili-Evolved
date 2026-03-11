@@ -28,6 +28,7 @@
           placeholder="禁用"
           change-on-blur
           :text="customKeyBindings[row.name]"
+          :validator="() => ''"
           @change="updateCustomBinding"
         />
         <VButton type="transparent" title="删除自定义键位" @click="removeCustomBinding()">
@@ -42,77 +43,72 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, nextTick, useTemplateRef } from 'vue'
 import { TextBox, VButton, VIcon } from '@/ui'
 import { getComponentSettings } from '@/core/settings'
 import { presetBase, presets } from '../presets'
+import { Options } from '../options'
 
-const keymapOptions = getComponentSettings('keymap').options
-export default Vue.extend({
-  components: {
-    TextBox,
-    VButton,
-    VIcon,
-  },
-  props: {
-    row: {
-      type: Object,
-      required: true,
-    },
-    selectedPreset: {
-      type: String,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      presets,
-      presetBase,
-      customKeyBindings: keymapOptions.customKeyBindings,
-      editable: false,
-    }
-  },
-  created() {
-    this.checkEditable()
-  },
-  methods: {
-    checkEditable() {
-      this.editable = this.customKeyBindings[this.row.name] !== undefined
-    },
-    showReadonlyKey(preset: Record<string, string>) {
-      const { name } = this.row
-      const key = preset[name]
-      if (key === undefined) {
-        return '继承'
-      }
-      if (key === '') {
-        return '禁用'
-      }
-      return key
-    },
-    isOverwrittern(...higherPresets: Record<string, string>[]) {
-      const { name } = this.row
-      return higherPresets.some(p => p[name] !== undefined)
-    },
-    async addCustomBinding() {
-      const { name } = this.row
-      this.customKeyBindings[name] = ''
-      this.checkEditable()
-      await this.$nextTick()
-      this.$refs.customBindingTextBox.focus()
-    },
-    removeCustomBinding() {
-      const { name } = this.row
-      delete this.customKeyBindings[name]
-      this.checkEditable()
-    },
-    updateCustomBinding(text: string) {
-      console.log('update', text)
-      const { name } = this.row
-      this.customKeyBindings[name] = text
-    },
-  },
-})
+interface Row {
+  name: string
+  displayName: string
+}
+
+const keymapOptions = getComponentSettings<Options>('keymap').options
+
+const { row, selectedPreset } = defineProps<{
+  row: Row
+  selectedPreset: string
+}>()
+
+const customBindingTextBox = useTemplateRef('customBindingTextBox')
+
+const customKeyBindings = ref<Record<string, string>>(keymapOptions.customKeyBindings)
+const editable = ref(false)
+
+const checkEditable = () => {
+  editable.value = customKeyBindings.value[row.name] !== undefined
+}
+
+const showReadonlyKey = (preset: Record<string, string>) => {
+  const { name } = row
+  const key = preset[name]
+  if (key === undefined) {
+    return '继承'
+  }
+  if (key === '') {
+    return '禁用'
+  }
+  return key
+}
+
+const isOverwrittern = (...higherPresets: Record<string, string>[]) => {
+  const { name } = row
+  return higherPresets.some(p => p[name] !== undefined)
+}
+
+const addCustomBinding = async () => {
+  const { name } = row
+  customKeyBindings.value[name] = ''
+  checkEditable()
+  await nextTick()
+  customBindingTextBox.value.inputRef.focus()
+}
+
+const removeCustomBinding = () => {
+  const { name } = row
+  delete customKeyBindings.value[name]
+  checkEditable()
+}
+
+const updateCustomBinding = (text: string) => {
+  console.log('update', text)
+  const { name } = row
+  customKeyBindings.value[name] = text
+}
+
+checkEditable()
 </script>
 <style lang="scss">
 @import 'common';

@@ -26,11 +26,21 @@
     <div class="online-registry-header">
       <div class="online-registry-header-search">
         <VIcon icon="search" :size="18" />
-        <TextBox v-model="searchKeyword" :disabled="loading" placeholder="搜索功能" />
+        <TextBox
+          :text="searchKeyword"
+          :disabled="loading"
+          placeholder="搜索功能"
+          @change="searchKeyword = $event"
+        />
       </div>
       <div class="online-registry-header-branch">
         分支:
-        <VDropdown v-model="selectedBranch" :disabled="loading" :items="registryBranches">
+        <VDropdown
+          :value="selectedBranch"
+          :disabled="loading"
+          :items="registryBranches"
+          @change="selectedBranch = $event"
+        >
           <template #item="{ item }">
             {{ item }}
           </template>
@@ -49,7 +59,7 @@
         </RadioButton>
       </div>
     </div>
-    <div class="online-registry-separator"></div>
+    <div class="online-registry-separator" />
     <div ref="content" class="online-registry-content">
       <VLoading v-if="loading" />
       <VEmpty v-if="!loading && !filteredList.length" />
@@ -70,8 +80,8 @@
     </div>
   </VPopup>
 </template>
-<script lang="ts">
-import { DocSourceItem } from 'registry/lib/docs'
+<script setup lang="ts">
+import { ref, watch, onMounted, useTemplateRef, nextTick } from 'vue'
 import { monkey } from '@/core/ajax'
 import { cdnRoots } from '@/core/cdn-types'
 import { meta } from '@/core/meta'
@@ -82,20 +92,25 @@ import RegistryItem from './RegistryItem.vue'
 import { registryBranches } from './third-party'
 import { ItemFilter } from './item-filter'
 import { getDescriptionText } from '@/components/description'
+import { DocSourceItem } from '../../../../../registry/lib/docs/types'
 
-type ExtendedSettings = ReturnType<typeof getGeneralSettings> & { registryBranch: string }
-const general = getGeneralSettings() as ExtendedSettings
-function updateList(keyword: string) {
-  if (!keyword) {
-    this.filteredList = this.list
-    return
-  }
-  this.filteredList = this.list.filter((it: DocSourceItem) => {
-    const text = [it.name, it.displayName, it.descriptionText].join('\n').toLowerCase()
-    return text.includes(keyword)
-  })
-  this.$nextTick().then(() => this.$refs.content.scrollTo(0, 0))
+const { open = false } = defineProps<{
+  open?: boolean
+}>()
+
+const emit = defineEmits<{
+  'update:open': [value: boolean]
+}>()
+
+const content = useTemplateRef('content')
+const items = useTemplateRef('items')
+
+interface ExtendedSettings extends ReturnType<typeof getGeneralSettings> {
+  registryBranch: string
 }
+
+const general = getGeneralSettings() as ExtendedSettings
+
 const itemFilterOptions = [
   {
     label: '全部',
@@ -111,96 +126,106 @@ const itemFilterOptions = [
   },
 ]
 
-export default Vue.extend({
-  components: {
-    VIcon,
-    VDropdown,
-    TextBox,
-    VPopup,
-    RegistryItem,
-    VLoading,
-    VEmpty,
-    RadioButton,
-  },
-  props: {
-    open: {
-      default: false,
-      type: Boolean,
-    },
-  },
-  data() {
-    const branches = [
-      general.registryBranch,
-      meta.compilationInfo.branch,
-      registryBranches[0],
-    ].filter(it => registryBranches.includes(it) && Boolean(it))
-    return {
-      searchKeyword: '',
-      popupOpen: false,
-      loading: false,
-      list: [],
-      itemFilter: ItemFilter.All,
-      itemFilterOptions,
-      filteredList: [],
-      // packList: [],
-      registryBranches,
-      selectedBranch: branches[0],
+const searchKeyword = ref('')
+const popupOpen = ref(false)
+const loading = ref(false)
+const list = ref<DocSourceItem[]>([])
+const itemFilter = ref(ItemFilter.All)
+const filteredList = ref<DocSourceItem[]>([])
+
+const branches = [general.registryBranch, meta.compilationInfo.branch, registryBranches[0]].filter(
+  it => registryBranches.includes(it) && Boolean(it),
+)
+
+const selectedBranch = ref(branches[0])
+
+const updateList = (keyword: string) => {
+  if (!keyword) {
+    filteredList.value = list.value
+    return
+  }
+  filteredList.value = list.value.filter((it: DocSourceItem) => {
+    const text = [it.name, it.displayName, it.descriptionText].join('\n').toLowerCase()
+    return text.includes(keyword)
+  })
+
+  nextTick().then(() => {
+    const element = content.value as HTMLElement
+    if (element) {
+      element.scrollTo(0, 0)
     }
-  },
-  watch: {
-    searchKeyword: lodash.debounce(updateList, 200),
-    selectedBranch(newBranch: string) {
-      general.registryBranch = newBranch
-      this.fetchFeatures()
-    },
-  },
-  mounted() {
-    this.fetchFeatures()
-  },
-  methods: {
-    async fetchFeatures() {
-      if (this.loading) {
-        return
-      }
-      const fetchPath = cdnRoots[general.cdnRoot](this.selectedBranch)
-      try {
-        this.loading = true
-        this.list = []
-        this.filteredList = []
-        const featureListUrl = `${fetchPath}doc/features/features.json`
-        const packListUrl = `${fetchPath}doc/features/pack/pack.json`
-        const featureList = await monkey({
-          url: featureListUrl,
-          responseType: 'json',
-        })
-        const packList = await monkey({
-          url: packListUrl,
-          responseType: 'json',
-        })
-        if (!Array.isArray(featureList) || !Array.isArray(packList)) {
-          console.error('Fetch failed:', featureList, packList, featureListUrl, packListUrl)
-          throw new Error('获取在线仓库数据失败, 请尝试在通用设置中设置其他更新源, 然后再试一次.')
+  })
+}
+
+const fetchFeatures = async () => {
+  if (loading.value) {
+    return
+  }
+  const fetchPath = cdnRoots[general.cdnRoot](selectedBranch.value)
+  try {
+    loading.value = true
+    list.value = []
+    filteredList.value = []
+    const featureListUrl = `${fetchPath}doc/features/features.json`
+    const packListUrl = `${fetchPath}doc/features/pack/pack.json`
+    const featureList = await monkey({
+      url: featureListUrl,
+      responseType: 'json',
+    })
+    const packList = await monkey({
+      url: packListUrl,
+      responseType: 'json',
+    })
+    if (!Array.isArray(featureList) || !Array.isArray(packList)) {
+      console.error('Fetch failed:', featureList, packList, featureListUrl, packListUrl)
+      throw new Error('获取在线仓库数据失败, 请尝试在通用设置中设置其他更新源, 然后再试一次.')
+    }
+    list.value = await Promise.all(
+      [...packList, ...featureList].map(async it => {
+        return {
+          ...it,
+          descriptionText: await getDescriptionText(it),
         }
-        this.list = await Promise.all(
-          [...packList, ...featureList].map(async it => {
-            return {
-              ...it,
-              descriptionText: await getDescriptionText(it),
-            }
-          }),
-        )
-        console.log(this.list)
-        updateList.call(this, this.searchKeyword)
-      } catch (error) {
-        logError(error)
-      } finally {
-        this.loading = false
-      }
-    },
-    checkInstalled() {
-      this.$refs.items?.forEach((item: any) => item.checkInstalled())
-    },
+      }),
+    )
+    console.log(list.value)
+    updateList(searchKeyword.value)
+  } catch (error) {
+    logError(error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const checkInstalled = () => {
+  const itemsArray = Array.isArray(items.value) ? items.value : [items.value]
+  itemsArray.forEach((item: any) => item?.checkInstalled?.())
+}
+
+watch(
+  () => open,
+  value => {
+    popupOpen.value = value
   },
+)
+
+watch(popupOpen, value => {
+  emit('update:open', value)
+})
+
+watch(searchKeyword, lodash.debounce(updateList, 200))
+
+watch(selectedBranch, newBranch => {
+  general.registryBranch = newBranch
+  fetchFeatures()
+})
+
+onMounted(() => {
+  fetchFeatures()
+})
+
+defineExpose({
+  popupOpen,
 })
 </script>
 <style lang="scss">

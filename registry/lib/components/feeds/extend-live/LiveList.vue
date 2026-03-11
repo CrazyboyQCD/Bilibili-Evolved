@@ -21,7 +21,7 @@
     </div>
     <div class="be-live-list-search">
       <VIcon icon="search" :size="18" />
-      <TextBox v-model="keyword" placeholder="搜索" />
+      <TextBox :text="keyword" placeholder="搜索" @change="keyword = $event" />
     </div>
     <div class="be-live-list-content">
       <VLoading v-if="!loaded" />

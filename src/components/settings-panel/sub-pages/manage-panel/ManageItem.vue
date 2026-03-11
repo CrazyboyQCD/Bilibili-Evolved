@@ -1,13 +1,27 @@
 <template>
-  <div class="manage-item" :class="{ virtual }">
-    <slot v-if="!virtual"></slot>
+  <div ref="root" class="manage-item" :class="{ virtual }">
+    <slot v-if="!virtual" />
   </div>
 </template>
-<script lang="ts">
-import { virtualScrollMixin } from '../../mixins'
+<script setup lang="ts">
+import { onMounted, ref, useTemplateRef } from 'vue'
 
-export default Vue.extend({
-  mixins: [virtualScrollMixin('.manage-panel .manage-item-list')],
+const root = useTemplateRef('root')
+const virtual = ref(false)
+
+onMounted(async () => {
+  const { dq } = await import('@/core/utils')
+  const { visibleInside } = await import('@/core/observer')
+  const container = dq('.manage-panel .manage-item-list') as HTMLElement
+  if (!container) {
+    console.warn('virtual container not found, virtual scroll will be disabled!')
+    return
+  }
+  visibleInside(root.value, container, '150% 0px', records => {
+    records.forEach(record => {
+      virtual.value = !record.isIntersecting
+    })
+  })
 })
 </script>
 <style lang="scss">

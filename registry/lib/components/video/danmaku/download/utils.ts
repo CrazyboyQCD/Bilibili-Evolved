@@ -52,7 +52,7 @@ export class JsonDanmaku {
     }
     console.log('segment count =', total)
     const segments = await Promise.all(
-      new Array(total).fill(0).map(async (_, index) => {
+      Array.from({ length: total }, async (_, index) => {
         try {
           const result = await getDanmakuSegment(this.aid, this.cid, index)
           const elements: any[] = result.elems ?? []
@@ -184,8 +184,6 @@ export const getUserDanmakuConfig = async () => {
             continue
           }
           switch (b.t) {
-            default:
-              return true
             case 'keyword': {
               if (danmaku.content.includes(b.v)) {
                 return false
@@ -204,6 +202,8 @@ export const getUserDanmakuConfig = async () => {
               }
               break
             }
+            default:
+              return true
           }
         }
         return true
@@ -279,15 +279,15 @@ export const getBlobByType = async (
         type: 'text/xml',
       })
     }
-    default:
-    case 'json': {
-      return new Blob([JSON.stringify(danmaku.jsonDanmakus, undefined, 2)], {
-        type: 'text/json',
-      })
-    }
     case 'ass': {
       return new Blob([await convertToAssFromJson(danmaku)], {
         type: 'text/ass',
+      })
+    }
+    case 'json':
+    default: {
+      return new Blob([JSON.stringify(danmaku.jsonDanmakus, undefined, 2)], {
+        type: 'text/json',
       })
     }
   }

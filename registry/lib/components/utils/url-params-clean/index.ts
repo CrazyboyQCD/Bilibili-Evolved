@@ -5,13 +5,11 @@ import {
 } from '@/components/define'
 import { getComponentSettings } from '@/core/settings'
 import { isIframe, isNotHtml, matchPattern } from '@/core/utils'
-import { useScopedConsole } from '@/core/utils/log'
 import { registerAndGetData } from '@/plugins/data'
 import { cleanAnchors } from './anchor'
+import { console } from './console'
+import { displayName, name } from './common'
 
-const displayName = '网址参数清理'
-const name = 'urlParamsClean'
-export const console = useScopedConsole(displayName)
 const entry = async () => {
   if (isNotHtml() || isIframe()) {
     return
@@ -125,14 +123,9 @@ const entry = async () => {
       if (blockParams.some(b => p.startsWith(`${b}=`))) {
         return false
       }
-      if (
-        siteSpecifiedParams.some(
-          ({ match, param }) => document.URL.match(match) && p.startsWith(`${param}=`),
-        )
-      ) {
-        return false
-      }
-      return true
+      return !siteSpecifiedParams.some(
+        ({ match, param }) => document.URL.match(match) && p.startsWith(`${param}=`),
+      )
     })
     const filteredParamsString = filteredParams.join('&')
     tailingSlash.forEach(({ match }) => {
@@ -162,7 +155,7 @@ const entry = async () => {
         try {
           return new URL(url, location.origin + location.pathname).toString()
         } catch (error) {
-          console.warn('History API URL', `解析失败: ${url}`)
+          console.warn('History API URL', `解析失败: ${url} 错误: ${error}`)
           return url
         }
       })()

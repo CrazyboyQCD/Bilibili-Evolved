@@ -5,7 +5,8 @@ import { logError } from '@/core/utils/log'
 import { formatTitle } from '@/core/utils/title'
 import { bangumiUrls } from '@/core/utils/urls'
 import { DownloadVideoInput } from '../../types'
-import { createEpisodesPicker, EpisodeItem } from '../episode-item'
+import { createEpisodesPicker } from '../episode-item'
+import { EpisodeItem } from '../episode-item-types'
 
 export const bangumiBatchInput: DownloadVideoInput = {
   name: 'bangumi.batch',
@@ -14,7 +15,7 @@ export const bangumiBatchInput: DownloadVideoInput = {
   batch: true,
   getInputs: async instance => instance?.checkedInputItems ?? [],
   component: async () =>
-    createEpisodesPicker(async instance => {
+    createEpisodesPicker(async maxCheckedItems => {
       const metadata = dq('script[type="application/ld+json"]')
       if (!metadata) {
         logError('获取番剧数据失败: 无法找到 Metadata')
@@ -45,7 +46,7 @@ export const bangumiBatchInput: DownloadVideoInput = {
           return {
             key: it.cid,
             title: `${nText} - ${title}`,
-            isChecked: index < instance.maxCheckedItems,
+            isChecked: index < maxCheckedItems,
             inputItem: {
               aid: it.aid,
               cid: it.cid,

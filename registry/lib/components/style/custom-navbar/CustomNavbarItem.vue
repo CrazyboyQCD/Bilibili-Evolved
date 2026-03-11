@@ -17,7 +17,7 @@
       <template v-if="typeof item.content === 'string'">
         {{ item.content }}
       </template>
-      <component :is="item.content" v-else :item="item"></component>
+      <component :is="item.content" v-else :item="item" />
     </CustomNavbarLink>
     <div
       v-else
@@ -27,7 +27,7 @@
       <template v-if="typeof item.content === 'string'">
         {{ item.content }}
       </template>
-      <component :is="item.content" v-else :item="item"></component>
+      <component :is="item.content" v-else :item="item" />
     </div>
 
     <div v-show="!item.active" class="notify-count">
@@ -46,124 +46,110 @@
           :is="item.popupContent"
           v-if="item.requestedPopup"
           ref="popup"
-          :container="$refs.popupContainer"
+          :container="popupContainer"
           :item="item"
-        ></component>
+          @updateItemNotifyCount="(v: number) => emit('updateItemNotifyCount', v)"
+        />
       </div>
     </div>
-    <div class="active-bar"></div>
+    <div class="active-bar" />
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount, useTemplateRef } from 'vue'
 import { addComponentListener, removeComponentListener } from '@/core/settings'
 import CustomNavbarLink from './CustomNavbarLink.vue'
 import { CustomNavbarItem } from './custom-navbar-item'
 
-const isOpenInNewTab = (item: CustomNavbarItem) => {
-  const { name } = item
+const { item } = defineProps<{
+  item: CustomNavbarItem
+}>()
+
+const emit = defineEmits<{
+  updateItemRequestedPopup: [val: boolean]
+  updateItemNotifyCount: [val: number]
+}>()
+const popup = useTemplateRef('popup')
+const popupContainer = useTemplateRef('popupContainer')
+
+const isOpenInNewTab = (navbarItem: CustomNavbarItem) => {
+  const { name } = navbarItem
   const options = CustomNavbarItem.navbarOptions
   if (name in options.openInNewTabOverrides) {
     return options.openInNewTabOverrides[name]
   }
   return options.openInNewTab
 }
-export default Vue.extend({
-  components: {
-    CustomNavbarLink,
-  },
-  props: {
-    item: {
-      type: CustomNavbarItem,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      newTab: isOpenInNewTab(this.item),
-      cancelListeners: none,
-      inputWithin: false,
-    }
-  },
-  mounted() {
-    const navbarItem = this.item as CustomNavbarItem
-    navbarItem.contentMounted?.(navbarItem)
-    const listener = () => {
-      this.updateLinkOption()
-    }
-    addComponentListener('customNavbar.openInNewTabOverrides', listener)
-    addComponentListener('customNavbar.openInNewTab', listener)
-    this.cancelListeners = () => {
-      removeComponentListener('customNavbar.openInNewTabOverrides', listener)
-      removeComponentListener('customNavbar.openInNewTab', listener)
-    }
-  },
-  beforeDestroy() {
-    this.cancelListeners?.()
-  },
-  methods: {
-    toggleInputWithin(e: FocusEvent, value: boolean) {
-      if (!(e.target instanceof HTMLInputElement)) {
-        this.inputWithin = false
-        return
-      }
-      this.inputWithin = value
-    },
-    updateLinkOption() {
-      this.newTab = isOpenInNewTab(this.item)
-    },
-    popupClasses(item: CustomNavbarItem & { iframeName?: string }) {
-      return {
-        transparent: item.transparentPopup,
-        'no-padding': item.noPopupPadding,
-        'iframe-container': item.iframeName,
-      }
-    },
-    triggerPopupShow: lodash.debounce(function trigger(initialPopup: boolean) {
-      const { popup } = this.$refs
-      if (!popup) {
-        return
-      }
-      const allowRefresh =
-        CustomNavbarItem.navbarOptions.refreshOnPopup &&
-        popup.popupRefresh &&
-        typeof popup.popupRefresh === 'function'
-      if (!initialPopup && allowRefresh) {
-        popup.popupRefresh()
-      }
-      if (popup.popupShow && typeof popup.popupShow === 'function') {
-        popup.popupShow()
-      }
-    }, 300),
-    async requestPopup() {
-      const { item } = this as {
-        item: CustomNavbarItem
-      }
-      /** 惰性加载的, 要在鼠标经过时加载 popup */
-      if (item.disabled) {
-        return
-      }
-      if (!item.requestedPopup) {
-        item.requestedPopup = true
-        this.triggerPopupShow(true)
-        return
-      }
-      this.triggerPopupShow(false)
-    },
-    // async initPopper() {
-    //   const { popupContainer } = this.$refs
-    //   const navbarItem = this.item as CustomNavbarItem
-    //   console.log(navbarItem.name, this.$refs, popupContainer, navbarItem.popper)
-    //   if (!popupContainer || navbarItem.popper) {
-    //     console.log('return')
-    //     return
-    //   }
-    //   console.log('createPopper', createPopper)
-    //   navbarItem.popper = createPopper(navbarItem.element, popupContainer, {
-    //     placement: 'bottom',
-    //   })
-    // },
-  },
+
+const newTab = ref(isOpenInNewTab(item))
+const cancelListeners = ref<(() => void) | null>(none)
+const inputWithin = ref(false)
+
+const toggleInputWithin = (e: FocusEvent, value: boolean) => {
+  if (!(e.target instanceof HTMLInputElement)) {
+    inputWithin.value = false
+    return
+  }
+  inputWithin.value = value
+}
+
+const updateLinkOption = () => {
+  newTab.value = isOpenInNewTab(item)
+}
+
+const popupClasses = (navbarItem: CustomNavbarItem & { iframeName?: string }) => {
+  return {
+    transparent: navbarItem.transparentPopup,
+    'no-padding': navbarItem.noPopupPadding,
+    'iframe-container': navbarItem.iframeName,
+  }
+}
+
+const triggerPopupShow = lodash.debounce((initialPopup: boolean) => {
+  if (!popup.value) {
+    return
+  }
+  const allowRefresh =
+    CustomNavbarItem.navbarOptions.refreshOnPopup &&
+    popup.value.popupRefresh &&
+    typeof popup.value.popupRefresh === 'function'
+  if (!initialPopup && allowRefresh) {
+    popup.value.popupRefresh()
+  }
+  if (popup.value.popupShow && typeof popup.value.popupShow === 'function') {
+    popup.value.popupShow()
+  }
+}, 300)
+
+const requestPopup = async () => {
+  /** 惰性加载的, 要在鼠标经过时加载 popup */
+  if (item.disabled) {
+    return
+  }
+  if (!item.requestedPopup) {
+    emit('updateItemRequestedPopup', true)
+    triggerPopupShow(true)
+    return
+  }
+  triggerPopupShow(false)
+}
+
+onMounted(() => {
+  item.contentMounted?.(item)
+  const listener = () => {
+    updateLinkOption()
+  }
+  addComponentListener('customNavbar.openInNewTabOverrides', listener)
+  addComponentListener('customNavbar.openInNewTab', listener)
+  cancelListeners.value = () => {
+    removeComponentListener('customNavbar.openInNewTabOverrides', listener)
+    removeComponentListener('customNavbar.openInNewTab', listener)
+  }
+})
+
+onBeforeUnmount(() => {
+  cancelListeners.value()
 })
 </script>
 

@@ -1,7 +1,7 @@
 <template>
   <div class="video-feeds">
-    <VLoading v-if="loading"></VLoading>
-    <VEmpty v-else-if="!loading && cards.length === 0"></VEmpty>
+    <VLoading v-if="loading" />
+    <VEmpty v-else-if="!loading && cards.length === 0" />
     <template v-else>
       <div class="video-feeds-content">
         <transition-group name="cards" tag="div" class="left-column">
@@ -12,7 +12,7 @@
             :is-new="c.new"
             :show-stats="false"
             :data="c"
-          ></VideoCard>
+          />
         </transition-group>
         <transition-group name="cards" tag="div" class="right-column">
           <VideoCard
@@ -22,20 +22,22 @@
             :is-new="c.new"
             :show-stats="false"
             :data="c"
-          ></VideoCard>
+          />
         </transition-group>
       </div>
-      <ScrollTrigger v-if="hasMorePage" @trigger="nextPage()"></ScrollTrigger>
+      <ScrollTrigger v-if="hasMorePage" @trigger="nextPage()" />
     </template>
   </div>
 </template>
-<script lang="ts">
-import { VideoCard } from '@/components/feeds/video-card'
+<script setup lang="ts">
+import { computed } from 'vue'
+import { VLoading, VEmpty, ScrollTrigger } from '@/ui'
+import type { VideoCard as VideoCardData } from '@/components/feeds/video-card'
+import VideoCard from '@/components/feeds/VideoCard.vue'
 import { formatDuration, formatCount, parseDuration, parseCount } from '@/core/utils/formatters'
 import { isNewID } from '@/components/feeds/notify'
 import { feedsCardTypes, groupVideoFeeds } from '@/components/feeds/api'
-import VideoCardComponent from '@/components/feeds/VideoCard.vue'
-import { nextPageMixin } from './next-page'
+import { useNextPage } from './next-page'
 
 const formatPubTime = (pubTime: number) => {
   const now = Number(new Date())
@@ -74,51 +76,46 @@ const formatPubTimeText = (pubTime: number) => {
   }
   return `${date.map(it => it.toString().padStart(2, '0')).join('-')}`
 }
-export default Vue.extend({
-  components: {
-    VideoCard: VideoCardComponent,
-  },
-  mixins: [
-    nextPageMixin(feedsCardTypes.video, (card: any) => {
-      const archive = lodash.get(card, 'modules.module_dynamic.major.archive')
-      const author = lodash.get(card, 'modules.module_author')
-      return {
-        id: card.id_str,
-        aid: parseInt(archive.aid),
-        bvid: archive.bvid,
-        videoUrl: `https://www.bilibili.com/${archive.bvid}`,
-        coverUrl: archive.cover,
-        title: archive.title,
-        duration: parseDuration(archive.duration_text),
-        durationText: formatDuration(parseDuration(archive.duration_text)),
-        description: archive.desc,
-        pubTime: formatPubTime(author.pub_ts * 1000),
-        pubTimeText: formatPubTimeText(author.pub_ts * 1000),
-        upFaceUrl: author.face,
-        upName: author.name,
-        upID: author.mid,
-        watchlater: true,
-        playCount: formatCount(parseCount(archive.stat.play)),
-        get new() {
-          return isNewID(this.id)
-        },
-      } as VideoCard
-    }),
-  ],
-  computed: {
-    columnedCards() {
-      const { cards } = this as { cards: VideoCard[] }
-      return {
-        left: cards.filter((_, index) => index % 2 === 0),
-        right: cards.filter((_, index) => index % 2 !== 0),
-      }
+
+const onCardsUpdate = (newCards: (VideoCardData & { new: boolean })[]) => {
+  return groupVideoFeeds(newCards)
+}
+const jsonMapper = (card: any): VideoCardData & { new: boolean } => {
+  const archive = lodash.get(card, 'modules.module_dynamic.major.archive')
+  const author = lodash.get(card, 'modules.module_author')
+  return {
+    id: card.id_str,
+    aid: parseInt(archive.aid),
+    bvid: archive.bvid,
+    videoUrl: `https://www.bilibili.com/${archive.bvid}`,
+    coverUrl: archive.cover,
+    title: archive.title,
+    duration: parseDuration(archive.duration_text),
+    durationText: formatDuration(parseDuration(archive.duration_text)),
+    description: archive.desc,
+    pubTime: formatPubTime(author.pub_ts * 1000),
+    pubTimeText: formatPubTimeText(author.pub_ts * 1000),
+    upFaceUrl: author.face,
+    upName: author.name,
+    upID: author.mid,
+    watchlater: true,
+    playCount: formatCount(parseCount(archive.stat.play)),
+    get new() {
+      return isNewID(this.id)
     },
-  },
-  methods: {
-    onCardsUpdate(cards: VideoCard[]) {
-      return groupVideoFeeds(cards)
-    },
-  },
+  } as VideoCardData & { new: boolean }
+}
+const { loading, cards, hasMorePage, nextPage } = useNextPage<VideoCardData & { new: boolean }>(
+  feedsCardTypes.video,
+  jsonMapper,
+  onCardsUpdate,
+)
+
+const columnedCards = computed(() => {
+  return {
+    left: cards.value.filter((_, index) => index % 2 === 0),
+    right: cards.value.filter((_, index) => index % 2 !== 0),
+  }
 })
 </script>
 <style lang="scss" scoped>

@@ -13,9 +13,10 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue'
 import { getJsonWithCredentials } from '@/core/ajax'
-import { popperMixin } from '../mixins'
+import { usePopper, UsePopperProps } from '../mixins'
 
 interface MessageEntry {
   prop?: string
@@ -58,81 +59,93 @@ const entries = [
     name: '消息设置',
   },
 ] as MessageEntry[]
-export default Vue.extend({
-  name: 'MessagesPopup',
-  mixins: [popperMixin],
-  data() {
-    return {
-      entries: entries.map(e => {
-        e.count = 0
-        return e
-      }),
-      settings: {
-        notify: true,
-        hideNotFollowedCount: false,
-        json: {},
-      },
-    }
-  },
-  async created() {
-    await this.fetchSettings()
-    this.notify()
-  },
-  methods: {
-    popupRefresh() {
-      this.notify()
-    },
-    async fetchSettings() {
-      const json = await getJsonWithCredentials(
-        'https://api.vc.bilibili.com/link_setting/v1/link_setting/get?msg_notify=1&show_unfollowed_msg=1',
-      )
-      if (json.code !== 0) {
-        return
-      }
-      this.settings = {
-        notify: json.data.msg_notify !== 3,
-        hideNotFollowedCount: json.data.show_unfollowed_msg === 1,
-        json: json.data,
-      }
-    },
-    async notify() {
-      if (!this.settings.notify) {
-        return
-      }
-      const [mainJson, messageJson] = await Promise.all([
-        getJsonWithCredentials('https://api.bilibili.com/x/msgfeed/unread'),
-        getJsonWithCredentials(
-          'https://api.vc.bilibili.com/session_svr/v1/session_svr/single_unread',
-        ),
-      ])
-      mainJson.data.user_msg = messageJson.data.follow_unread || 0
-      if (!this.settings.hideNotFollowedCount) {
-        mainJson.data.user_msg += messageJson.data.unfollow_unread || 0
-      }
+const props = defineProps<UsePopperProps>()
+const popper = usePopper(props)
 
-      this.item.notifyCount = entries.reduce(
-        (acc, it) => acc + (it.prop ? mainJson.data[it.prop] : 0),
-        0,
-      )
-      if (!this.item.notifyCount) {
-        return
+const emit = defineEmits<{
+  updateItemNotifyCount: [count: number]
+}>()
+
+const entriesRef = ref<(MessageEntry & { count: number })[]>(entries.map(e => ({ ...e, count: 0 })))
+const settings = ref({
+  notify: true,
+  hideNotFollowedCount: false,
+  json: {},
+})
+
+const fetchSettings = async () => {
+  const json = await getJsonWithCredentials(
+    'https://api.vc.bilibili.com/link_setting/v1/link_setting/get?msg_notify=1&show_unfollowed_msg=1',
+  )
+  if (json.code !== 0) {
+    return
+  }
+  settings.value = {
+    notify: json.data.msg_notify !== 3,
+    hideNotFollowedCount: json.data.show_unfollowed_msg === 1,
+    json: json.data,
+  }
+}
+
+const notify = async () => {
+  if (!settings.value.notify) {
+    return
+  }
+  const [mainJson, messageJson] = await Promise.all([
+    getJsonWithCredentials('https://api.bilibili.com/x/msgfeed/unread'),
+    getJsonWithCredentials('https://api.vc.bilibili.com/session_svr/v1/session_svr/single_unread'),
+  ])
+  mainJson.data.user_msg = messageJson.data.follow_unread || 0
+  if (!settings.value.hideNotFollowedCount) {
+    mainJson.data.user_msg += messageJson.data.unfollow_unread || 0
+  }
+
+  emit(
+    'updateItemNotifyCount',
+    entries.reduce((acc, it) => acc + (it.prop ? mainJson.data[it.prop] : 0), 0),
+  )
+  if (!props.item.notifyCount) {
+    return
+  }
+  console.log(entries)
+  entries.forEach(e => {
+    if (!e.prop) {
+      return
+    }
+    const count = mainJson.data[e.prop] as number
+    console.log(e.prop, e.count, count)
+    if (count > 0) {
+      const entry = entriesRef.value.find(_e => _e.prop === e.prop)
+      if (entry) {
+        entry.count = count
       }
-      console.log(entries)
-      entries.forEach(e => {
-        if (!e.prop) {
-          return
-        }
-        const count = mainJson.data[e.prop] as number
-        console.log(e.prop, e.count, count)
-        if (count > 0) {
-          e.count = count
-        }
-      })
-    },
-    clearCount(entry: MessageEntry) {
-      this.item.notifyCount -= entry.count
-      entry.count = 0
-    },
+    }
+  })
+}
+
+const clearCount = (entry: MessageEntry) => {
+  emit('updateItemNotifyCount', props.item.notifyCount - (entry.count || 0))
+  const targetEntry = entriesRef.value.find(e => e.prop === entry.prop)
+  if (targetEntry) {
+    targetEntry.count = 0
+  }
+}
+
+const popupRefresh = () => {
+  notify()
+}
+
+const init = async () => {
+  await fetchSettings()
+  notify()
+}
+
+init()
+
+defineExpose({
+  popupShow() {
+    popper.popupShow()
+    popupRefresh()
   },
 })
 </script>

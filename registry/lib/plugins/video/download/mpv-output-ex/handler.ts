@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from 'vue'
 import { monkey } from '@/core/ajax'
 import { logError } from '@/core/utils/log'
 import { DownloadVideoOutput } from '../../../../components/video/download/types'
@@ -24,7 +25,7 @@ const getPastebinUrl = async (str: string, config: ConfigDataType) => {
     responseType: 'text',
     fetch: true,
   })
-  if (/^Bad API request,/.test(response)) {
+  if (response.startsWith('Bad API request,')) {
     throw response
   }
 
@@ -67,5 +68,5 @@ export const MPV_Ex: DownloadVideoOutput<ConfigDataType> = {
     console.log(finalURL)
     window.open(finalURL)
   },
-  component: () => import('./Config.vue').then(m => m.default),
+  component: defineAsyncComponent(() => import('./Config.vue')),
 }

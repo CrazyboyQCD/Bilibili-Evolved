@@ -18,7 +18,7 @@ const options = defineOptionsMetadata({
 export type Options = OptionsOfMetadata<typeof options>
 
 const entry: ComponentEntry<Options> = async ({ settings }) => {
-  const { videoChange } = await import('@/core/observer')
+  const { videoChange } = await import('@/core/video')
   videoChange(async () => {
     const { select } = await import('@/core/spin-query')
     const { descendingSort } = await import('@/core/utils/sort')

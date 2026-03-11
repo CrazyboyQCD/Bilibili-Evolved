@@ -5,66 +5,60 @@
     :class="{ on, ...displayModeClass }"
     @click="toggle()"
   >
-    <VIcon class="icon" :size="28" icon="mdi-timetable"></VIcon>
+    <VIcon class="icon" :size="28" icon="mdi-timetable" />
     <span class="text">稍后再看</span>
     <div class="tip" :class="{ show: tipShowing }">{{ tipText }}</div>
   </span>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 import { VIcon } from '@/ui'
 import { watchlaterList, toggleWatchlater } from '@/components/video/watchlater'
-import { DisplayMode, Options } from './options'
+import { DisplayMode, OuterWatchlaterOptions } from './options'
 import { addComponentListener, getComponentSettings } from '@/core/settings'
 
-export default Vue.extend({
-  components: {
-    VIcon,
-  },
-  data() {
-    const { displayMode } = getComponentSettings<Options>('outerWatchlater').options
-    return {
-      watchlaterList,
-      displayMode,
-      aid: unsafeWindow.aid,
-      tipText: '',
-      tipShowing: false,
-      tipHandle: 0,
-    }
-  },
-  computed: {
-    on() {
-      console.log(this.watchlaterList, this.aid, this.watchlaterList.includes(parseInt(this.aid)))
-      return this.watchlaterList.includes(parseInt(this.aid))
-    },
-    displayModeClass() {
-      return {
-        'icon-only': this.displayMode === DisplayMode.Icon,
-        'icon-and-text': this.displayMode === DisplayMode.IconAndText,
-      }
-    },
-  },
-  created() {
-    addComponentListener('outerWatchlater.displayMode', (value: DisplayMode) => {
-      this.displayMode = value
-    })
-  },
-  methods: {
-    showTip(text: string) {
-      this.tipText = text
-      this.tipShowing = true
-      if (this.tipHandle) {
-        clearTimeout(this.tipHandle)
-      }
-      this.tipHandle = setTimeout(() => {
-        this.tipShowing = false
-      }, 2000)
-    },
-    async toggle() {
-      await toggleWatchlater(this.aid)
-      this.showTip(this.on ? '已添加至稍后再看' : '已从稍后再看移除')
-    },
-  },
+const { displayMode: initialDisplayMode } =
+  getComponentSettings<OuterWatchlaterOptions>('outerWatchlater').options
+
+const displayModeRef = ref(initialDisplayMode)
+const aid = ref(unsafeWindow.aid)
+const tipText = ref('')
+const tipShowing = ref(false)
+let tipHandle = 0
+
+const on = computed(() => {
+  console.log(watchlaterList, aid, watchlaterList.includes(parseInt(aid.value)))
+  return watchlaterList.includes(parseInt(aid.value))
+})
+
+const displayModeClass = computed(() => ({
+  'icon-only': displayModeRef.value === DisplayMode.Icon,
+  'icon-and-text': displayModeRef.value === DisplayMode.IconAndText,
+}))
+
+addComponentListener('outerWatchlater.displayMode', (value: DisplayMode) => {
+  displayModeRef.value = value
+})
+
+const showTip = (text: string) => {
+  tipText.value = text
+  tipShowing.value = true
+  if (tipHandle) {
+    clearTimeout(tipHandle)
+  }
+  tipHandle = window.setTimeout(() => {
+    tipShowing.value = false
+  }, 2000)
+}
+
+const toggle = async () => {
+  await toggleWatchlater(aid.value)
+  showTip(on.value ? '已添加至稍后再看' : '已从稍后再看移除')
+}
+
+defineExpose({
+  aid,
 })
 </script>
 

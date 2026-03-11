@@ -4,7 +4,7 @@
       ref="medalPopup"
       v-model="medalOpen"
       class="badge-popup widgets-popup medal"
-      :trigger-element="$refs.medalButton"
+      :trigger-element="medalButton.root.root"
     >
       <ul>
         <li
@@ -30,7 +30,7 @@
       ref="titlePopup"
       v-model="titleOpen"
       class="badge-popup widgets-popup title"
-      :trigger-element="$refs.titleButton"
+      :trigger-element="titleButton.root.root"
     >
       <ul>
         <li
@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, Ref, ref, useTemplateRef } from 'vue'
 import { addComponentListener, getComponentSettings } from '@/core/settings'
 import { descendingSort } from '@/core/utils/sort'
 import { DefaultWidget, VPopup } from '@/ui'
@@ -59,9 +59,11 @@ import { Medal, Title, Badge, getMedalList, getTitleList } from './badge'
 import { BadgeHelperOptions } from './options'
 
 const { options } = getComponentSettings<BadgeHelperOptions>('badgeHelper')
+const medalButton = useTemplateRef('medalButton')
+const titleButton = useTemplateRef('titleButton')
 const element = ref<HTMLElement>()
-const medalList = ref<Medal[]>([])
-const titleList = ref<Title[]>([])
+const medalList = ref([]) as Ref<Medal[]>
+const titleList = ref([]) as Ref<Title[]>
 const medalOpen = ref(false)
 const titleOpen = ref(false)
 const grayEffect = ref(true)

@@ -1,8 +1,8 @@
 import { readFileSync, existsSync } from 'fs'
 
 interface DevServerConfig {
-  port?: number
-  maxWatchers?: number
+  port: number
+  maxWatchers: number
 }
 const configFile = (path: string) => () =>
   existsSync(path) ? JSON.parse(readFileSync(path, { encoding: 'utf-8' })) : {}
@@ -15,5 +15,5 @@ const configSource: (() => DevServerConfig)[] = [
 ]
 export const devServerConfig = configSource.reduce(
   (previous, current) => ({ ...previous, ...current() }),
-  {} as DevServerConfig,
-)
+  {} as Partial<DevServerConfig>,
+) as DevServerConfig

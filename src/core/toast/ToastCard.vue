@@ -5,7 +5,7 @@
     @mouseover="stopTimer"
     @mouseout="startTimer"
   >
-    <div class="toast-card-border"></div>
+    <div class="toast-card-border" />
     <div class="toast-card-header">
       <h1 class="toast-card-title">
         {{ card.title }}
@@ -25,7 +25,7 @@
         <VIcon icon="close" :size="14" />
       </div>
     </div>
-    <div class="toast-card-message" v-html="card.message"></div>
+    <div class="toast-card-message" v-html="card.message" />
   </div>
 </template>
 
@@ -34,17 +34,15 @@ import { ref, onMounted } from 'vue'
 import { VIcon, ProgressRing } from '@/ui'
 import type { Toast } from '.'
 
-interface Props {
+const { card } = defineProps<{
   card: Toast
-}
-
-const props = defineProps<Props>()
+}>()
 
 const progressMax = ref(0)
 const remainingTime = ref(0)
 
 const durationTick = () => {
-  const { closeTime } = props.card
+  const { closeTime } = card
   if (!closeTime) {
     return
   }
@@ -55,7 +53,7 @@ const durationTick = () => {
 }
 
 const readDuration = () => {
-  const { duration, closeTime } = props.card
+  const { duration, closeTime } = card
   if (duration) {
     progressMax.value = closeTime - Number(new Date())
     remainingTime.value = progressMax.value
@@ -64,13 +62,13 @@ const readDuration = () => {
 }
 
 const stopTimer = () => {
-  props.card.clearDuration()
+  card.clearDuration()
   progressMax.value = 0
   remainingTime.value = 0
 }
 
 const startTimer = () => {
-  props.card.setDuration()
+  card.setDuration()
   readDuration()
 }
 

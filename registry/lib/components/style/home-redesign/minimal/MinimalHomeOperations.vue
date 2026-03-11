@@ -6,8 +6,10 @@
       class="minimal-home-operations-refresh"
       title="刷新"
       @click="
-        backToTop()
-        $emit('refresh')
+        () => {
+          backToTop()
+          emit('refresh')
+        }
       "
     >
       <VIcon icon="mdi-refresh" :size="size" />
@@ -17,22 +19,18 @@
     </VButton>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import { VButton, VIcon } from '@/ui'
 
-export default Vue.extend({
-  components: { VButton, VIcon },
-  data() {
-    return {
-      size: 28,
-    }
-  },
-  methods: {
-    backToTop() {
-      window.scrollTo(0, 0)
-    },
-  },
-})
+const size = 28
+
+const backToTop = () => {
+  window.scrollTo(0, 0)
+}
+
+const emit = defineEmits<{
+  refresh: []
+}>()
 </script>
 <style lang="scss">
 @import 'common';

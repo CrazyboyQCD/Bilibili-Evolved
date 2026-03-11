@@ -1,18 +1,13 @@
 <template>
   <div class="comment-content-replace-extra-options">
     <div class="comment-content-replace-rows">
-      <template v-for="(row, index) of rows">
+      <template v-for="(row, index) of rows" :key="row.key">
         <ContentReplaceRow
-          :key="row.key"
           :row="row"
           @change="handleRowChange(row, $event)"
           @delete="handleRowDelete(row)"
         />
-        <div
-          v-if="index < rows.length - 1"
-          :key="row.key"
-          class="comment-content-replace-separator"
-        ></div>
+        <div v-if="index < rows.length - 1" class="comment-content-replace-separator" />
       </template>
     </div>
     <VButton class="comment-content-replace-add-row" @click="handleRowAdd">
@@ -21,7 +16,8 @@
     </VButton>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue'
 import { getComponentSettings } from '@/core/settings'
 import { deleteValue } from '@/core/utils'
 import { VButton, VIcon } from '@/ui'
@@ -30,43 +26,30 @@ import { CommentContentReplaceRow } from './row'
 import ContentReplaceRow from './ContentReplaceRow.vue'
 
 const { options } = getComponentSettings<CommentContentReplaceOptions>('commentContentReplace')
-export default Vue.extend({
-  components: {
-    ContentReplaceRow,
-    VButton,
-    VIcon,
-  },
-  data() {
-    const { replaceMap } = options
 
-    const rows = Object.entries(replaceMap).map(
-      ([from, to]) => new CommentContentReplaceRow(from, to),
-    )
-    return {
-      rows,
-    }
-  },
-  methods: {
-    saveSettings() {
-      const validRows = (this.rows as CommentContentReplaceRow[])
-        .map(row => [row.from, row.to])
-        .filter(([from]) => Boolean(from))
-      options.replaceMap = Object.fromEntries(validRows)
-    },
-    handleRowChange(row: CommentContentReplaceRow, event: { from: string; to: string }) {
-      row.from = event.from
-      row.to = event.to
-      this.saveSettings()
-    },
-    handleRowDelete(row: CommentContentReplaceRow) {
-      deleteValue(this.rows, it => it === row)
-      this.saveSettings()
-    },
-    handleRowAdd() {
-      this.rows.push(new CommentContentReplaceRow())
-    },
-  },
-})
+const { replaceMap } = options
+const rows = Object.entries(replaceMap).map(([from, to]) => new CommentContentReplaceRow(from, to))
+const rowsRef = ref<CommentContentReplaceRow[]>(rows)
+
+const saveSettings = () => {
+  const validRows = rowsRef.value.map(row => [row.from, row.to]).filter(([from]) => Boolean(from))
+  options.replaceMap = Object.fromEntries(validRows)
+}
+
+const handleRowChange = (row: CommentContentReplaceRow, event: { from: string; to: string }) => {
+  row.from = event.from
+  row.to = event.to
+  saveSettings()
+}
+
+const handleRowDelete = (row: CommentContentReplaceRow) => {
+  deleteValue(rowsRef.value, it => it === row)
+  saveSettings()
+}
+
+const handleRowAdd = () => {
+  rowsRef.value.push(new CommentContentReplaceRow())
+}
 </script>
 <style lang="scss">
 @import 'common';

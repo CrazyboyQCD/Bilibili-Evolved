@@ -17,7 +17,7 @@ const handleSocketMessage = (event: MessageEvent, callback: (payload: Payload) =
     console.log('接收信息', payload)
     callback(payload)
   } catch (error) {
-    console.error('无效信息', data)
+    console.error('无效信息', data, error)
   }
 }
 export enum DevClientEvents {
@@ -77,9 +77,6 @@ export class DevClient extends EventTarget {
       this.socket.addEventListener('message', e => {
         handleSocketMessage(e, payload => {
           switch (payload.type) {
-            default: {
-              break
-            }
             case 'start': {
               this.sessions = payload.sessions
               this.dispatchEvent(
@@ -98,6 +95,9 @@ export class DevClient extends EventTarget {
             case 'itemUpdate': {
               const { path } = payload
               this.handleItemUpdate(path)
+              break
+            }
+            default: {
               break
             }
           }
@@ -172,7 +172,6 @@ export class DevClient extends EventTarget {
         return false
       }
       switch (options.registryReloadMethod) {
-        default:
         case HotReloadMethod.Disabled: {
           if (options.registryRefreshMethod === RefreshMethod.DoNotRefresh) {
             doNotReload()
@@ -187,6 +186,9 @@ export class DevClient extends EventTarget {
           } else {
             reload()
           }
+          break
+        }
+        default: {
           break
         }
       }

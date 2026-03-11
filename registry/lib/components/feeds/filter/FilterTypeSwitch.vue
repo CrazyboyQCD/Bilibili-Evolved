@@ -3,8 +3,8 @@
     <label :class="{ disabled }">
       <span class="name" :class="{ disabled }">{{ type.name }}</span>
       <input v-model="disabled" type="checkbox" />
-      <VIcon v-if="disabled" :size="16" class="disabled" icon="mdi-cancel"></VIcon>
-      <VIcon v-else :size="16" icon="mdi-check"></VIcon>
+      <VIcon v-if="disabled" :size="16" class="disabled" icon="mdi-cancel" />
+      <VIcon v-else :size="16" icon="mdi-check" />
     </label>
   </div>
 </template>
@@ -15,27 +15,25 @@ import { getComponentSettings } from '@/core/settings'
 import { VIcon } from '@/ui'
 import { FeedsFilterOptions } from './options'
 
-interface Props {
+const { name, type } = defineProps<{
   name: string
   type: {
     id: number
     name: string
   }
-}
-
-const props = defineProps<Props>()
+}>()
 
 const { options } = getComponentSettings<FeedsFilterOptions>('feedsFilter')
 
-const optionKey = computed(() => (props.type.id >= 0 ? 'types' : 'specialTypes'))
+const optionKey = computed(() => (type.id >= 0 ? 'types' : 'specialTypes'))
 
-const disabled = ref(options[optionKey.value].includes(props.type.id))
+const disabled = ref(options[optionKey.value].includes(type.id))
 
 const setFilter = (isDisabled: boolean, updateSettings = true) => {
   if (isDisabled) {
-    document.body.classList.add(`feeds-filter-block-${props.name}`)
+    document.body.classList.add(`feeds-filter-block-${name}`)
   } else {
-    document.body.classList.remove(`feeds-filter-block-${props.name}`)
+    document.body.classList.remove(`feeds-filter-block-${name}`)
   }
 
   if (!updateSettings) {
@@ -44,9 +42,9 @@ const setFilter = (isDisabled: boolean, updateSettings = true) => {
 
   const key = optionKey.value as 'types' | 'specialTypes'
   if (isDisabled) {
-    options[key].push(props.type.id)
+    options[key].push(type.id)
   } else {
-    const index = options[key].indexOf(props.type.id)
+    const index = options[key].indexOf(type.id)
     if (index !== -1) {
       options[key].splice(index, 1)
     }

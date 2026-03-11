@@ -1,10 +1,6 @@
 <template>
   <div v-if="folded">
-    <DefaultWidget
-      name="下载字幕"
-      icon="mdi-subtitles"
-      @click="expandDownloadOptions()"
-    ></DefaultWidget>
+    <DefaultWidget name="下载字幕" icon="mdi-subtitles" @click="expandDownloadOptions()" />
   </div>
   <div v-else class="subtitle-download">
     <div class="subtitle-download-header">
@@ -18,7 +14,12 @@
     </div>
     <div v-if="subtitleLanguageOptions.length > 0" class="subtitle-download-language">
       <div class="">语言:</div>
-      <VDropdown v-model="selectedLanguage" :items="subtitleLanguageOptions" :disabled="disabled" />
+      <VDropdown
+        :value="selectedLanguage"
+        :items="subtitleLanguageOptions"
+        :disabled="disabled"
+        @change="selectedLanguage = $event"
+      />
     </div>
     <div class="subtitle-download-formats">
       <DefaultWidget
@@ -26,13 +27,13 @@
         name="下载 JSON"
         icon="mdi-download"
         @click="download('json')"
-      ></DefaultWidget>
+      />
       <DefaultWidget
         :disabled="disabled"
         name="下载 ASS"
         icon="mdi-download"
         @click="download('ass')"
-      ></DefaultWidget>
+      />
     </div>
   </div>
 </template>

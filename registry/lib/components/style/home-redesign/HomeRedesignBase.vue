@@ -1,9 +1,11 @@
 <template>
-  <div class="home-redesign-base">
+  <div ref="root" class="home-redesign-base">
     <slot />
   </div>
 </template>
 <script setup lang="ts">
+import { useTemplateRef } from 'vue'
+
 const params = new URLSearchParams(location.search)
 if (params.has('bvid')) {
   const restParams = new URLSearchParams([...params.entries()].filter(([name]) => name !== 'bvid'))
@@ -11,6 +13,9 @@ if (params.has('bvid')) {
     `/video/${params.get('bvid')}/${restParams.size > 0 ? `?${restParams.toString()}` : ''}`,
   )
 }
+const root = useTemplateRef('root')
+
+defineExpose({ root })
 </script>
 <style lang="scss">
 @import 'common';

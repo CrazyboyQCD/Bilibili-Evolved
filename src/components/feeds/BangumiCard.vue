@@ -1,33 +1,23 @@
 <template>
   <a class="bangumi-card" :class="{ new: isNew }" target="_blank" :href="data.url">
     <div class="ep-cover-container">
-      <DpiImage class="ep-cover" :size="{ width: 100 }" :src="data.epCoverUrl"></DpiImage>
+      <DpiImage class="ep-cover" :size="100" :src="data.epCoverUrl" />
     </div>
     <h1 class="ep-title" :title="data.epTitle">{{ data.epTitle }}</h1>
     <div class="up" :title="data.title">
-      <DpiImage class="cover" :size="24" :src="data.coverUrl"></DpiImage>
+      <DpiImage class="cover" :size="24" :src="data.coverUrl" />
       <div class="title">{{ data.title }}</div>
     </div>
   </a>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import { DpiImage } from '@/ui'
+import { BangumiCard } from './bangumi-card'
 
-export default Vue.extend({
-  components: {
-    DpiImage,
-  },
-  props: {
-    data: {
-      type: Object,
-      required: true,
-    },
-    isNew: {
-      type: Boolean,
-      default: false,
-    },
-  },
-})
+const { data, isNew = false } = defineProps<{
+  data: BangumiCard
+  isNew?: boolean
+}>()
 </script>
 <style lang="scss" scoped>
 @import 'common';

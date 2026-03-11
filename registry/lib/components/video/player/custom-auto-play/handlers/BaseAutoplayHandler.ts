@@ -1,8 +1,10 @@
 import { ComponentSettings } from '@/core/settings'
 import { sq, select } from '@/core/spin-query'
 import { getVue2Data as getVueData } from '@/core/utils'
-import { logger } from '..'
 import { AutoplayActionType } from '../AutoplayActionType'
+import { useScopedConsole } from '@/core/utils/log'
+
+export const logger = useScopedConsole('定制自动连播行为')
 
 /** 自动连播处理器基类 */
 export abstract class BaseAutoplayHandler {

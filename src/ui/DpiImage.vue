@@ -1,6 +1,6 @@
 <template>
   <img
-    v-bind="$attrs"
+    v-bind="attrs"
     :width="width"
     :height="height"
     :srcset="srcset"
@@ -8,115 +8,93 @@
     :class="{ placeholder: isPlaceholderActive }"
   />
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, watch, onMounted, useTemplateRef, useAttrs } from 'vue'
 import { getDpiSourceSet } from '@/core/utils'
 import { EmptyImageUrl } from '@/core/utils/constants'
 
-export default Vue.extend({
-  name: 'DpiImage',
-  props: {
-    size: {
-      type: [Object, Number],
-      required: true,
-    },
-    src: {
-      type: String,
-      required: true,
-    },
-    intersection: {
-      type: Object,
-      default: () => ({}),
-    },
-    placeholderImage: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  data() {
-    return {
-      srcset: null,
-      actualSrc: EmptyImageUrl,
-      isPlaceholderActive: false,
+const attrs = useAttrs()
+
+const { size, src, intersection, placeholderImage } = defineProps<{
+  size: number | { width: number; height: number }
+  src: string
+  intersection?: IntersectionObserverInit
+  placeholderImage?: boolean
+}>()
+
+const root = useTemplateRef('root')
+
+const srcset = ref<string | null>(null)
+const actualSrc = ref(EmptyImageUrl)
+const isPlaceholderActive = ref(false)
+
+const width = computed(() => (typeof size === 'object' ? size.width : size))
+
+const height = computed(() => (typeof size === 'object' ? size.height : size))
+
+const calcSrc = () => {
+  const isSourceInvalid = !src || !size
+  isPlaceholderActive.value = isSourceInvalid && Boolean(placeholderImage)
+  if (isSourceInvalid) {
+    srcset.value = null
+    if (placeholderImage) {
+      actualSrc.value =
+        'https://s1.hdslb.com/bfs/static/blive/live-web-center/static/img/no-cover.1ebe4d5.jpg'
+    } else {
+      actualSrc.value = EmptyImageUrl
     }
+    return
+  }
+  let srcVar = src
+  if (srcVar.startsWith('http:')) {
+    srcVar = srcVar.replace('http:', 'https:')
+  }
+  if (src.includes('//static.hdslb.com/images/member/noface.gif')) {
+    // 这张图无法缩放
+    srcset.value = srcVar
+    actualSrc.value = srcVar
+    return
+  }
+  srcset.value = getDpiSourceSet(srcVar, size)
+  actualSrc.value = srcVar
+}
+
+const sourceChange = () => {
+  if (actualSrc.value === EmptyImageUrl || srcset.value === null) {
+    return
+  }
+  calcSrc()
+}
+
+watch(
+  () => size,
+  () => {
+    sourceChange()
   },
-  computed: {
-    width() {
-      if (typeof this.size === 'object' && 'width' in this.size) {
-        return this.size.width
-      }
-      if (typeof this.size === 'number') {
-        return this.size
-      }
-      return null
-    },
-    height() {
-      if (typeof this.size === 'object' && 'height' in this.size) {
-        return this.size.height
-      }
-      if (typeof this.size === 'number') {
-        return this.size
-      }
-      return null
-    },
+)
+
+watch(
+  () => src,
+  () => {
+    sourceChange()
   },
-  watch: {
-    size() {
-      this.sourceChange()
-    },
-    src() {
-      this.sourceChange()
-    },
-  },
-  mounted() {
-    const options = {
-      ...{
-        rootMargin: '200px',
-      },
-      ...this.intersection,
-    }
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          this.calcSrc()
-          observer.disconnect()
-        }
-      })
-    }, options)
-    observer.observe(this.$el)
-  },
-  methods: {
-    sourceChange() {
-      if (this.actualSrc === EmptyImageUrl || this.srcset === null) {
-        return
+)
+
+onMounted(() => {
+  const options = {
+    rootMargin: '200px',
+    ...intersection,
+  }
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        calcSrc()
+        observer.disconnect()
       }
-      this.calcSrc()
-    },
-    calcSrc() {
-      const isSourceInvalid = !this.src || !this.size
-      this.isPlaceholderActive = isSourceInvalid && this.placeholderImage
-      if (isSourceInvalid) {
-        this.srcset = null
-        if (this.placeholderImage) {
-          this.actualSrc =
-            'https://s1.hdslb.com/bfs/static/blive/live-web-center/static/img/no-cover.1ebe4d5.jpg'
-        } else {
-          this.actualSrc = EmptyImageUrl
-        }
-        return
-      }
-      let { src } = this
-      if (src.startsWith('http:')) {
-        src = src.replace('http:', 'https:')
-      }
-      if (src.includes('//static.hdslb.com/images/member/noface.gif')) {
-        // 这张图无法缩放
-        this.srcset = src
-        this.actualSrc = src
-        return
-      }
-      this.srcset = getDpiSourceSet(src, this.size)
-      this.actualSrc = src
-    },
-  },
+    })
+  }, options)
+  if (root.value) {
+    observer.observe(root.value)
+  }
 })
 </script>

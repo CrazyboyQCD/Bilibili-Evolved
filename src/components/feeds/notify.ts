@@ -29,7 +29,10 @@ export const setLatestID = (id: string) => {
 }
 export const isNewID = (id: string) => compareID(id, getLatestID()) > 0
 export const updateLatestID = (cards: { id: string }[]) => {
-  const [id] = [...cards.map(c => c.id)].sort(compareID).reverse()
+  const [id] = cards
+    .map(c => c.id)
+    .sort(compareID)
+    .reverse()
   setLatestID(id)
 }
 /** 按类型获取动态提醒数 */

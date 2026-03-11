@@ -5,7 +5,7 @@
     </div>
     <div class="fresh-home-areas-content">
       <a class="fresh-home-areas-content-primary" :href="primary.url" target="_blank">
-        <div class="fresh-home-areas-content-primary-image"></div>
+        <div class="fresh-home-areas-content-primary-image" />
         <div class="fresh-home-areas-content-primary-title">
           {{ primary.title }}
         </div>
@@ -21,7 +21,7 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import { addData } from '@/plugins/data'
 import { VButton, VIcon } from '@/ui'
 import LiveColored from './live.svg'
@@ -54,18 +54,6 @@ const others = [
     icon: 'black-room-colored',
   },
 ]
-export default Vue.extend({
-  components: {
-    VButton,
-    VIcon,
-  },
-  data() {
-    return {
-      primary,
-      others,
-    }
-  },
-})
 </script>
 <style lang="scss">
 @import 'common';

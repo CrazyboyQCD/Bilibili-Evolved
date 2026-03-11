@@ -163,13 +163,13 @@ export const monkey = <T = any>(details: MonkeyXhrBasicDetails) =>
       onload: (r: MonkeyXhrResponse) => resolve(r.response),
       onerror: (r: MonkeyXhrResponse) => {
         // 重新序列化一下取出对象字段, 油猴给的是一个函数对象混合体
-        const realObject = {
-          ...JSON.parse(JSON.stringify(r)),
-          toString() {
-            return JSON.stringify(this)
-          },
-        }
-        reject(realObject)
+        // const realObject = {
+        //   ...JSON.parse(JSON.stringify(r)),
+        //   toString() {
+        //     return JSON.stringify(this)
+        //   },
+        // }
+        reject(new Error(JSON.stringify(r)))
       },
     }
     if (!('method' in fullDetails)) {

@@ -1,5 +1,6 @@
 <template>
   <MiniToast
+    ref="root"
     class="online-registry-item-wrapper"
     :placement="placement"
     container="body"
@@ -13,9 +14,9 @@
         {{ badge }}
       </div>
       <div class="item-display-name">
-        {{ item.displayName }}
+        {{ _item.displayName }}
       </div>
-      <div class="grow"></div>
+      <div class="grow" />
       <div class="item-action">
         <VButton
           v-if="!installed"
@@ -23,7 +24,7 @@
           title="安装"
           type="primary"
           :disabled="installing"
-          @click="install(getUrl(item))"
+          @click="install(getUrl(_item))"
         >
           <VIcon icon="mdi-plus" :size="15" />
           {{ installing ? '正在安装' : '安装' }}
@@ -33,19 +34,19 @@
           class="reinstall-button"
           title="重新安装"
           :disabled="installing"
-          @click="install(getUrl(item))"
+          @click="install(getUrl(_item))"
         >
           {{ installing ? '正在安装' : '已安装' }}
         </VButton>
       </div>
     </div>
     <template #toast>
-      <ComponentDescription v-if="item.description" :component-data="item" />
+      <ComponentDescription v-if="_item.description" :component-data="_item" />
     </template>
   </MiniToast>
 </template>
-<script lang="ts">
-import { DocSourceItem } from 'registry/lib/docs'
+<script setup lang="ts">
+import { ref, computed, onMounted, useTemplateRef } from 'vue'
 import { cdnRoots } from '@/core/cdn-types'
 import { installFeature } from '@/core/install-feature'
 import { visibleInside } from '@/core/observer'
@@ -55,17 +56,37 @@ import { VIcon, VButton, MiniToast } from '@/ui'
 import ComponentDescription from '../../ComponentDescription.vue'
 import { SettingsPanelDockSide } from '../../dock'
 import { ItemFilter } from './item-filter'
+import { DocSourceItem } from '../../../../../registry/lib/docs/types'
+
+const {
+  item: _item,
+  branch: _branch,
+  itemFilter = ItemFilter.All,
+} = defineProps<{
+  item: DocSourceItem
+  branch: string
+  itemFilter?: string
+}>()
+
+const emit = defineEmits<{
+  refresh: []
+}>()
+
+const root = useTemplateRef('root')
 
 const getFeatureUrl = (item: DocSourceItem, branch: string) => {
   const cdnRootFn = cdnRoots[getGeneralSettings().cdnRoot]
   const cdnRoot = cdnRootFn(branch, item.owner)
   return `${cdnRoot}${item.fullAbsolutePath}`
 }
+
 const isFeatureInstalled = (item: DocSourceItem) => {
   const storageKey = `user${lodash.startCase(item.type)}s`
   return item.name in settings[storageKey]
 }
+
 type PackItem = { items: DocSourceItem[] }
+
 const typeMappings = {
   component: {
     icon: 'mdi-cube-scan',
@@ -93,92 +114,75 @@ const typeMappings = {
     isInstalled: (pack: PackItem) => pack.items.every(isFeatureInstalled),
   },
 }
-export default Vue.extend({
-  components: { VIcon, VButton, MiniToast, ComponentDescription },
-  props: {
-    item: {
-      type: Object,
-      required: true,
-    },
-    branch: {
-      type: String,
-      required: true,
-    },
-    itemFilter: {
-      type: String,
-      default: ItemFilter.All,
-    },
-  },
-  data() {
-    const { icon, badge, getUrl, isInstalled } = typeMappings[this.item.type]
-    return {
-      icon,
-      badge,
-      getUrl: (item: PackItem) => getUrl(item, this.branch),
-      isInstalled,
-      installing: false,
-      installed: false,
-      virtual: false,
-      placement: 'right',
+
+const {
+  icon,
+  badge,
+  getUrl: getTypeGetUrl,
+  isInstalled: typeIsInstalled,
+} = typeMappings[_item.type as keyof typeof typeMappings]
+
+const getUrl = (item: DocSourceItem | PackItem) => getTypeGetUrl(item as any, _branch)
+const isInstalled = (item: DocSourceItem | PackItem) => typeIsInstalled(item as any)
+const installing = ref(false)
+const installed = ref(false)
+const virtual = ref(false)
+const placement = ref<'left' | 'right'>('right')
+
+const hidden = computed(() => {
+  switch (itemFilter) {
+    case ItemFilter.All:
+    case ItemFilter.Installed: {
+      return !installed.value
     }
+    case ItemFilter.NotInstalled: {
+      return installed.value
+    }
+    default: {
+      return false
+    }
+  }
+})
+
+const checkInstalled = () => {
+  installed.value = isInstalled(_item)
+}
+
+const install = async (sourceUrls: string) => {
+  const urls = sourceUrls
+    .split('\n')
+    .map(it => it.trim())
+    .filter(it => it !== '')
+  try {
+    installing.value = true
+    await Promise.all(urls.map(async url => installFeature(url)))
+    checkInstalled()
+    if (_item.type === 'pack') {
+      emit('refresh')
+    }
+  } catch (error) {
+    logError(error)
+  } finally {
+    installing.value = false
+  }
+}
+
+checkInstalled()
+addComponentListener(
+  'settingsPanel.dockSide',
+  (value: SettingsPanelDockSide) => {
+    placement.value = value === SettingsPanelDockSide.Left ? 'right' : 'left'
   },
-  computed: {
-    hidden() {
-      switch (this.itemFilter) {
-        case ItemFilter.All:
-        default: {
-          return false
-        }
-        case ItemFilter.Installed: {
-          return !this.installed
-        }
-        case ItemFilter.NotInstalled: {
-          return this.installed
-        }
-      }
-    },
-  },
-  created() {
-    this.checkInstalled()
-    addComponentListener(
-      'settingsPanel.dockSide',
-      (value: SettingsPanelDockSide) => {
-        this.placement = value === SettingsPanelDockSide.Left ? 'right' : 'left'
-      },
-      true,
-    )
-  },
-  mounted() {
-    const element = this.$el as HTMLElement
-    visibleInside(element, element.parentElement, '150% 0px', records => {
-      records.forEach(record => {
-        this.virtual = !record.isIntersecting
-      })
+  true,
+)
+
+onMounted(() => {
+  const element = root.value.root
+  visibleInside(element, element.parentElement, '150% 0px', records => {
+    records.forEach(record => {
+      virtual.value = !record.isIntersecting
     })
-  },
-  methods: {
-    checkInstalled() {
-      this.installed = this.isInstalled(this.item)
-    },
-    async install(sourceUrls: string) {
-      const urls = sourceUrls
-        .split('\n')
-        .map(it => it.trim())
-        .filter(it => it !== '')
-      try {
-        this.installing = true
-        await Promise.all(urls.map(async url => installFeature(url)))
-        this.checkInstalled()
-        if (this.item.type === 'pack') {
-          this.$emit('refresh')
-        }
-      } catch (error) {
-        logError(error)
-      } finally {
-        this.installing = false
-      }
-    },
-  },
+  })
 })
 </script>
 <style lang="scss">

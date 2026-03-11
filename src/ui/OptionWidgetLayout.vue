@@ -3,13 +3,13 @@
     <VPopup
       v-if="isPopup"
       v-model="popup"
-      :trigger-element="$refs.popupButton"
+      :trigger-element="popupButtonRef?.root?.root ?? null"
       auto-destroy
       class="option-widget-popup"
     >
       <slot />
     </VPopup>
-    <DefaultWidget v-if="isPopup" ref="popupButton" :icon="icon" @click="popup = !popup">
+    <DefaultWidget v-if="isPopup" ref="popupButtonRef" :icon="icon" @click="popup = !popup">
       <span>{{ title }}</span>
     </DefaultWidget>
 
@@ -17,37 +17,25 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue'
 import { DefaultWidget, VPopup } from '@/ui'
 
-export default Vue.extend({
-  components: {
-    DefaultWidget,
-    VPopup,
-  },
-  props: {
-    /** 是否弹出显示，false：直接显示内容，true：显示一个按钮，点击弹出显示内容 */
-    isPopup: {
-      type: Boolean,
-      required: true,
-    },
-    /** 按钮标题 */
-    title: {
-      type: String,
-      required: true,
-    },
-    /** 按钮Icon */
-    icon: {
-      type: String,
-      default: '',
-    },
-  },
-  data() {
-    return {
-      popup: false,
-    }
-  },
-})
+const {
+  isPopup,
+  title,
+  icon = '',
+} = defineProps<{
+  /** 是否弹出显示，false：直接显示内容，true：显示一个按钮，点击弹出显示内容 */
+  isPopup: boolean
+  /** 按钮标题 */
+  title: string
+  /** 按钮Icon */
+  icon?: string
+}>()
+
+const popup = ref(false)
+const popupButtonRef = ref<InstanceType<typeof DefaultWidget> | null>(null)
 </script>
 
 <style lang="scss">

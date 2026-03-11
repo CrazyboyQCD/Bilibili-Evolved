@@ -57,9 +57,6 @@ const getText = (dynamicModule: any, cardType: FeedsCardType) => {
   })()
   const typeText = (() => {
     switch (cardType) {
-      default: {
-        return ''
-      }
       case feedsCardTypes.bangumi:
       case feedsCardTypes.column:
       case feedsCardTypes.video: {
@@ -72,6 +69,9 @@ const getText = (dynamicModule: any, cardType: FeedsCardType) => {
           const { title, summary } = major.opus
           return combineText(title, summary.text)
         }
+        return ''
+      }
+      default: {
         return ''
       }
     }

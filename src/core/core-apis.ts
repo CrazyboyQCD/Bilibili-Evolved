@@ -32,6 +32,7 @@ import * as sort from '@/core/utils/sort'
 import * as urls from '@/core/utils/urls'
 import * as toast from '@/core/toast'
 import * as themeColor from '@/core/theme-color'
+import * as video from '@/core/video'
 import * as ui from '@/ui'
 import { componentApis } from '@/components/api'
 import { pluginApis } from '@/plugins/api'
@@ -77,6 +78,7 @@ export const coreApis = {
     urls,
   },
   ui,
+  video,
   componentApis,
   pluginApis,
 }
@@ -152,4 +154,4 @@ export const externalApis = {
     }, time)
   },
 }
-export type ExternalApis = typeof externalApis
+export type ExternalApis = any

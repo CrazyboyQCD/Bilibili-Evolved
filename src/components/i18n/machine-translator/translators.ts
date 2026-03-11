@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import { monkey } from '@/core/ajax'
 import { UserAgent } from '@/core/utils/constants'
 import { getComponentSettings } from '@/core/settings'
@@ -103,11 +104,14 @@ export class GoogleCNTranslate extends GoogleTranslate {
   protected apiUrl = 'https://translate.google.cn/translate_a/single'
 }
 
-export const [translateProviders] = registerAndGetData('i18n.machineTranslators', {
-  // Bing: new BingTranslate(),
-  GoogleCN: new GoogleCNTranslate(),
-  Google: new GoogleTranslate(),
-} as Record<string, MachineTranslateProvider>)
+export const [translateProviders] = registerAndGetData(
+  'i18n.machineTranslators',
+  reactive({
+    // Bing: new BingTranslate(),
+    GoogleCN: new GoogleCNTranslate(),
+    Google: new GoogleTranslate(),
+  } as Record<string, MachineTranslateProvider>),
+)
 export const translateProviderNames = Object.keys(translateProviders)
 export const getTranslator = (): MachineTranslateProvider => {
   const {

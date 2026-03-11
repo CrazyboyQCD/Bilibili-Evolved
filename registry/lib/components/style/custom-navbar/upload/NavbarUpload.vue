@@ -1,17 +1,11 @@
 <template>
   <div class="navbar-upload">
-    <VIcon icon="upload" :size="18"></VIcon>
+    <VIcon icon="upload" :size="18" />
     <div class="navbar-upload-name">投稿</div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import { VIcon } from '@/ui'
-
-export default Vue.extend({
-  components: {
-    VIcon,
-  },
-})
 </script>
 <style lang="scss" scoped>
 .navbar-upload {

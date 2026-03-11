@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="root"
     class="fresh-home-categories-bangumi-timeline-content"
     :class="{ loading, loaded, scrolled, empty: items.length === 0 }"
   >
@@ -14,7 +15,7 @@
       <div
         v-if="item.episodes.length === 0"
         class="fresh-home-categories-bangumi-timeline-empty-background"
-      ></div>
+      />
       <div class="fresh-home-categories-bangumi-timeline-date">
         <div
           class="fresh-home-categories-bangumi-timeline-date-icon"
@@ -124,11 +125,12 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { watch, nextTick, useTemplateRef, ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { DpiImage, VIcon, VEmpty, VButton, VLoading } from '@/ui'
 import { addComponentListener } from '@/core/settings'
 import { enableHorizontalScroll } from '@/core/horizontal-scroll'
-import { cssVariableMixin, requestMixin } from '../../../../mixin'
+import { RequestProps, useCssVariable, useRequest } from '../../../../mixin'
 import { rankListCssVars } from './rank-list'
 import { setupScrollMask, cleanUpScrollMask } from '../../../scroll-mask'
 import { getJsonWithCredentials } from '@/core/ajax'
@@ -161,67 +163,60 @@ interface TimelineDay {
 }
 
 const rankListHeight = rankListCssVars.panelHeight - 2 * rankListCssVars.padding
-const timelineCssVars = (() => {
-  const seasonItemWidth = 250
-  const seasonTodayWidth = 250
-  const timelineItemHeight = 82
-  const timelineTodayHeight = 114
-  const timelineViewportItemsHeight = 5 * timelineItemHeight + timelineTodayHeight
-  const timelineItemGap = (rankListHeight - timelineViewportItemsHeight) / 5
-  const timelineViewportHeight = 5 * timelineItemGap + timelineViewportItemsHeight
-  return {
-    seasonItemWidth,
-    seasonTodayWidth,
-    timelineItemHeight,
-    timelineTodayHeight,
-    timelineViewportItemsHeight,
-    timelineItemGap,
-    timelineViewportHeight,
-  }
-})()
-export default Vue.extend({
-  components: {
-    DpiImage,
-    VIcon,
-    VEmpty,
-    VLoading,
-    VButton,
-  },
-  mixins: [
-    requestMixin({ requestMethod: getJsonWithCredentials }),
-    cssVariableMixin(timelineCssVars),
-  ],
-  data() {
-    return {
-      observers: [],
-      now: Number(new Date()),
-      timer: 0,
-      scrolled: false,
-    }
-  },
-  computed: {
-    todayIndex() {
-      return (this.items as TimelineDay[]).findIndex(it => it.is_today === 1)
-    },
-    pastWeekItems() {
-      return this.items.slice(0, this.todayIndex + 1)
-    },
-    currentWeekItems() {
-      return this.items.slice(this.todayIndex)
-    },
-  },
-  watch: {
-    loaded() {
-      if (this.loaded) {
-        this.updateScrollPosition()
-      }
-    },
-  },
-  mounted() {
-    this.timer = setInterval(() => {
-      this.now = Number(new Date())
-    }, 60 * 1000)
-    const element = this.$el as HTMLElement
+const seasonItemWidth = 250
+const seasonTodayWidth = 250
+const timelineItemHeight = 82
+const timelineTodayHeight = 114
+const timelineViewportItemsHeight = 5 * timelineItemHeight + timelineTodayHeight
+const timelineItemGap = (rankListHeight - timelineViewportItemsHeight) / 5
+const timelineViewportHeight = 5 * timelineItemGap + timelineViewportItemsHeight
+const timelineCssVars = {
+  seasonItemWidth,
+  seasonTodayWidth,
+  timelineItemHeight,
+  timelineTodayHeight,
+  timelineViewportItemsHeight,
+  timelineItemGap,
+  timelineViewportHeight,
+}
+
+const { api } = defineProps<RequestProps>()
+
+const { items, loading, loaded } = useRequest<TimelineDay>({
+  api,
+  parseJson: (json: any) => json.result ?? [],
+  requestMethod: getJsonWithCredentials,
+})
+
+useCssVariable(timelineCssVars)
+
+const seasonsList = useTemplateRef('seasonsList')
+const root = useTemplateRef('root')
+
+// const observers = ref([])
+const now = ref(Number(new Date()))
+const timer = ref<null | NodeJS.Timeout>(null)
+const scrolled = ref(false)
+
+const todayIndex = computed(() => {
+  return items.value.findIndex(it => it.is_today === 1)
+})
+
+// const pastWeekItems = computed(() => {
+//   return items.value.slice(0, todayIndex.value + 1)
+// })
+
+// const currentWeekItems = computed(() => {
+//   return items.value.slice(todayIndex.value)
+// })
+
+onMounted(() => {
+  timer.value = setInterval(() => {
+    now.value = Number(new Date())
+  }, 60 * 1000)
+
+  const element = root.value
+  if (element) {
     let ended = 0
     const endHandler = () => {
       ended++
@@ -231,96 +226,113 @@ export default Vue.extend({
       }
     }
     element.addEventListener('animationend', endHandler)
-  },
-  beforeDestroy() {
-    if (this.timer) {
-      clearInterval(this.timer)
-    }
-    const list: HTMLElement[] = this.$refs.seasonsList
-    cleanUpScrollMask(...list)
-  },
-  methods: {
-    parseJson(json: any) {
-      return json.result ?? []
-    },
-    async updateScrollPosition() {
-      await this.$nextTick()
-      const list: HTMLElement[] = this.$refs.seasonsList
-      let cancelAll: () => void
-      addComponentListener(
-        'freshHome.horizontalWheelScroll',
-        (scroll: boolean) => {
-          if (scroll) {
-            const cancel = list
-              .flatMap(it => [...it.children])
-              .map(it => enableHorizontalScroll(it as HTMLElement))
-            cancelAll = () => cancel.forEach(fn => fn())
-          } else {
-            cancelAll?.()
-          }
-        },
-        true,
-      )
-      const root: HTMLElement = this.$el
-      root.scrollTop = 5 * timelineCssVars.timelineItemHeight + 5 * timelineCssVars.timelineItemGap
-
-      const classPrefix = '.fresh-home-categories-bangumi-timeline'
-      list.forEach(seasons => {
-        setupScrollMask({
-          container: seasons,
-          items: dqa(seasons, `${classPrefix}-season`) as HTMLElement[],
-        })
-      })
-      const todaySeasons = dq(`${classPrefix}-seasons.today`)
-      if (!todaySeasons) {
-        return
-      }
-      const seasonsData: TimelineSeason[] = this.items[this.todayIndex]?.episodes
-      if (seasonsData.length === 0) {
-        return
-      }
-      const lastPublishedItem = [...seasonsData].reverse().find(it => this.isPublished(it))
-      if (!lastPublishedItem) {
-        this.scrolled = true
-        return
-      }
-      const lastPublishedElement = dq(
-        todaySeasons,
-        `[data-season="${lastPublishedItem.season_id}"]`,
-      ) as HTMLElement
-      if (!lastPublishedElement) {
-        return
-      }
-      todaySeasons.scrollLeft = lastPublishedElement.offsetLeft
-      this.scrolled = true
-    },
-    getEpisode(season: TimelineSeason) {
-      if (season.delay) {
-        return `${season.delay_reason}: ${season.delay_index}`
-      }
-      return season.pub_index
-    },
-    isPublished(season: TimelineSeason) {
-      if (season.delay) {
-        return false
-      }
-      return season.pub_ts * 1000 <= this.now
-    },
-    dayOfWeekText(item: TimelineDay) {
-      return `周${['日', '一', '二', '三', '四', '五', '六', '日'][item.day_of_week]}`
-    },
-    offsetPage(item: TimelineDay, offset: number) {
-      const list = this.$refs.seasonsList as HTMLElement[]
-      const container = list.find(it => it.dataset.date === item.date)
-      const containerWidth = container.clientWidth
-      const pageWidth =
-        Math.trunc(containerWidth / timelineCssVars.seasonItemWidth) *
-        timelineCssVars.seasonItemWidth
-      const scrollArea = container.children[0]
-      scrollArea?.scrollBy(offset * pageWidth, 0)
-    },
-  },
+  }
 })
+
+onBeforeUnmount(() => {
+  if (timer.value) {
+    clearInterval(timer.value)
+  }
+  cleanUpScrollMask(seasonsList.value)
+})
+
+const isPublished = (season: TimelineSeason) => {
+  if (season.delay) {
+    return false
+  }
+  return season.pub_ts * 1000 <= now.value
+}
+
+const updateScrollPosition = async () => {
+  await nextTick()
+  const list = seasonsList.value
+
+  let cancelAll: () => void
+  addComponentListener(
+    'freshHome.horizontalWheelScroll',
+    (scroll: boolean) => {
+      if (scroll) {
+        const cancel = list
+          .flatMap(it => [...it.children])
+          .map(it => enableHorizontalScroll(it as HTMLElement))
+        cancelAll = () => cancel.forEach(fn => fn())
+      } else {
+        cancelAll?.()
+      }
+    },
+    true,
+  )
+
+  root.value.scrollTop =
+    5 * timelineCssVars.timelineItemHeight + 5 * timelineCssVars.timelineItemGap
+
+  const classPrefix = '.fresh-home-categories-bangumi-timeline'
+  list.forEach(seasons => {
+    setupScrollMask({
+      container: seasons,
+      items: dqa(seasons, `${classPrefix}-season`) as HTMLElement[],
+    })
+  })
+
+  const todaySeasons = dq(`${classPrefix}-seasons.today`)
+  if (!todaySeasons) {
+    return
+  }
+
+  const seasonsData: TimelineSeason[] = items.value[todayIndex.value]?.episodes
+  if (seasonsData.length === 0) {
+    return
+  }
+
+  const lastPublishedItem = [...seasonsData].reverse().find(it => isPublished(it))
+  if (!lastPublishedItem) {
+    scrolled.value = true
+    return
+  }
+
+  const lastPublishedElement = dq(
+    todaySeasons,
+    `[data-season="${lastPublishedItem.season_id}"]`,
+  ) as HTMLElement
+  if (!lastPublishedElement) {
+    return
+  }
+
+  todaySeasons.scrollLeft = lastPublishedElement.offsetLeft
+  scrolled.value = true
+}
+
+watch(loaded, () => {
+  if (loaded.value) {
+    updateScrollPosition()
+  }
+})
+
+const getEpisode = (season: TimelineSeason) => {
+  if (season.delay) {
+    return `${season.delay_reason}: ${season.delay_index}`
+  }
+  return season.pub_index
+}
+
+const dayOfWeekText = (item: TimelineDay) => {
+  return `周${['日', '一', '二', '三', '四', '五', '六', '日'][item.day_of_week]}`
+}
+
+const offsetPage = (item: TimelineDay, offset: number) => {
+  const list = seasonsList.value
+  if (!list) {
+    return
+  }
+
+  const container = list.find(it => it.dataset.date === item.date) as HTMLElement
+
+  const containerWidth = container.clientWidth
+  const pageWidth =
+    Math.trunc(containerWidth / timelineCssVars.seasonItemWidth) * timelineCssVars.seasonItemWidth
+  const scrollArea = container.children[0] as HTMLElement
+  scrollArea?.scrollBy(offset * pageWidth, 0)
+}
 </script>
 <style lang="scss">
 @import 'common';

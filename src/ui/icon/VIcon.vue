@@ -1,60 +1,38 @@
 <template>
-  <i
-    class="be-icon"
-    :class="classes"
-    :style="{ '--size': size + 'px' }"
-    v-bind="$attrs"
-    v-on="$listeners"
-  >
-    <slot></slot>
-    <div
-      v-if="icon in $options.static.customIcons"
-      class="custom-icon"
-      v-html="$options.static.customIcons[icon]"
-    ></div>
+  <i ref="root" class="be-icon" :class="classes" :style="{ '--size': size + 'px' }" v-bind="attrs">
+    <slot />
+    <div v-if="icon in customIcons" class="custom-icon" v-html="customIcons[icon]" />
   </i>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed, useAttrs, useTemplateRef } from 'vue'
 import { customIcons } from '.'
 
-const staticData = { customIcons }
-export default Vue.extend({
-  name: 'VIcon',
-  props: {
-    icon: {
-      type: String,
-      default: '',
-    },
-    size: {
-      type: Number,
-      default: 24,
-    },
-    colored: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  computed: {
-    classes() {
-      const icons = this.$options.static.customIcons
-      const icon = this.icon as string
-      const base = []
-      if (this.colored) {
-        base.push('colored')
-      }
-      if (icon === '' || icon in icons) {
-        return base
-      }
-      if (icon.startsWith('mdi-')) {
-        return [...base, 'mdi', icon]
-      }
-      return [...base, `be-iconfont-${icon}`]
-    },
-  },
-  beforeCreate(this: any) {
-    this.$options.static = staticData
-  },
+const attrs = useAttrs()
+
+const {
+  icon = '',
+  size = 24,
+  colored = false,
+} = defineProps<{ icon?: string; size?: number; colored?: boolean }>()
+
+const classes = computed(() => {
+  const base = []
+  if (colored) {
+    base.push('colored')
+  }
+  if (icon === '' || icon in customIcons) {
+    return base
+  }
+  if (icon.startsWith('mdi-')) {
+    return [...base, 'mdi', icon]
+  }
+  return [...base, `be-iconfont-${icon}`]
+})
+const root = useTemplateRef('root')
+defineExpose({
+  root,
 })
 </script>
 

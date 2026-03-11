@@ -8,11 +8,11 @@
     :trigger-element="triggerElement"
   >
     <div class="navbar-settings-header">
-      <VIcon class="title-icon" icon="mdi-sort" :size="24"></VIcon>
+      <VIcon class="title-icon" icon="mdi-sort" :size="24" />
       <div class="title">顶栏布局设置</div>
-      <div class="grow"></div>
+      <div class="grow" />
       <div class="close" @click="open = false">
-        <VIcon icon="close" :size="18"></VIcon>
+        <VIcon icon="close" :size="18" />
       </div>
     </div>
     <div class="navbar-settings-content">
@@ -27,7 +27,7 @@
           @mouseover="peekPadding(true)"
           @mouseout="peekPadding(false)"
         >
-          <VSlider v-model="padding" :min="0" :max="40" :step="0.5"></VSlider>
+          <VSlider :value="padding" :min="0" :max="40" :step="0.5" @change="padding = $event" />
           <div class="padding-value">{{ padding.toFixed(1) }}%</div>
         </div>
       </div>
@@ -59,7 +59,7 @@
                 :size="18"
                 :icon="item.hidden ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
                 @click="toggleVisible(item)"
-              ></VIcon>
+              />
             </div>
           </div>
         </div>
@@ -67,7 +67,8 @@
     </div>
   </VPopup>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch, onMounted, useTemplateRef } from 'vue'
 import { SortableEvent } from 'sortablejs'
 import { VPopup, VIcon, VSlider, VLoading } from '@/ui'
 import { addComponentListener } from '@/core/settings'
@@ -83,85 +84,84 @@ const [rendered] = getData(CustomNavbarRenderedItems) as [
     items: CustomNavbarItem[]
   },
 ]
-export default Vue.extend({
-  components: {
-    VPopup,
-    VIcon,
-    VSlider,
-    VLoading,
-  },
-  props: {
-    triggerElement: {
-      type: HTMLElement,
-      default: null,
-    },
-  },
-  data() {
-    return {
-      open: false,
-      padding: navbarOptions.padding,
-      rendered,
-      hidden: navbarOptions.hidden,
-      loaded: false,
-      isLogin: Boolean(getUID()),
+
+const triggerElement = ref<HTMLElement | null>(null)
+const open = ref(false)
+const padding = ref(navbarOptions.padding)
+const loaded = ref(false)
+const isLogin = ref(Boolean(getUID()))
+
+const popup = useTemplateRef('popup')
+const navbarSortList = useTemplateRef<HTMLElement>('navbarSortList')
+
+const paddingDebounced = lodash.debounce((newValue: number) => {
+  navbarOptions.padding = newValue
+}, 200)
+
+watch(padding, newValue => {
+  paddingDebounced(newValue)
+})
+
+const toggle = () => {
+  popup.value.toggle()
+}
+
+const peekPadding = (peek: boolean) => {
+  dqa('.custom-navbar .padding').forEach(it => it.classList.toggle('peek', peek))
+}
+
+const peekItem = (item: CustomNavbarItem, peek: boolean) => {
+  item.element?.classList.toggle('peek', peek)
+}
+
+const onSort = (e: SortableEvent) => {
+  const container = navbarSortList.value
+  if (!container) {
+    return
+  }
+  const element = e.item
+  console.log(`${element.getAttribute('data-name')} ${e.oldIndex}->${e.newIndex}`)
+  const ordersMap = Object.fromEntries(
+    [...container.children].map((el, index) => [el.getAttribute('data-name') as string, index]),
+  )
+  rendered.items = sortItems(rendered.items, ordersMap)
+}
+
+const toggleVisible = (item: CustomNavbarItem) => {
+  if (navbarOptions.hidden.includes(item.name)) {
+    lodash.pull(navbarOptions.hidden, item.name)
+    item.hidden = false
+    console.log('delete', item.name)
+  } else {
+    navbarOptions.hidden.push(item.name)
+    item.hidden = true
+    console.log('add', item.name)
+  }
+}
+
+onMounted(async () => {
+  addComponentListener('customNavbar.padding', (newValue: number) => {
+    if (padding.value !== newValue) {
+      padding.value = newValue
     }
-  },
-  watch: {
-    padding: lodash.debounce((newValue: number) => {
-      navbarOptions.padding = newValue
-    }, 200),
-  },
-  async mounted() {
-    addComponentListener('customNavbar.padding', (newValue: number) => {
-      if (this.padding !== newValue) {
-        this.padding = newValue
-      }
+  })
+  const list = navbarSortList.value
+  if (list) {
+    const Sortable = await SortableJSLibrary
+    Sortable.create(list, {
+      delay: 100,
+      forceFallback: true,
+      onEnd: (e: SortableEvent) => {
+        onSort(e)
+      },
     })
-    const list: HTMLElement = this.$refs.navbarSortList
-    if (list) {
-      const Sortable = await SortableJSLibrary
-      Sortable.create(list, {
-        delay: 100,
-        forceFallback: true,
-        onEnd: (e: SortableEvent) => {
-          this.onSort(e)
-        },
-      })
-      checkSequentialOrder(rendered.items)
-    }
-    this.loaded = true
-  },
-  methods: {
-    toggle() {
-      this.$refs.popup.toggle()
-    },
-    peekPadding(peek: boolean) {
-      dqa('.custom-navbar .padding').forEach(it => it.classList.toggle('peek', peek))
-    },
-    peekItem(item: CustomNavbarItem, peek: boolean) {
-      item.element?.classList.toggle('peek', peek)
-    },
-    onSort(e: SortableEvent) {
-      const container = this.$refs.navbarSortList as HTMLElement
-      const element = e.item
-      console.log(`${element.getAttribute('data-name')} ${e.oldIndex}->${e.newIndex}`)
-      const ordersMap = Object.fromEntries(
-        [...container.children].map((el, index) => [el.getAttribute('data-name') as string, index]),
-      )
-      this.rendered.items = sortItems(rendered.items, ordersMap)
-    },
-    toggleVisible(item: CustomNavbarItem) {
-      if (navbarOptions.hidden.includes(item.name)) {
-        lodash.pull(navbarOptions.hidden, item.name)
-        item.hidden = false
-        console.log('delete', item.name)
-      } else {
-        navbarOptions.hidden.push(item.name)
-        item.hidden = true
-        console.log('add', item.name)
-      }
-    },
-  },
+    checkSequentialOrder(rendered.items)
+  }
+  loaded.value = true
+})
+defineExpose({
+  toggle,
+  triggerElement,
 })
 </script>
 <style lang="scss">

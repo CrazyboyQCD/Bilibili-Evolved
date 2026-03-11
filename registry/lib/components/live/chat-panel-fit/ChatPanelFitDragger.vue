@@ -8,7 +8,7 @@
     @pointermove="handlePointerMove"
     @dblclick="resetCustomWidth"
   >
-    <div class="chat-panel-fit-dragger-bar"></div>
+    <div class="chat-panel-fit-dragger-bar" />
     <div class="chat-panel-fit-dragger-preview-area" :style="{ width: `${previewWidth}px` }">
       <div class="chat-panel-fit-dragger-preview-area-background">
         {{ previewWidth.toFixed(1) }}px

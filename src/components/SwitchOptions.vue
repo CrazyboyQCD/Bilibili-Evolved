@@ -1,18 +1,18 @@
 <template>
-  <div class="switch-options" :class="{ 'small-size': smallSize, grid: !popupMode }">
+  <div ref="root" class="switch-options" :class="{ 'small-size': smallSize, grid: !popupMode }">
     <template v-if="popupMode">
       <VButton ref="button" @click="popupOpen = !popupOpen">
         <VIcon
           class="switch-icon"
           icon="mdi-checkbox-marked-circle-outline"
           :size="smallSize ? 16 : 24"
-        ></VIcon>
+        />
         {{ options.optionDisplayName }}
       </VButton>
       <VPopup
         v-model="popupOpen"
         class="switch-options-popup widgets-popup"
-        :trigger-element="$refs.button"
+        :trigger-element="button.root"
         esc-close
         auto-destroy
       >
@@ -47,74 +47,58 @@
   </div>
 </template>
 
-<script lang="ts">
-import { VPopup, VButton, VIcon, CheckBox, RadioButton } from '@/ui'
+<script setup lang="ts">
+import { ref, computed, watch, onMounted, useTemplateRef } from 'vue'
+import { VPopup, VButton, VIcon } from '@/ui'
 import { getComponentSettings } from '../core/settings'
+import { SwitchMetadataOption } from './switch-options'
 
-export default Vue.extend({
-  name: 'SwitchOptions',
-  components: {
-    VPopup,
-    VButton,
-    VIcon,
-    CheckBox,
-    RadioButton,
+const {
+  options,
+  smallSize = false,
+  popupMode = true,
+} = defineProps<{
+  options: SwitchMetadataOption<any, any>
+  smallSize?: boolean
+  popupMode?: boolean
+}>()
+
+const root = useTemplateRef('root')
+const button = useTemplateRef('button')
+
+const popupOpen = ref(false)
+const componentOptions = ref(getComponentSettings(options.componentName).options)
+
+const mergedSwitchProps = computed(() => ({
+  checkedIcon: 'mdi-eye-off-outline',
+  notCheckedIcon: 'mdi-eye-outline',
+  ...options.switchProps,
+}))
+
+const updateColumnsCount = () => {
+  const columns = Math.ceil(Object.keys(options.switches).length / 12)
+  root.value.style.setProperty('--columns', columns.toString())
+}
+
+const isDim = (name: string) => {
+  if (options.dimAt === 'checked' || options.dimAt === undefined) {
+    return componentOptions.value[`switch-${name}`]
+  }
+  if (options.dimAt === 'notChecked') {
+    return !componentOptions.value[`switch-${name}`]
+  }
+  return false
+}
+
+watch(
+  () => options,
+  () => {
+    updateColumnsCount()
   },
-  props: {
-    options: {
-      type: Object,
-      required: true,
-    },
-    smallSize: {
-      type: Boolean,
-      default: false,
-    },
-    popupMode: {
-      type: Boolean,
-      default: true,
-    },
-  },
-  data() {
-    const { componentName } = this.options
-    const componentOptions = getComponentSettings(componentName).options
-    return {
-      popupOpen: false,
-      componentOptions,
-    }
-  },
-  computed: {
-    mergedSwitchProps() {
-      return {
-        checkedIcon: 'mdi-eye-off-outline',
-        notCheckedIcon: 'mdi-eye-outline',
-        ...this.options.switchProps,
-      }
-    },
-  },
-  watch: {
-    options() {
-      this.updateColumnsCount()
-    },
-  },
-  mounted() {
-    this.updateColumnsCount()
-  },
-  methods: {
-    updateColumnsCount() {
-      const element = this.$el as HTMLElement
-      const columns = Math.ceil(Object.keys(this.options.switches).length / 12)
-      element.style.setProperty('--columns', columns.toString())
-    },
-    isDim(name: string) {
-      if (this.options.dimAt === 'checked' || this.options.dimAt === undefined) {
-        return this.componentOptions[`switch-${name}`]
-      }
-      if (this.options.dimAt === 'notChecked') {
-        return !this.componentOptions[`switch-${name}`]
-      }
-      return false
-    },
-  },
+)
+
+onMounted(() => {
+  updateColumnsCount()
 })
 </script>
 

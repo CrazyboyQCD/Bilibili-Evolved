@@ -8,10 +8,7 @@ const isIdValid = (id: string) => {
     return false
   }
   const idNumber = parseInt(id)
-  if (Number.isNaN(idNumber)) {
-    return true
-  }
-  return idNumber > 0
+  return Number.isNaN(idNumber) || idNumber > 0
 }
 const idPolyfill = async () => {
   const player = await select(() => unsafeWindow.player)

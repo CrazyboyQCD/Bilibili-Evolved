@@ -3,7 +3,15 @@
     class="video-default-location-extend-box"
     :class="{ 'video-default-location-extend-box-hidden': realHidden }"
   >
-    <div class="video-default-location-extend-box-bar" @click="setRealHidden">
+    <div
+      class="video-default-location-extend-box-bar"
+      @click="
+        () => {
+          // TODO: check this
+          setRealHidden(!realHidden)
+        }
+      "
+    >
       <div class="video-default-location-extend-box-bar-text">位置测试</div>
       <div
         class="video-default-location-extend-box-bar-btn"
@@ -17,76 +25,61 @@
     <div class="video-default-location-extend-box-content-wrap">
       <transition name="video-default-location-extend-box-content-transition">
         <div v-show="!realHidden" class="video-default-location-extend-box-content">
-          <slot></slot>
+          <slot />
         </div>
       </transition>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch, nextTick } from 'vue'
 import { VIcon } from '@/ui'
 
 const getIconName = (hidden: boolean): string =>
   hidden ? 'mdi-unfold-more-horizontal' : 'mdi-unfold-less-horizontal'
 
 const btnAnimationClass = 'video-default-location-extend-box-bar-btn-animation'
+const emit = defineEmits<{
+  change: [value: boolean]
+}>()
 
-export default Vue.extend({
-  components: { VIcon },
-  model: {
-    prop: 'hidden',
-    event: 'change',
-  },
-  props: {
-    title: {
-      type: String,
-      default: '',
-    },
-    size: {
-      type: Number,
-      default: 12,
-    },
-    hidden: {
-      type: Boolean,
-      default: true,
-    },
-  },
-  data() {
-    return {
-      realHidden: this.hidden,
-      barBottom: !this.hidden,
-      btnIcon: getIconName(this.hidden),
-      btnClass: {
-        [btnAnimationClass]: false,
-      },
-    }
-  },
-  watch: {
-    hidden(value: boolean) {
-      this.setRealHidden(value)
-    },
-  },
-  methods: {
-    setRealHidden(value: boolean) {
-      if (value !== this.realHidden) {
-        this.realHidden = !this.realHidden
-        this.$emit('change', this.realHidden)
-
-        this.btnClass[btnAnimationClass] = false
-        this.$nextTick(() => {
-          this.btnClass[btnAnimationClass] = true
-          setTimeout(() => {
-            this.btnIcon = getIconName(this.realHidden)
-          }, 150)
-        })
-      }
-    },
-    onBarBtnAnimationEnd() {
-      this.btnClass[btnAnimationClass] = false
-    },
+const hidden = defineModel<boolean>({
+  default: true,
+  set: v => {
+    emit('change', v)
+    return v
   },
 })
+
+const realHidden = ref(hidden.value)
+const btnIcon = ref(getIconName(hidden.value))
+const btnClass = ref({
+  [btnAnimationClass]: false,
+})
+
+const setRealHidden = (value: boolean) => {
+  if (value !== realHidden.value) {
+    realHidden.value = !realHidden.value
+    emit('change', realHidden.value)
+
+    btnClass.value[btnAnimationClass] = false
+    nextTick(() => {
+      btnClass.value[btnAnimationClass] = true
+      setTimeout(() => {
+        btnIcon.value = getIconName(realHidden.value)
+      }, 150)
+    })
+  }
+}
+
+watch(hidden, newValue => {
+  setRealHidden(newValue)
+})
+
+const onBarBtnAnimationEnd = () => {
+  btnClass.value[btnAnimationClass] = false
+}
 </script>
 
 <style lang="scss">

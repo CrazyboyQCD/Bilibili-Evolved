@@ -2,21 +2,22 @@
   <div class="bvid-convert">
     <div v-if="aid" class="bvid-convert-item">
       {{ aid }}
-      <div class="bvid-convert-item-copy" title="复制链接" @click="copyLink('aid')">
+      <div class="bvid-convert-item-copy" title="复制链接" @click="copyLink(CopyIdType.Aid)">
         <VIcon :size="16" :icon="aidCopied ? 'mdi-check' : 'mdi-link'" />
       </div>
     </div>
     <div v-if="bvid" class="bvid-convert-item">
       {{ bvid }}
-      <div class="bvid-convert-item-copy" title="复制链接" @click="copyLink('bvid')">
+      <div class="bvid-convert-item-copy" title="复制链接" @click="copyLink(CopyIdType.Bvid)">
         <VIcon :size="16" :icon="bvidCopied ? 'mdi-check' : 'mdi-link'" />
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { videoChange } from '@/core/observer'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { videoChange } from '@/core/video'
 import { getComponentSettings } from '@/core/settings'
 import { select } from '@/core/spin-query'
 import { matchUrlPattern } from '@/core/utils'
@@ -62,47 +63,42 @@ const linkProviders: LinkProvider[] = [
     }`
   },
 ]
-export default Vue.extend({
-  components: { VIcon },
-  data() {
-    return {
-      aid: '',
-      aidCopied: false,
-      bvid: '',
-      bvidCopied: false,
+
+const aid = ref('')
+const aidCopied = ref(false)
+const bvid = ref('')
+const bvidCopied = ref(false)
+
+onMounted(() => {
+  videoChange(async () => {
+    aid.value = `av${unsafeWindow.aid}`
+    bvid.value = unsafeWindow.bvid
+    const link = (await select('.av-link,.bv-link,.bvid-link')) as HTMLElement
+    if (link) {
+      bvid.value = link.innerHTML.trim()
     }
-  },
-  async mounted() {
-    videoChange(async () => {
-      this.aid = `av${unsafeWindow.aid}`
-      this.bvid = unsafeWindow.bvid
-      const link = (await select('.av-link,.bv-link,.bvid-link')) as HTMLElement
-      if (link) {
-        this.bvid = link.innerHTML.trim()
-      }
-    })
-  },
-  methods: {
-    async copyLink(data: CopyIdType) {
-      if (this[`${data}Copied`]) {
-        return
-      }
-      const context = {
-        query: location.search,
-        url: location.origin + location.pathname,
-        id: this[data],
-      }
-      const link = linkProviders.map(p => p(context)).filter(it => it !== null)[0]
-      if (options.copyWithTitle) {
-        await navigator.clipboard.writeText(`${getFriendlyTitle()} ${link}`)
-      } else {
-        await navigator.clipboard.writeText(link)
-      }
-      this[`${data}Copied`] = true
-      setTimeout(() => (this[`${data}Copied`] = false), 1000)
-    },
-  },
+  })
 })
+
+const copyLink = async (data: CopyIdType) => {
+  const copiedRef = data === 'aid' ? aidCopied : bvidCopied
+  if (copiedRef.value) {
+    return
+  }
+  const context = {
+    query: location.search,
+    url: location.origin + location.pathname,
+    id: data === 'aid' ? aid.value : bvid.value,
+  }
+  const link = linkProviders.map(p => p(context)).filter(it => it !== null)[0]
+  if (options.copyWithTitle) {
+    await navigator.clipboard.writeText(`${getFriendlyTitle()} ${link}`)
+  } else {
+    await navigator.clipboard.writeText(link)
+  }
+  copiedRef.value = true
+  setTimeout(() => (copiedRef.value = false), 1000)
+}
 </script>
 
 <style lang="scss">

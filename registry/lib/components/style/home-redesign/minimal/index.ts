@@ -36,8 +36,8 @@ export const component = defineComponentMetadata({
     )
     contentLoaded(async () => {
       const MinimalHome = await import('./MinimalHome.vue')
-      const minimalHome = mountVueComponent(MinimalHome)
-      document.body.appendChild(minimalHome.$el)
+      const [el] = mountVueComponent(MinimalHome)
+      document.body.appendChild(el)
     })
   },
   options: minimalHomeOptionsMetadata,

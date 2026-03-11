@@ -53,7 +53,9 @@ async function getVideoPreview(bvid: string): Promise<string | null> {
     let apiRes = await fetch(apiUrl.toString())
     if (apiRes.status === 412) {
       // 412 error, pause for 30 seconds and retry once.
-      await new Promise(r => setTimeout(r, 30000))
+      await new Promise(r => {
+        setTimeout(r, 30000)
+      })
       apiRes = await fetch(apiUrl.toString())
       if (apiRes.status === 412) {
         return null

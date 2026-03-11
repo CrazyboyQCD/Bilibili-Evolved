@@ -7,48 +7,37 @@
   </div>
 </template>
 
-<script lang="ts">
-import Vue from 'vue'
+<script setup lang="ts">
+import { ref, computed, onUnmounted } from 'vue'
+import type { RecordValue } from '../types'
+import type { Settings } from '@/core/settings/types'
 
-export default Vue.extend({
-  data() {
-    return {
-      countdown: 30,
-      userComponent: undefined,
-    }
-  },
-  computed: {
-    displayName() {
-      return this.userComponent?.metadata?.displayName
-    },
-    name() {
-      return this.userComponent?.metadata?.name
-    },
-  },
-  watch: {
-    countdown(value) {
-      if (value === 0) {
-        this.restore()
-      }
-    },
-  },
-  created() {
-    this.interval = setInterval(() => {
-      if (this.countdown > 0) {
-        this.countdown--
-      } else {
-        clearInterval(this.interval)
-      }
-    }, 1e3)
-  },
-  destroyed() {
-    clearInterval(this.interval)
-  },
-  methods: {
-    restore() {
-      clearInterval(this.interval)
-      this.$emit('restore')
-    },
-  },
+const { userComponent, onRestore } = defineProps<{
+  userComponent: RecordValue<Settings['userComponents']>
+  onRestore: () => Promise<void>
+}>()
+
+const countdown = ref(30)
+
+const displayName = computed(() => userComponent.metadata?.displayName)
+const name = computed(() => userComponent.metadata?.name)
+let interval: ReturnType<typeof setInterval>
+
+const restore = () => {
+  clearInterval(interval)
+  onRestore()
+}
+
+interval = setInterval(() => {
+  if (countdown.value > 0) {
+    countdown.value--
+  } else {
+    clearInterval(interval)
+    restore()
+  }
+}, 1000)
+
+onUnmounted(() => {
+  clearInterval(interval)
 })
 </script>

@@ -2,15 +2,10 @@
 import { ref } from 'vue'
 import { VLoading } from '@/ui'
 import { bilibiliApi } from '@/core/ajax'
-import { CustomNavbarItem } from '../custom-navbar-item'
-import { usePopper } from '../mixins'
+import { usePopper, UsePopperProps } from '../mixins'
 import type { MangaRecommendItem, MangaHotItem } from './types'
 
-const props = defineProps<{
-  item: CustomNavbarItem
-  container: HTMLElement
-}>()
-const popper = usePopper(props)
+const popper = usePopper(defineProps<UsePopperProps>())
 
 const loading = ref(true)
 const recommendItems = ref<MangaRecommendItem[] | undefined>(undefined)
@@ -82,7 +77,7 @@ defineExpose({
           <div class="recommend-manga-card-title" :title="card.title">{{ card.title }}</div>
         </a>
       </div>
-      <div class="custom-navbar-manga-panel-separator"></div>
+      <div class="custom-navbar-manga-panel-separator" />
       <div class="custom-navbar-manga-right-panel">
         <div class="custom-navbar-manga-hot-title">人气漫画</div>
         <div class="custom-navbar-manga-hot-list">

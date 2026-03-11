@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from 'vue'
 import { getUID } from '@/core/utils'
 import { CustomNavbarItemInit } from '../custom-navbar-item'
 
@@ -9,7 +10,7 @@ const uid = getUID()
 export const subscriptions: CustomNavbarItemInit = {
   name: 'subscriptions',
   displayName: '番剧 (弹窗)',
-  content: () => import('./Content.vue').then(m => m.default),
+  content: defineAsyncComponent(() => import('./Content.vue')),
 
   href: `https://space.bilibili.com/${uid}/bangumi`,
   touch: true,
@@ -22,5 +23,5 @@ export const subscriptions: CustomNavbarItemInit = {
 
   boundingWidth: 380,
   noPopupPadding: true,
-  popupContent: () => import('./NavbarSubscriptions.vue').then(m => m.default),
+  popupContent: defineAsyncComponent(() => import('./NavbarSubscriptions.vue')),
 }

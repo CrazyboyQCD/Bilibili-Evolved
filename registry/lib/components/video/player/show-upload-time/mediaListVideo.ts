@@ -1,11 +1,11 @@
-import Vue from 'vue'
+import { ComponentPublicInstance } from 'vue'
 import { ComponentMetadata } from '@/components/types'
 import { getFormatStr, Video } from './video'
 import { getVue2Data } from '@/core/utils'
 import { getComponentSettings } from '@/core/settings'
 import { VideoInfo } from '@/components/video/video-info'
 
-interface RecommendListUgc extends Vue {
+interface RecommendListUgc extends ComponentPublicInstance {
   isFolded: boolean
   recLimit: number
   // 组件添加元素，非b站自有元素
@@ -13,7 +13,7 @@ interface RecommendListUgc extends Vue {
   $children: VideoCard[]
 }
 
-interface VideoCard extends Vue {
+interface VideoCard extends ComponentPublicInstance {
   cardIndex: number
   // 组件添加元素，非b站自有元素
   mark: boolean

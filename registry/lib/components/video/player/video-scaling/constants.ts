@@ -1,7 +1,7 @@
-import { ScalePreset } from './types'
-
 // 缩放比例预设选项数组
 export const SCALE_PRESETS = ['75%', '100%', '110%', '125%', '150%', '自定义'] as const
+// 定义缩放预设选项类型
+export type ScalePreset = (typeof SCALE_PRESETS)[number]
 
 // 缩放比例映射表
 export const SCALE_MAPPING: Record<ScalePreset, number> = {

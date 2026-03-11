@@ -21,7 +21,7 @@ const entry = async () => {
       if (!danmakuSendBarElement) {
         const { mountVueComponent } = await import('@/core/utils')
         const DanmakuSendBar = await import('./DanmakuSendbar.vue')
-        danmakuSendBarElement = mountVueComponent(DanmakuSendBar).$el
+        danmakuSendBarElement = mountVueComponent(DanmakuSendBar, {})[0]
       }
       leftController.insertAdjacentElement('afterend', danmakuSendBarElement)
     },

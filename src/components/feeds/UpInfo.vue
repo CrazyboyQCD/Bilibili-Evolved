@@ -17,41 +17,23 @@
     </div>
   </a>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { computed } from 'vue'
 import { DpiImage, VIcon } from '@/ui'
 
-export default Vue.extend({
-  components: {
-    DpiImage,
-    VIcon,
-  },
-  props: {
-    href: {
-      type: String,
-      default: '',
-    },
-    upId: {
-      type: [String, Number],
-      default: '',
-    },
-    upFaceUrl: {
-      type: String,
-      default: '',
-    },
-    upName: {
-      type: String,
-      required: true,
-    },
-  },
-  computed: {
-    actualHref() {
-      if (this.href) {
-        return this.href
-      }
-      return `https://space.bilibili.com/${this.upId}`
-    },
-  },
-})
+const {
+  href = '',
+  upId = '',
+  upFaceUrl = '',
+  upName,
+} = defineProps<{
+  href?: string
+  upId?: string | number
+  upFaceUrl?: string
+  upName: string
+}>()
+
+const actualHref = computed(() => href || `https://space.bilibili.com/${upId}`)
 </script>
 <style lang="scss">
 @import 'common';

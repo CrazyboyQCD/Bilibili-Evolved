@@ -20,7 +20,7 @@ const entry: ComponentEntry<Options> = async ({ settings }) => {
   if (isEmbeddedPlayer()) {
     return
   }
-  const { videoChange } = await import('@/core/observer')
+  const { videoChange } = await import('@/core/video')
   const { sq } = await import('@/core/spin-query')
   const { logError } = await import('@/core/utils/log')
   videoChange(async () => {

@@ -5,7 +5,8 @@ import { logError } from '@/core/utils/log'
 import { formatTitle, getTitleVariablesFromDate } from '@/core/utils/title'
 import { videoUrls } from '@/core/utils/urls'
 import { DownloadVideoInput } from '../../types'
-import { createEpisodesPicker, EpisodeItem } from '../episode-item'
+import { createEpisodesPicker } from '../episode-item'
+import { EpisodeItem } from '../episode-item-types'
 
 export const videoBatchInput: DownloadVideoInput = {
   name: 'video.batch',
@@ -14,7 +15,7 @@ export const videoBatchInput: DownloadVideoInput = {
   batch: true,
   getInputs: async instance => instance?.checkedInputItems ?? [],
   component: async () =>
-    createEpisodesPicker(async instance => {
+    createEpisodesPicker(async maxCheckedItems => {
       const { aid } = unsafeWindow
       const api = `https://api.bilibili.com/x/web-interface/view?aid=${aid}`
       const json = await getJsonWithCredentials(api)
@@ -34,7 +35,7 @@ export const videoBatchInput: DownloadVideoInput = {
         return {
           key,
           title,
-          isChecked: index < instance.maxCheckedItems,
+          isChecked: index < maxCheckedItems,
           durationText: formatDuration(page.duration),
           inputItem: {
             allowQualityDrop: true,
@@ -66,7 +67,7 @@ export const videoSeasonBatchInput: DownloadVideoInput = {
   batch: true,
   getInputs: async instance => instance?.checkedInputItems ?? [],
   component: async () =>
-    createEpisodesPicker(async instance => {
+    createEpisodesPicker(async maxCheckedItems => {
       const { aid, bvid } = unsafeWindow
       const api = `https://api.bilibili.com/x/web-interface/wbi/view/detail?bvid=${bvid}&aid=${aid}`
       const json = await getJsonWithCredentials(api)
@@ -92,7 +93,7 @@ export const videoSeasonBatchInput: DownloadVideoInput = {
           return {
             key,
             title,
-            isChecked: currentIndex < instance.maxCheckedItems,
+            isChecked: currentIndex < maxCheckedItems,
             durationText: formatDuration(episode.arc.duration),
             inputItem: {
               allowQualityDrop: true,

@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from 'vue'
 import { postJson } from '@/core/ajax'
 import { Toast } from '@/core/toast'
 import { UserAgent } from '@/core/utils/constants'
@@ -30,5 +31,5 @@ export const mpvPlaylist: DownloadVideoOutput = {
       logError(resp.message)
     }
   },
-  component: () => import('./MpvConfig.vue').then(m => m.default),
+  component: defineAsyncComponent(() => import('./MpvConfig.vue')),
 }

@@ -1,11 +1,13 @@
 <template>
-  <HomeRedesignBase>
+  <HomeRedesignBase ref="root">
     <div class="minimal-home">
       <TabControl class="minimal-home-tabs" :default-tab="defaultTab" :tabs="tabs" />
     </div>
   </HomeRedesignBase>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { onMounted, useTemplateRef, defineAsyncComponent } from 'vue'
+
 import { addComponentListener } from '@/core/settings'
 import { TabControl } from '@/ui'
 import { TabMappings } from '@/ui/tab-mapping'
@@ -13,45 +15,38 @@ import HomeRedesignBase from '../HomeRedesignBase.vue'
 import { minimalHomeOptions } from './options'
 import { MinimalHomeTabOption } from './types'
 
+const root = useTemplateRef('root')
+
 const tabs: TabMappings = [
   {
     name: MinimalHomeTabOption.Feeds,
     displayName: '动态',
-    component: () => import('./tabs/Feeds.vue').then(m => m.default),
+    component: defineAsyncComponent(() => import('./tabs/Feeds.vue')),
     activeLink: 'https://t.bilibili.com/?tab=video',
   },
   {
     name: MinimalHomeTabOption.Trending,
     displayName: minimalHomeOptions.personalized ? '推荐' : '热门',
-    component: () => import('./tabs/Trending.vue').then(m => m.default),
+    component: defineAsyncComponent(() => import('./tabs/Trending.vue')),
     activeLink: 'https://www.bilibili.com/v/popular/all',
   },
 ]
-export default Vue.extend({
-  components: {
-    HomeRedesignBase,
-    TabControl,
-  },
-  data() {
-    return {
-      tabs,
-      defaultTab: minimalHomeOptions.defaultTab,
-    }
-  },
-  mounted() {
-    const columnCountKey = '--minimal-home-column-count-override'
-    addComponentListener(
-      'minimalHome.columnCount',
-      (count: number) => {
-        if (count > 0) {
-          ;(this.$el as HTMLElement).style.setProperty(columnCountKey, count.toString())
-        } else {
-          ;(this.$el as HTMLElement).style.removeProperty(columnCountKey)
-        }
-      },
-      true,
-    )
-  },
+
+const { defaultTab } = minimalHomeOptions
+
+onMounted(() => {
+  const columnCountKey = '--minimal-home-column-count-override'
+  addComponentListener(
+    'minimalHome.columnCount',
+    (count: number) => {
+      if (count > 0) {
+        root.value.root.style.setProperty(columnCountKey, count.toString())
+      } else {
+        root.value.root.style.removeProperty(columnCountKey)
+      }
+    },
+    true,
+  )
 })
 </script>
 <style lang="scss">

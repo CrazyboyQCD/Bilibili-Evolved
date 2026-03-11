@@ -21,22 +21,16 @@
     </template>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { computed } from 'vue'
 import { freshHomeOptions } from './options'
+import { FreshLayoutItem } from './layouts/fresh-layout-item'
 
-export default Vue.extend({
-  props: {
-    item: {
-      required: true,
-      type: Object,
-    },
-  },
-  data() {
-    return {
-      options: freshHomeOptions.layoutOptions[this.item.name] ?? {},
-    }
-  },
-})
+const { item } = defineProps<{
+  item: FreshLayoutItem
+}>()
+
+const options = computed(() => freshHomeOptions.layoutOptions[item.name] ?? {})
 </script>
 <style lang="scss">
 .fresh-home {

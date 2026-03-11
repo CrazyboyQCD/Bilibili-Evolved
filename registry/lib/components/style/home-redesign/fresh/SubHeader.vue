@@ -1,6 +1,6 @@
 <template>
   <div class="fresh-home-sub-header">
-    <div class="fresh-home-sub-header-dot"></div>
+    <div class="fresh-home-sub-header-dot" />
     <slot />
   </div>
 </template>

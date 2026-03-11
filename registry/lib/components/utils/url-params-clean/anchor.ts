@@ -1,7 +1,7 @@
 import { CommentAreaV3, forEachCommentArea } from '@/components/utils/comment-apis'
 import { contentLoaded } from '@/core/life-cycle'
 import { ShadowRootEvents } from '@/core/shadow-root'
-import { console } from './index'
+import { console } from './console'
 
 const isAnchor = (n: Node): n is HTMLAnchorElement => n.nodeName === 'A'
 

@@ -120,8 +120,8 @@ export const getSubtitleBlob = async (
         type: 'text/ass',
       })
     }
-    default:
-    case 'json': {
+    case 'json':
+    default: {
       return new Blob([JSON.stringify(rawData, undefined, 2)], {
         type: 'text/json',
       })

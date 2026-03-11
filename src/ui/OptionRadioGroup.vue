@@ -34,8 +34,8 @@
   </OptionWidgetLayout>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType, ref } from 'vue'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 import { OptionMetadata } from '@/components/types'
 import ComponentOption from '@/components/settings-panel/ComponentOption.vue'
 import RadioGroupItem from './RadioGroupItem.vue'
@@ -53,136 +53,107 @@ type RadioItemVM = RadioItem & {
   optionsFiltered?: Record<string, OptionMetadata>
 }
 
-export default defineComponent({
-  components: {
-    ComponentOption,
-    RadioGroupItem,
-    CollapsibleContainer,
-    OptionWidgetLayout,
-  },
-  props: {
-    /** 选项组标题 */
-    title: {
-      type: String,
-      default: '',
-    },
-    /** RadioButton分组名称，全局唯一 */
-    groupName: {
-      type: String,
-      required: true,
-    },
-    /** 选项组定义 */
-    items: {
-      type: Object as PropType<Record<string, RadioItem>>,
-      required: true,
-    },
-    /** 组件名称 */
-    componentName: {
-      type: String,
-      required: true,
-    },
-    /** 是否弹出显示，false：直接显示内容，true：显示一个按钮，点击弹出显示内容 */
-    isPopup: {
-      type: Boolean,
-      required: true,
-    },
-    /** 按钮Icon */
-    icon: {
-      type: String,
-      default: '',
-    },
-    /** 是否包含容器（CollapsibleContainer） */
-    hasContainer: {
-      type: Boolean,
-      default: true,
-    },
-    /** 禁用内容区域 */
-    disableContent: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  setup(props) {
-    const componentData = componentsMap[props.componentName]
-    const optionDefs = componentData.options
-    const optionValues = getComponentSettings(componentData).options
+const {
+  title = '',
+  groupName,
+  items,
+  componentName,
+  isPopup,
+  icon = '',
+  hasContainer = true,
+  disableContent = false,
+} = defineProps<{
+  /** 选项组标题 */
+  title?: string
+  /** RadioButton分组名称，全局唯一 */
+  groupName: string
+  /** 选项组定义 */
+  items: Record<string, RadioItem>
+  /** 组件名称 */
+  componentName: string
+  /** 是否弹出显示，false：直接显示内容，true：显示一个按钮，点击弹出显示内容 */
+  isPopup: boolean
+  /** 按钮Icon */
+  icon?: string
+  /** 是否包含容器（CollapsibleContainer） */
+  hasContainer?: boolean
+  /** 禁用内容区域 */
+  disableContent?: boolean
+}>()
 
-    // 转换 itemVMs
-    const vms: Record<string, RadioItemVM> = Object.fromEntries(
-      Object.entries(props.items).map(([key, item]) => {
-        const vm: RadioItemVM = {
-          ...item,
-        }
+const componentData = componentsMap[componentName]
+const optionDefs = componentData.options
+const optionValues = getComponentSettings(componentData).options
 
-        // 检测选项名称是否为保留占位相关选项
-        const matchOption = (option: string, def: RadioItem): boolean => {
-          if (def.optionsIncluded) {
-            const pattern = def.optionsIncluded
-            if (pattern instanceof RegExp) {
-              return pattern.test(option)
-            }
-
-            if (Array.isArray(pattern)) {
-              return pattern.includes(option)
-            }
-
-            return false
-          }
-
-          // 默认不过滤
-          return true
-        }
-
-        // 检测是否为脚本设置选项
-        if (item.isOption) {
-          vm.displayName = optionDefs[item.name]?.displayName ?? item.name
-          vm.checked = !!optionValues[item.name]
-
-          // 监测其他组件的选项值更新
-          addComponentListener(`${props.componentName}.${item.name}`, value => {
-            vm.checked = value
-          })
-        } else {
-          vm.displayName = item.name
-        }
-
-        // 检测是否包含下拉内容
-        if (item.optionsIncluded) {
-          // 过滤出需要的 options
-          vm.optionsFiltered = Object.fromEntries(
-            Object.entries(optionDefs).filter(([name]) => matchOption(name, item)),
-          )
-        }
-
-        return [key, vm] as [string, RadioItemVM]
-      }),
-    )
-    const itemVMs = ref(vms)
-
-    /** 处理单选按钮变化 */
-    function onRadioChange(itemVM: RadioItemVM, checked: boolean) {
-      // 更新 checked 状态
-      itemVM.checked = checked
-
-      if (itemVM.isOption) {
-        // 如果是脚本设置选项，更新值
-        setTimeout(() => (optionValues[itemVM.name] = checked), 200)
-      }
-
-      // 回调
-      if (itemVM.onChange) {
-        itemVM.onChange(checked)
-      }
+// 转换 itemVMs
+const vms: Record<string, RadioItemVM> = Object.fromEntries(
+  Object.entries(items).map(([key, item]) => {
+    const vm: RadioItemVM = {
+      ...item,
     }
 
-    return {
-      componentData,
-      itemVMs,
-      onRadioChange,
-      currentComponent: props.hasContainer ? CollapsibleContainer : 'div',
+    // 检测选项名称是否为保留占位相关选项
+    const matchOption = (option: string, def: RadioItem): boolean => {
+      if (def.optionsIncluded) {
+        const pattern = def.optionsIncluded
+        if (pattern instanceof RegExp) {
+          return pattern.test(option)
+        }
+
+        if (Array.isArray(pattern)) {
+          return pattern.includes(option)
+        }
+
+        return false
+      }
+
+      // 默认不过滤
+      return true
     }
-  },
-})
+
+    // 检测是否为脚本设置选项
+    if (item.isOption) {
+      vm.displayName = optionDefs[item.name]?.displayName ?? item.name
+      vm.checked = !!optionValues[item.name]
+
+      // 监测其他组件的选项值更新
+      addComponentListener(`${componentName}.${item.name}`, value => {
+        vm.checked = value
+      })
+    } else {
+      vm.displayName = item.name
+    }
+
+    // 检测是否包含下拉内容
+    if (item.optionsIncluded) {
+      // 过滤出需要的 options
+      vm.optionsFiltered = Object.fromEntries(
+        Object.entries(optionDefs).filter(([name]) => matchOption(name, item)),
+      )
+    }
+
+    return [key, vm] as [string, RadioItemVM]
+  }),
+)
+const itemVMs = ref(vms)
+
+/** 处理单选按钮变化 */
+const onRadioChange = (itemVM: RadioItemVM, checked: boolean) => {
+  // 更新 checked 状态
+  itemVM.checked = checked
+
+  if (itemVM.isOption) {
+    // 如果是脚本设置选项，更新值
+    setTimeout(() => (optionValues[itemVM.name] = checked), 200)
+  }
+
+  // 回调
+  if (itemVM.onChange) {
+    itemVM.onChange(checked)
+  }
+}
+
+const currentComponent = computed(() => (hasContainer ? CollapsibleContainer : 'div'))
 </script>
 
 <style lang="scss" scoped>

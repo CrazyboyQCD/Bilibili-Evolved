@@ -1,7 +1,7 @@
 <!-- 这个 Vue 组件是因为无法正常从 @/components/SwitchOptions.vue 导入 SwitchOptions 组件而新建的 -->
 
 <template>
-  <div class="switch-options-min">
+  <div ref="root" class="switch-options-min">
     <div class="switch-options-min-grid">
       <component
         :is="options.radio ? 'RadioButton' : 'CheckBox'"
@@ -19,74 +19,45 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-import { CheckBox, RadioButton } from '@/ui'
+<script setup lang="ts">
+import { computed, watch, onMounted, useTemplateRef } from 'vue'
 import { getComponentSettings } from '@/core/settings'
+import { SwitchMetadataOption } from '@/components/switch-options'
 
-export default defineComponent({
-  name: 'SwitchOptionsMin',
+const { options } = defineProps<{
+  options: SwitchMetadataOption<string, string>
+}>()
 
-  components: {
-    CheckBox,
-    RadioButton,
-  },
+const root = useTemplateRef('root')
 
-  props: {
-    options: {
-      type: Object,
-      required: true,
-    },
-  },
+const componentOptions = getComponentSettings(options.componentName).options
 
-  data() {
-    const { componentName } = this.options
-    const componentOptions = getComponentSettings(componentName).options
-    const getIsDimAtChecked = () => {
-      if (this.options.dimAt === 'checked' || this.options.dimAt === undefined) {
-        return true
-      }
-      if (this.options.dimAt === 'notChecked') {
-        return false
-      }
-      return false
-    }
-    const isDimAtChecked = getIsDimAtChecked()
+const getIsDimAtChecked = () => {
+  if (options.dimAt === 'checked' || options.dimAt === undefined) {
+    return true
+  }
+  if (options.dimAt === 'notChecked') {
+    return false
+  }
+  return false
+}
 
-    return {
-      componentOptions,
-      isDimAtChecked,
-    }
-  },
+const isDimAtChecked = getIsDimAtChecked()
 
-  computed: {
-    mergedSwitchProps() {
-      return {
-        checkedIcon: 'mdi-eye-off-outline',
-        notCheckedIcon: 'mdi-eye-outline',
-        ...this.options.switchProps,
-      }
-    },
-  },
+const mergedSwitchProps = computed(() => ({
+  checkedIcon: 'mdi-eye-off-outline',
+  notCheckedIcon: 'mdi-eye-outline',
+  ...options.switchProps,
+}))
 
-  watch: {
-    options() {
-      this.updateColumnsCount()
-    },
-  },
+const updateColumnsCount = () => {
+  const columns = Math.ceil(Object.keys(options.switches).length / 12)
+  root.value.style.setProperty('--columns', columns.toString())
+}
 
-  mounted() {
-    this.updateColumnsCount()
-  },
+watch(() => options, updateColumnsCount)
 
-  methods: {
-    updateColumnsCount() {
-      const element = this.$el as HTMLElement
-      const columns = Math.ceil(Object.keys(this.options.switches).length / 12)
-      element.style.setProperty('--columns', columns.toString())
-    },
-  },
-})
+onMounted(updateColumnsCount)
 </script>
 
 <style lang="scss">

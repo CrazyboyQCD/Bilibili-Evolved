@@ -1,18 +1,17 @@
-import { Watching, Configuration, webpack } from 'webpack'
+import { Configuration, webpack } from 'webpack'
 import exitHook from 'async-exit-hook'
 import { fromId } from '../../registry/lib/id'
-import { defaultWatcherHandler } from './watcher-common'
+import { defaultWatcherHandler, stopInstance, watchers } from './watcher-common'
 import { sendMessage } from './web-socket-server'
 import { devServerConfig } from './config'
 
-export const watchers: { url: string; instance: Watching }[] = []
 export const parseRegistryUrl = (url: string) => {
   /* example: http://localhost:2333/registry/dist/components/feeds/copy-link.js
   -> src: ./registry/lib/components/
   -> type: component
   -> entry: ./registry/lib/components/feeds/copy-link/index.ts
   */
-  const regex = new RegExp('/registry/dist/([^/]+)s/(.+)\\.js')
+  const regex = /\/registry\/dist\/([^/]+)s\/(.+)\.js/
   const match = url.match(regex)
   if (!match) {
     return null
@@ -23,14 +22,6 @@ export const parseRegistryUrl = (url: string) => {
     src,
     type,
     entry: fromId(src, id),
-  }
-}
-
-export const stopInstance = (instance: Watching, onClose: () => void) => {
-  if (!instance.closed) {
-    instance.close(() => {
-      onClose()
-    })
   }
 }
 
@@ -56,7 +47,7 @@ export const startRegistryWatcher = (url: string, config: Configuration) =>
       ),
     )
     exitHook(exit => {
-      if (!instance.closed) {
+      if (instance && !instance.closed) {
         instance.close(() => {
           console.log(`功能编译器已退出: ${url}`)
           exit()
@@ -65,11 +56,13 @@ export const startRegistryWatcher = (url: string, config: Configuration) =>
     })
     if (watchers.length >= maxWatchers) {
       const oldInstance = watchers.shift()
-      stopInstance(oldInstance.instance, () => {
-        console.log(
-          `已达到 maxWatchers 数量 (${maxWatchers}), 退出了功能编译器: ${oldInstance.url}`,
-        )
-      })
+      if (oldInstance?.instance) {
+        stopInstance(oldInstance.instance, () => {
+          console.log(
+            `已达到 maxWatchers 数量 (${maxWatchers}), 退出了功能编译器: ${oldInstance.url}`,
+          )
+        })
+      }
     }
     watchers.push({ url, instance })
   })

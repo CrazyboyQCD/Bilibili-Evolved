@@ -6,7 +6,7 @@ export const SkipChargeListDisabledClass = 'skip-charge-list-disable'
 const entry = styledComponentEntry(
   () => import('./charge-list.scss'),
   async () => {
-    const { videoChange } = await import('@/core/observer')
+    const { videoChange } = await import('@/core/video')
     const { select } = await import('@/core/spin-query')
 
     videoChange(async () => {

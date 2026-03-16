@@ -1,11 +1,11 @@
-import Vue from 'vue'
+import { ComponentPublicInstance } from 'vue'
 import { ComponentMetadata } from '@/components/types'
 import { getFormatStr, Video } from './video'
 import { getVue2Data } from '@/core/utils'
 import { getComponentSettings } from '@/core/settings'
 import { VideoInfo } from '@/components/video/video-info'
 
-interface RecommendList extends Vue {
+interface RecommendList extends ComponentPublicInstance {
   isOpen: boolean
   // 组件添加元素，非b站自有元素
   mark: boolean
@@ -20,7 +20,7 @@ interface RecommendList extends Vue {
   $children: (RecommendList & VideoPageCard)[]
 }
 
-interface VideoPageCard extends Vue {
+interface VideoPageCard extends ComponentPublicInstance {
   name: string
   title: string
   // 组件添加元素，非b站自有元素

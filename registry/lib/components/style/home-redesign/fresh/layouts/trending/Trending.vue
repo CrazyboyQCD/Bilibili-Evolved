@@ -8,10 +8,10 @@
         <VButton icon title="刷新" @click="reload">
           <VIcon icon="mdi-refresh" :size="18" />
         </VButton>
-        <VButton icon title="上一页" @click="$refs.videoList.offsetPage(-1)">
+        <VButton icon title="上一页" @click="videoList.offsetPage(-1)">
           <VIcon icon="left-arrow" :size="20" />
         </VButton>
-        <VButton icon title="下一页" @click="$refs.videoList.offsetPage(1)">
+        <VButton icon title="下一页" @click="videoList.offsetPage(1)">
           <VIcon icon="right-arrow" :size="20" />
         </VButton>
       </div>
@@ -21,45 +21,34 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, useTemplateRef } from 'vue'
 import { VButton, VIcon } from '@/ui'
 import VideoList from '../../VideoList.vue'
 import { freshHomeOptions } from '../../options'
 import { getTrendingVideos } from '../../../trending'
 
-export default Vue.extend({
-  components: {
-    VButton,
-    VIcon,
-    VideoList,
-  },
-  data() {
-    return {
-      videos: [],
-      loading: true,
-    }
-  },
-  computed: {
-    title() {
-      if (freshHomeOptions.personalized) {
-        return '推荐'
-      }
-      return '热门'
-    },
-  },
-  created() {
-    this.reload()
-  },
-  methods: {
-    async reload() {
-      this.loading = true
-      this.videos = []
-      this.videos = await getTrendingVideos(freshHomeOptions.personalized).finally(() => {
-        this.loading = false
-      })
-    },
-  },
+const videos = ref([])
+const loading = ref(true)
+
+const videoList = useTemplateRef('videoList')
+
+const title = computed(() => {
+  if (freshHomeOptions.personalized) {
+    return '推荐'
+  }
+  return '热门'
 })
+
+const reload = async () => {
+  loading.value = true
+  videos.value = []
+  videos.value = await getTrendingVideos(freshHomeOptions.personalized).finally(() => {
+    loading.value = false
+  })
+}
+
+reload()
 </script>
 <style lang="scss">
 @import 'common';

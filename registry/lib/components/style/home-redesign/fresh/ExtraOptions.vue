@@ -67,8 +67,9 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import type { SortableEvent } from 'sortablejs'
+import { ref, onMounted, useTemplateRef } from 'vue'
 import { SortableJSLibrary } from '@/core/runtime-library'
 import { ascendingSort } from '@/core/utils/sort'
 import { VLoading, VIcon, VButton } from '@/ui'
@@ -81,67 +82,62 @@ interface SortItem {
   layoutSettings: FreshLayoutItemSettings
 }
 
-export default Vue.extend({
-  components: { VLoading, VIcon, VButton },
-  data() {
-    return {
-      loaded: false,
-      layouts,
-      sortedItems: [],
-    }
-  },
-  async mounted() {
-    const list: HTMLElement = this.$refs.sortList
-    const Sortable = await SortableJSLibrary
-    console.log({ list })
-    Sortable.create(list, {
-      delay: 100,
-      forceFallback: true,
-      onEnd: (e: SortableEvent) => {
-        const sortedItems = [...this.sortedItems] as SortItem[]
-        const [targetItem] = sortedItems.splice(e.oldIndex, 1)
-        console.log(targetItem.layoutItem.name, `${e.oldIndex} -> ${e.newIndex}`)
-        sortedItems.splice(e.newIndex, 0, targetItem)
-        const { layoutOptions } = freshHomeOptions
-        sortedItems.forEach((it, index) => {
-          ;(layoutOptions[it.layoutItem.name] as FreshLayoutItemSettings).order = index + 1
-          it.layoutSettings.order = index + 1
-        })
-        this.sortedItems = sortedItems
-      },
+const loaded = ref(false)
+const sortedItems = ref<SortItem[]>([])
+const sortList = useTemplateRef('sortList')
+
+const sortItems = () => {
+  sortedItems.value = (layouts as FreshLayoutItem[])
+    .map((layoutItem, index): SortItem => {
+      const layoutSettings: FreshLayoutItemSettings = {
+        linebreak: false,
+        order: index + 1,
+        hidden: false,
+        ...freshHomeOptions.layoutOptions[layoutItem.name],
+      }
+      return {
+        layoutItem,
+        layoutSettings,
+      }
     })
-    this.sortItems()
-    this.loaded = true
-  },
-  methods: {
-    sortItems() {
-      this.sortedItems = (this.layouts as FreshLayoutItem[])
-        .map((layoutItem, index): SortItem => {
-          const layoutSettings: FreshLayoutItemSettings = {
-            linebreak: false,
-            order: index + 1,
-            hidden: false,
-            ...freshHomeOptions.layoutOptions[layoutItem.name],
-          }
-          return {
-            layoutItem,
-            layoutSettings,
-          }
-        })
-        .filter(it => it !== null)
-        .sort(ascendingSort(it => it.layoutSettings.order))
+    .filter(it => it !== null)
+    .sort(ascendingSort(it => it.layoutSettings.order))
+}
+
+const toggleLinebreak = (item: FreshLayoutItem) => {
+  const options = freshHomeOptions.layoutOptions[item.name]
+  options.linebreak = !options.linebreak
+  sortItems()
+}
+
+const toggleVisible = (item: FreshLayoutItem) => {
+  const options = freshHomeOptions.layoutOptions[item.name]
+  options.hidden = !options.hidden
+  sortItems()
+}
+
+onMounted(async () => {
+  const list = sortList.value
+  const Sortable = await SortableJSLibrary
+  console.log({ list })
+  Sortable.create(list, {
+    delay: 100,
+    forceFallback: true,
+    onEnd: (e: SortableEvent) => {
+      const sortedItemsCopy = [...sortedItems.value] as SortItem[]
+      const [targetItem] = sortedItemsCopy.splice(e.oldIndex, 1)
+      console.log(targetItem.layoutItem.name, `${e.oldIndex} -> ${e.newIndex}`)
+      sortedItemsCopy.splice(e.newIndex, 0, targetItem)
+      const { layoutOptions } = freshHomeOptions
+      sortedItemsCopy.forEach((it, index) => {
+        ;(layoutOptions[it.layoutItem.name] as FreshLayoutItemSettings).order = index + 1
+        it.layoutSettings.order = index + 1
+      })
+      sortedItems.value = sortedItemsCopy
     },
-    toggleLinebreak(item: FreshLayoutItem) {
-      const options = freshHomeOptions.layoutOptions[item.name]
-      options.linebreak = !options.linebreak
-      this.sortItems()
-    },
-    toggleVisible(item: FreshLayoutItem) {
-      const options = freshHomeOptions.layoutOptions[item.name]
-      options.hidden = !options.hidden
-      this.sortItems()
-    },
-  },
+  })
+  sortItems()
+  loaded.value = true
 })
 </script>
 <style lang="scss">

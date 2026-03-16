@@ -1,7 +1,7 @@
 import { FeatureBase } from '@/components/types'
 import { loadFeatureCode } from './external-input'
 import { meta } from './meta'
-import { useScopedConsole } from './utils/log'
+import { logError, useScopedConsole } from './utils/log'
 
 export enum CompareResult {
   Less = -1,
@@ -12,7 +12,7 @@ export enum CompareResult {
 export class Version {
   parts: number[]
   constructor(public versionString: string) {
-    if (!/^[\d\.]+$/.test(versionString)) {
+    if (!/^[\d.]+$/.test(versionString)) {
       throw new Error('Invalid version string')
     }
     this.parts = versionString.split('.').map(it => parseInt(it))
@@ -70,6 +70,7 @@ export const isFeatureAcceptable = async (feature: FeatureBase | string) => {
     const requiredVersion = new Version(requiredVersionText)
     return currentVersion.equals(requiredVersion) || currentVersion.greaterThan(requiredVersion)
   } catch (error) {
+    logError(error)
     console.warn('check failed, feature =', feature)
     // 版本号异常, 跳过检测
     return true

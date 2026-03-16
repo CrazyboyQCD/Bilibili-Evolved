@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from 'vue'
 import { defineComponentMetadata } from '@/components/define'
 import { getUID, none } from '@/core/utils'
 import { autoMatchMedal } from './auto-match'
@@ -11,7 +12,7 @@ export const component = defineComponentMetadata({
   unload: none,
   tags: [componentsTags.live],
   widget: {
-    component: () => import('./BadgeHelper.vue').then(m => m.default),
+    component: defineAsyncComponent(() => import('./BadgeHelper.vue')),
     condition: () => Boolean(getUID()),
   },
   options: badgeHelperOptions,

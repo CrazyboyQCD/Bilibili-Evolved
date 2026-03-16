@@ -16,9 +16,9 @@
         />
       </a>
     </div>
-    <div class="cover-placeholder-vertical"></div>
+    <div class="cover-placeholder-vertical" />
     <div v-if="!loaded" class="fresh-home-video-slides-empty">
-      <div class="empty-placeholder fresh-home-video-slides-main-title" v-text="' '"></div>
+      <div class="empty-placeholder fresh-home-video-slides-main-title" v-text="' '" />
       <div class="empty-indicator">
         <VLoading v-if="loading" />
         <div v-if="error" class="empty-indicator-error">
@@ -33,7 +33,7 @@
     <div v-if="currentItem && loaded" class="fresh-home-video-slides-row">
       <div class="fresh-home-video-slides-main-info">
         <div class="fresh-home-video-slides-row">
-          <div class="cover-placeholder-horizontal"></div>
+          <div class="cover-placeholder-horizontal" />
           <div class="fresh-home-video-slides-main-actions">
             <a class="fresh-home-video-slides-play-button" :href="currentUrl" target="_blank">
               <VButton type="primary" round>
@@ -82,7 +82,7 @@
         </a>
       </div>
       <div class="fresh-home-video-slides-main-description">
-        <div class="description-text" v-text="currentItem.description"></div>
+        <div class="description-text" v-text="currentItem.description" />
       </div>
       <div class="fresh-home-video-slides-actions">
         <VButton class="fresh-home-video-slides-refresh-button" title="刷新" icon @click="reload">
@@ -103,107 +103,80 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { computed } from 'vue'
 import { applyContentFilter } from '@/components/feeds/api'
 import { VideoCard } from '@/components/feeds/video-card'
 import { getWatchlaterList, toggleWatchlater, watchlaterList } from '@/components/video/watchlater'
 import { formatDuration } from '@/core/utils/formatters'
 import { DpiImage, VButton, VIcon, VLoading, VEmpty } from '@/ui'
-import { cssVariableMixin, requestMixin } from '../../../../mixin'
+import { RequestProps, useCssVariable, useRequest } from '../../../../mixin'
 
-export default Vue.extend({
-  components: {
-    VButton,
-    VIcon,
-    DpiImage,
-    VLoading,
-    VEmpty,
-  },
-  mixins: [
-    requestMixin(),
-    cssVariableMixin({
-      mainCoverHeight: 185,
-      mainCoverWidth: 287,
-      otherCoverHeight: 100,
-      otherCoverWidth: 154,
-      mainPaddingX: 18,
-      mainPaddingY: 20,
-      coverPadding: 16,
-    }),
-  ],
-  data() {
-    return {
-      watchlaterList,
-      itemLimit: 10,
-    }
-  },
-  computed: {
-    currentItem() {
-      return this.items[1]
-    },
-    currentUrl() {
-      return this.url(this.currentItem.bvid)
-    },
-    watchlaterAdded() {
-      return this.watchlaterList.includes(this.currentItem.aid)
-    },
-  },
-  created() {
-    getWatchlaterList()
-  },
-  methods: {
-    parseJson(json: any) {
-      const items = lodash.get(json, 'data.archives', [])
-      const cards = items.map(
-        (item: any): VideoCard => ({
-          id: item.aid,
-          aid: item.aid,
-          bvid: item.bvid,
-          coverUrl: item.pic,
-          title: item.title,
-          upName: item.owner.name,
-          upFaceUrl: item.owner.face,
-          upID: item.owner.mid,
-          playCount: item.stat.view,
-          danmakuCount: item.stat.danmaku,
-          like: item.stat.like,
-          coins: item.stat.coin,
-          description: item.desc,
-          dynamic: item.dynamic || item.desc,
-          type: item.tname,
-          duration: item.duration,
-          durationText: formatDuration(item.duration),
-        }),
-      )
-      return applyContentFilter(cards)
-    },
-    url(id: string) {
-      return `https://www.bilibili.com/video/${id}/`
-    },
-    toggleWatchlater,
-    nextCard() {
-      this.items.push(this.items.shift())
-    },
-    previousCard() {
-      this.items.unshift(this.items.pop())
-    },
-    jumpToCard(event: MouseEvent, index: number) {
-      if (index <= 1 || index >= this.items.length) {
-        return
-      }
-      let steps = index - 1
-      const jump = () => {
-        this.nextCard()
-        steps--
-        if (steps > 0) {
-          setTimeout(jump)
-        }
-      }
-      jump()
-      event.preventDefault()
-    },
+const { api } = defineProps<RequestProps>()
+const { items, loading, error, loaded, reload } = useRequest({
+  api,
+  parseJson(json: any) {
+    const originItems = lodash.get(json, 'data.archives', [])
+    const cards: VideoCard[] = originItems.map(
+      (item: any): VideoCard => ({
+        id: item.aid,
+        aid: item.aid,
+        bvid: item.bvid,
+        coverUrl: item.pic,
+        title: item.title,
+        upName: item.owner.name,
+        upFaceUrl: item.owner.face,
+        upID: item.owner.mid,
+        playCount: item.stat.view,
+        danmakuCount: item.stat.danmaku,
+        like: item.stat.like,
+        coins: item.stat.coin,
+        description: item.desc,
+        dynamic: item.dynamic || item.desc,
+        type: item.tname,
+        duration: item.duration,
+        durationText: formatDuration(item.duration),
+      }),
+    )
+    return applyContentFilter(cards)
   },
 })
+const { ui } = useCssVariable({
+  mainCoverHeight: 185,
+  mainCoverWidth: 287,
+  otherCoverHeight: 100,
+  otherCoverWidth: 154,
+  mainPaddingX: 18,
+  mainPaddingY: 20,
+  coverPadding: 16,
+})
+// const itemLimit = 10
+const url = (id: string) => `https://www.bilibili.com/video/${id}/`
+const nextCard = () => {
+  items.value.push(items.value.shift())
+}
+const previousCard = () => {
+  items.value.unshift(items.value.pop())
+}
+const jumpToCard = (event: MouseEvent, index: number) => {
+  if (index <= 1 || index >= items.value.length) {
+    return
+  }
+  let steps = index - 1
+  const jump = () => {
+    nextCard()
+    steps--
+    if (steps > 0) {
+      setTimeout(jump)
+    }
+  }
+  jump()
+  event.preventDefault()
+}
+const currentItem = computed(() => items.value[1])
+const currentUrl = computed(() => url(currentItem.value.bvid))
+const watchlaterAdded = computed(() => watchlaterList.includes(currentItem.value.aid))
+getWatchlaterList()
 </script>
 <style lang="scss">
 @import 'common';

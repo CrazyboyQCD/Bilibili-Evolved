@@ -1,36 +1,9 @@
-import {
-  OptionsOfMetadata,
-  defineComponentMetadata,
-  defineOptionsMetadata,
-} from '@/components/define'
-import { hasVideo } from '@/core/spin-query'
-import { DashCodec, DefaultDashExtensions } from './apis/dash'
+import { defineAsyncComponent } from 'vue'
+import { OptionsOfMetadata, defineComponentMetadata } from '@/components/define'
+import { hasVideo } from '@/core/video'
+import { options } from './options'
 
-const options = defineOptionsMetadata({
-  basicConfig: {
-    defaultValue: {},
-    displayName: '基础配置',
-    hidden: true,
-  },
-  dashVideoExtension: {
-    defaultValue: DefaultDashExtensions.video,
-    displayName: 'DASH 视频扩展名',
-  },
-  dashAudioExtension: {
-    defaultValue: DefaultDashExtensions.audio,
-    displayName: 'DASH 普通音频扩展名',
-  },
-  dashFlacAudioExtension: {
-    defaultValue: DefaultDashExtensions.flacAudio,
-    displayName: 'DASH FLAC 音频扩展名',
-  },
-  dashCodecFallback: {
-    defaultValue: DashCodec.Avc,
-    dropdownEnum: DashCodec,
-    displayName: 'DASH 回退编码',
-  },
-})
-export type Options = OptionsOfMetadata<typeof options>
+export type DownloadVideoOptions = OptionsOfMetadata<typeof options>
 export const component = defineComponentMetadata({
   name: 'downloadVideo',
   displayName: '下载视频',
@@ -38,7 +11,7 @@ export const component = defineComponentMetadata({
   reload: none,
   unload: none,
   widget: {
-    component: () => import('./Widget.vue').then(m => m.default),
+    component: defineAsyncComponent(() => import('./Widget.vue')),
     condition: () => hasVideo(),
   },
   tags: [componentsTags.video],

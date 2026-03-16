@@ -38,11 +38,12 @@
       </div>
       <div v-for="(item, index) of episodeItems" :key="item.key" class="episodes-picker-item">
         <CheckBox
-          v-model="item.isChecked"
+          :checked="item.isChecked"
           icon-position="left"
           :data-aid="item.inputItem.aid"
           :data-cid="item.inputItem.cid"
           :data-bvid="item.inputItem.bvid"
+          @change="checked => (item.isChecked = checked)"
           @click.native="shiftSelect($event, item, index)"
         >
           <span class="episode-title">
@@ -56,82 +57,66 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, Ref } from 'vue'
 import { VButton, VIcon, CheckBox, VEmpty } from '@/ui'
-import { EpisodeItem } from './episode-item'
+import { EpisodeItem } from './episode-item-types'
 
-export default Vue.extend({
-  components: {
-    VButton,
-    VIcon,
-    CheckBox,
-    VEmpty,
-  },
-  props: {
-    api: {
-      type: Function,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      episodeItems: [],
-      maxCheckedItems: 32,
-      lastCheckedEpisodeIndex: -1,
-    }
-  },
-  computed: {
-    checkedRatio() {
-      const checked: number = this.episodeItems.filter((it: EpisodeItem) => it.isChecked).length
-      return `(${checked}/${this.episodeItems.length})`
-    },
-    inputItems() {
-      return this.episodeItems.map((it: EpisodeItem) => it.inputItem)
-    },
-    checkedInputItems() {
-      const items: EpisodeItem[] = this.episodeItems
-      return items.filter(it => it.isChecked).map(it => it.inputItem)
-    },
-  },
-  created() {
-    this.getEpisodeItems()
-  },
-  methods: {
-    shiftSelect(e: MouseEvent, item: EpisodeItem, index: number) {
-      if (!e.shiftKey || this.lastCheckedEpisodeIndex === -1) {
-        // console.log('set lastCheckedEpisodeIndex', index)
-        this.lastCheckedEpisodeIndex = index
-        return
-      }
-      if (e.shiftKey && this.lastCheckedEpisodeIndex !== -1) {
-        ;(this.episodeItems as EpisodeItem[])
-          .slice(
-            Math.min(this.lastCheckedEpisodeIndex, index) + 1,
-            Math.max(this.lastCheckedEpisodeIndex, index),
-          )
-          .forEach(it => {
-            it.isChecked = !it.isChecked
-          })
-        // console.log(
-        //   'shift toggle',
-        //   Math.min(this.lastCheckedEpisodeIndex, index) + 1,
-        //   Math.max(this.lastCheckedEpisodeIndex, index),
-        // )
-        this.lastCheckedEpisodeIndex = index
-        e.preventDefault()
-      }
-    },
-    forEachItem(action: (item: EpisodeItem, index: number) => void) {
-      const items: EpisodeItem[] = this.episodeItems
-      items.forEach(action)
-    },
-    async getEpisodeItems() {
-      if (this.episodeItems.length > 0) {
-        return
-      }
-      this.episodeItems = await this.api(this)
-    },
-  },
+const maxCheckedItems = 32
+
+const { api } = defineProps<{
+  api: (maxCheckedItems: number) => Promise<EpisodeItem[]>
+}>()
+
+const episodeItems = ref([]) as Ref<EpisodeItem[]>
+const lastCheckedEpisodeIndex = ref(-1)
+
+const checkedRatio = computed(() => {
+  const checked: number = episodeItems.value.filter((it: EpisodeItem) => it.isChecked).length
+  return `(${checked}/${episodeItems.value.length})`
+})
+
+const inputItems = computed(() => episodeItems.value.map(it => it.inputItem))
+const checkedInputItems = computed(() =>
+  episodeItems.value.filter(it => it.isChecked).map(it => it.inputItem),
+)
+
+const shiftSelect = (e: MouseEvent, item: EpisodeItem, index: number) => {
+  if (!e.shiftKey || lastCheckedEpisodeIndex.value === -1) {
+    lastCheckedEpisodeIndex.value = index
+    return
+  }
+  if (e.shiftKey && lastCheckedEpisodeIndex.value !== -1) {
+    episodeItems.value
+      .slice(
+        Math.min(lastCheckedEpisodeIndex.value, index) + 1,
+        Math.max(lastCheckedEpisodeIndex.value, index),
+      )
+      .forEach(it => {
+        it.isChecked = !it.isChecked
+      })
+    lastCheckedEpisodeIndex.value = index
+    e.preventDefault()
+  }
+}
+
+const forEachItem = (action: (item: EpisodeItem, index: number) => void) => {
+  const items: EpisodeItem[] = episodeItems.value
+  items.forEach(action)
+}
+
+const getEpisodeItems = async () => {
+  if (episodeItems.value.length > 0) {
+    return
+  }
+  episodeItems.value = await api(maxCheckedItems)
+}
+
+getEpisodeItems()
+
+defineExpose({
+  inputItems,
+  checkedInputItems,
 })
 </script>
 <style lang="scss">

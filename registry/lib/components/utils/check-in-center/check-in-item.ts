@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import { postTextWithCredentials } from '@/core/ajax'
 import { Toast } from '@/core/toast'
 import { getCsrf } from '@/core/utils'
@@ -41,4 +42,4 @@ const builtInItems: CheckInItem[] = [
     },
   },
 ]
-export const [checkInItems] = registerAndGetData('checkInCenter.items', builtInItems)
+export const [checkInItems] = registerAndGetData('checkInCenter.items', reactive(builtInItems))

@@ -1,16 +1,10 @@
 <template>
   <a class="column-card" target="_blank" :href="`https://www.bilibili.com/read/cv${data.cvID}`">
     <div class="covers">
-      <DpiImage
-        v-for="cover of data.covers"
-        :key="cover"
-        class="cover"
-        :size="{ height: 120 }"
-        :src="cover"
-      ></DpiImage>
+      <DpiImage v-for="cover of data.covers" :key="cover" class="cover" :size="120" :src="cover" />
     </div>
     <a class="up" target="_blank" :href="`https://space.bilibili.com/${data.upID}`">
-      <DpiImage class="face" :size="24" :src="data.upFaceUrl"></DpiImage>
+      <DpiImage class="face" :size="24" :src="data.upFaceUrl" />
       <div class="name">{{ data.upName }}</div>
     </a>
     <h1 class="title" :title="data.title">{{ data.title }}</h1>
@@ -18,24 +12,14 @@
   </a>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { DpiImage } from '@/ui'
+import { ColumnCard } from './column-card'
 
-export default Vue.extend({
-  components: {
-    DpiImage,
-  },
-  props: {
-    data: {
-      type: Object,
-      required: true,
-    },
-    isNew: {
-      type: Boolean,
-      default: false,
-    },
-  },
-})
+const { data } = defineProps<{
+  data: ColumnCard
+  // isNew?: boolean
+}>()
 </script>
 
 <style lang="scss" scoped>

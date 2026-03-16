@@ -3,8 +3,8 @@ import { meta } from '@/core/meta'
 import { getComponentSettings } from '@/core/settings'
 import { Toast } from '@/core/toast'
 import { formatFileSize, formatPercent } from '@/core/utils/formatters'
-import { title as pluginTitle } from '.'
-import type { Options } from '../../../../components/video/download'
+import { title as pluginTitle } from './common'
+import type { DownloadVideoOptions } from '../../../../components/video/download'
 import { DownloadVideoAction } from '../../../../components/video/download/types'
 import { FFmpeg } from './ffmpeg'
 import { mux } from './muxer'
@@ -128,7 +128,7 @@ export async function run(
   }
 
   const { dashAudioExtension, dashFlacAudioExtension, dashVideoExtension } =
-    getComponentSettings<Options>('downloadVideo').options
+    getComponentSettings<DownloadVideoOptions>('downloadVideo').options
 
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i]

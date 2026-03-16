@@ -21,64 +21,54 @@
       >{{ activeTranslator.name }}</a>: -->
     </div>
     <VIcon v-if="working" :size="18" icon="mdi-loading" class="translating mdi-spin" />
-    <div v-if="!working && translated" class="translate-result" v-text="result"></div>
+    <div v-if="!working && translated" class="translate-result" v-text="result" />
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, onMounted, Ref } from 'vue'
 import { getComponentSettings } from '@/core/settings'
 import { logError } from '@/core/utils/log'
 import { VDropdown, VIcon } from '@/ui'
 import { getTranslator, translateProviders, MachineTranslateProvider } from './translators'
+import { I18nOptions } from '..'
 
 const MachineTranslatorClass = 'machine-translator-enabled'
-export default Vue.extend({
-  components: {
-    VDropdown,
-    VIcon,
-  },
-  props: {
-    text: {
-      type: String,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      result: '',
-      working: false,
-      translateProviders,
-      activeTranslator: {},
-    }
-  },
-  computed: {
-    translated() {
-      return this.result !== ''
-    },
-  },
-  mounted() {
-    document.body.classList.add(MachineTranslatorClass)
-  },
-  methods: {
-    changeTranslator(translator: MachineTranslateProvider) {
-      getComponentSettings('i18n').options.translator = translator.name
-      this.translate()
-    },
-    async translate() {
-      try {
-        this.working = true
-        // 移除 #话题# , '#'似乎会干扰翻译器
-        const text = this.text.replace(/#(.+?)#/g, '') as string
-        this.activeTranslator = getTranslator()
-        const translator = this.activeTranslator as MachineTranslateProvider
-        this.result = await translator.translate(text)
-      } catch (error) {
-        logError(error)
-      } finally {
-        this.working = false
-      }
-    },
-  },
+
+const { text } = defineProps<{
+  text: string
+}>()
+
+const result = ref('')
+const working = ref(false)
+const activeTranslator = ref({}) as Ref<MachineTranslateProvider>
+
+const translated = computed(() => {
+  return result.value !== ''
+})
+
+const translate = async () => {
+  try {
+    working.value = true
+    // 移除 #话题# , '#'似乎会干扰翻译器
+    const cleanText = text.replace(/#(.+?)#/g, '')
+    activeTranslator.value = getTranslator()
+    const translator = activeTranslator.value
+    result.value = await translator.translate(cleanText)
+  } catch (error) {
+    logError(error)
+  } finally {
+    working.value = false
+  }
+}
+
+const changeTranslator = (translator: MachineTranslateProvider) => {
+  getComponentSettings<I18nOptions>('i18n').options.translator = translator.name
+  translate()
+}
+
+onMounted(() => {
+  document.body.classList.add(MachineTranslatorClass)
 })
 </script>
 

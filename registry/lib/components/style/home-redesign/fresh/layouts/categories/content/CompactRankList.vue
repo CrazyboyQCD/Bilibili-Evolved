@@ -40,82 +40,75 @@
           </UpInfo>
           <div class="compact-rank-list-card-stats">
             <VIcon icon="play" :size="16" />
-            {{ video.playCount | formatCount }}
+            {{ formatCount(video.playCount) }}
             <VIcon icon="danmaku" :size="16" />
-            {{ video.danmakuCount | formatCount }}
+            {{ formatCount(video.danmakuCount) }}
           </div>
         </div>
       </a>
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { computed, nextTick, onBeforeUnmount, useTemplateRef, watch } from 'vue'
 import UpInfo from '@/components/feeds/UpInfo.vue'
 import { formatCount } from '@/core/utils/formatters'
 import { VIcon, VLoading, VEmpty, VButton, DpiImage } from '@/ui'
-import { cssVariableMixin, requestMixin } from '../../../../mixin'
+import { requestProps, useCssVariable, useRequest } from '../../../../mixin'
 import { cleanUpScrollMask, setupScrollMask } from '../../../scroll-mask'
-import { compactRankListCssVars } from './rank-list'
+import { compactRankListCssVars, RankListCard } from './rank-list'
 import { getJsonWithCredentials } from '@/core/ajax'
 
-export default Vue.extend({
-  components: {
-    DpiImage,
-    UpInfo,
-    VIcon,
-    VLoading,
-    VEmpty,
-    VButton,
+const { parseJson, bangumiMode, api } = defineProps({
+  parseJson: {
+    type: Function,
+    required: true,
   },
-  filters: {
-    formatCount,
+  bangumiMode: {
+    type: Boolean,
+    default: false,
   },
-  mixins: [
-    requestMixin({ requestMethod: getJsonWithCredentials }),
-    cssVariableMixin(compactRankListCssVars),
-  ],
-  props: {
-    parseJson: {
-      type: Function,
-      required: true,
+  ...requestProps,
+})
+const { items, loading, error, loaded, reload } = useRequest<RankListCard>({
+  api,
+  parseJson: parseJson as (json: unknown) => RankListCard[],
+  requestMethod: getJsonWithCredentials,
+})
+const { el } = useCssVariable(compactRankListCssVars)
+
+const upInfoProps = computed(() => {
+  console.log({ bangumiMode })
+  return {
+    size: 18,
+    icon: bangumiMode ? 'mdi-television-classic' : 'up-outline',
+    style: {
+      transform: bangumiMode ? 'translateY(-1px)' : 'none',
     },
-    bangumiMode: {
-      type: Boolean,
-      default: false,
-    },
+  }
+})
+
+const cardsRef = useTemplateRef('cards')
+const setupIntersection = async () => {
+  await nextTick()
+  console.log(cardsRef.value)
+  setupScrollMask({
+    container: el.value,
+    items: cardsRef.value,
+  })
+}
+
+watch(
+  () => loaded,
+  newloaded => {
+    if (newloaded) {
+      setupIntersection()
+    }
   },
-  computed: {
-    upInfoProps() {
-      console.log({ bangumiMode: this.bangumiMode })
-      return {
-        size: 18,
-        icon: this.bangumiMode ? 'mdi-television-classic' : 'up-outline',
-        style: {
-          transform: this.bangumiMode ? 'translateY(-1px)' : 'none',
-        },
-      }
-    },
-  },
-  watch: {
-    loaded() {
-      if (this.loaded) {
-        this.setupIntersection()
-      }
-    },
-  },
-  beforeDestroy() {
-    cleanUpScrollMask(this.$el)
-  },
-  methods: {
-    async setupIntersection() {
-      await this.$nextTick()
-      console.log(this.$refs.cards)
-      setupScrollMask({
-        container: this.$el,
-        items: this.$refs.cards,
-      })
-    },
-  },
+)
+
+onBeforeUnmount(() => {
+  cleanUpScrollMask()
 })
 </script>
 <style lang="scss">
@@ -140,13 +133,16 @@ export default Vue.extend({
     @include v-stretch(12px);
     @include no-scrollbar();
   }
+
   &.not-empty &-content {
     scroll-snap-type: y mandatory;
   }
+
   .compact-rank-list-card {
     scroll-snap-align: start;
     cursor: pointer;
     @include h-center(8px);
+
     &-cover {
       @include card(12px);
       flex-shrink: 0;
@@ -156,14 +152,17 @@ export default Vue.extend({
       overflow: hidden;
       transform-origin: bottom;
       position: relative;
+
       img {
         transition: 0.2s ease-out;
         object-fit: cover;
       }
+
       &:hover img {
         transform: scale(1.05);
       }
     }
+
     &-rank {
       @include h-center();
       justify-content: center;
@@ -178,29 +177,35 @@ export default Vue.extend({
       background-color: #333;
       color: #eee;
       @include semi-bold();
+
       &.top-three {
         background-color: var(--theme-color);
         color: var(--foreground-color);
       }
     }
+
     &-info {
       @include v-stretch(6px);
       flex: 1 0 0;
       width: 0;
     }
+
     &-title {
       line-height: 1.5;
       transition: color 0.2s ease-out;
       @include semi-bold();
       @include single-line();
+
       &:hover {
         color: var(--theme-color);
       }
     }
+
     &-stats {
       @include h-center(12px);
       font-size: 12px;
       opacity: 0.5;
+
       .be-icon {
         margin-right: -8px;
       }

@@ -1,7 +1,8 @@
 import { matchUrlPattern } from '@/core/utils'
 import { registerAndGetData } from '@/plugins/data'
 import { FeedsCardCallback, FeedsCard } from '../types'
-import { ListAdaptorKey, FeedsCardsListAdaptor } from './adaptor'
+import { ListAdaptorKey } from './ListAdaptorKey'
+import { TestPattern } from '@/core/common-types'
 
 export const feedsCardCallbacks: Required<FeedsCardCallback>[] = []
 
@@ -91,4 +92,18 @@ export abstract class FeedsCardsManager extends EventTarget {
   abstract updateCards(cardsList: HTMLElement): readonly [MutationObserver, MutationObserverInit]
   /** 卡片管理器的标识名称, 组件如果需要对不同版本的动态做出行为区分, 可以读取这个字段 */
   abstract readonly managerType: string
+}
+
+/** 表示一个动态卡片列表适配器, 可以对在不同页面的地方里的动态列表提供支持 */
+export interface FeedsCardsListAdaptor {
+  /** 名称 */
+  name: string
+  /** 匹配的网址 */
+  match: TestPattern
+  /**
+   * 开始监测
+   * @param manager `FeedsCardsManager` 的实例
+   * @returns 是否监测成功
+   */
+  watchCardsList: (manager: FeedsCardsManager) => Promise<boolean>
 }

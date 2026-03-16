@@ -1,4 +1,9 @@
-import { defineComponentMetadata } from '@/components/define'
+import { defineAsyncComponent } from 'vue'
+import {
+  defineComponentMetadata,
+  defineOptionsMetadata,
+  OptionsOfMetadata,
+} from '@/components/define'
 import {
   allVideoUrls,
   bangumiUrls,
@@ -75,7 +80,9 @@ async function waitWithMoments<R>(
   setNextMoment()
 
   const result = await promise
-  timeoutId !== null && clearTimeout(timeoutId)
+  if (timeoutId) {
+    clearTimeout(timeoutId)
+  }
   return new WaitResult(lastMoment.time, result)
 }
 
@@ -145,18 +152,22 @@ const entry = async ({
   }
 }
 
+const options = defineOptionsMetadata({
+  locations: {
+    defaultValue: lodash.mapValues(pageTypeInfos, () => 0),
+    hidden: true,
+  },
+})
+
+export type VideoDefaultLocationOptions = OptionsOfMetadata<typeof options>
+
 export const component = defineComponentMetadata({
   name: 'videoDefaultLocation',
   displayName: '视频页默认定位',
   tags: [componentsTags.video],
   urlInclude: allVideoUrls,
   description: { 'zh-CN': desc },
-  extraOptions: () => import('./Options.vue').then(m => m.default),
-  options: {
-    locations: {
-      defaultValue: lodash.mapValues(pageTypeInfos, () => 0),
-      hidden: true,
-    },
-  },
-  entry: entry as any,
+  extraOptions: defineAsyncComponent(() => import('./Options.vue')),
+  options,
+  entry,
 })

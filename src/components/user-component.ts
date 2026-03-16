@@ -1,4 +1,4 @@
-import { componentToSettings } from '@/core/settings'
+import { componentToSettings } from '@/core/settings/helpers'
 import { isBuiltInComponent } from './built-in-components'
 import { ComponentMetadata, componentsMap } from './component'
 import * as bisector from './bisector/api'
@@ -80,12 +80,7 @@ export const uninstallComponent = async (nameOrDisplayName: string) => {
       {
         metadata: { displayName },
       },
-    ]) => {
-      if (name === nameOrDisplayName || displayName === nameOrDisplayName) {
-        return true
-      }
-      return false
-    },
+    ]) => name === nameOrDisplayName || displayName === nameOrDisplayName,
   )
   if (!existingComponent) {
     throw new Error(`没有找到与名称'${nameOrDisplayName}'相关联的组件`)

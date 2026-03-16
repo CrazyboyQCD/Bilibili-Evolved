@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div ref="root">
     组件二等分
     <div
       class="peek"
@@ -13,20 +13,17 @@
   </div>
 </template>
 
-<script lang="ts">
-import Vue from 'vue'
+<script setup lang="ts">
+import { ref, watch, useTemplateRef } from 'vue'
 import { VIcon } from '@/ui'
 
-export default Vue.extend({
-  components: { VIcon },
-  data() {
-    return { peek: false }
-  },
-  watch: {
-    peek(value) {
-      this.$el.closest('.be-dialog').style.opacity = value ? '0.1' : '1'
-    },
-  },
+const root = useTemplateRef('root')
+
+const peek = ref(false)
+
+watch(peek, value => {
+  const dialogElement = root.value.closest('.be-dialog') as HTMLElement | null
+  dialogElement.style.opacity = value ? '0.1' : '1'
 })
 </script>
 

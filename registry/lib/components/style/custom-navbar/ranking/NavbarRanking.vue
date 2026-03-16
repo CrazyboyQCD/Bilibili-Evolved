@@ -6,14 +6,14 @@
   </div>
 </template>
 
-<script lang="ts">
-import { popperMixin } from '../mixins'
+<script setup lang="ts">
+import { usePopper, UsePopperProps } from '../mixins'
 
 interface RankingEntry {
   href: string
   name: string
 }
-const entries = [
+const entries: RankingEntry[] = [
   {
     href: 'https://www.bilibili.com/v/popular/all',
     name: '综合热门',
@@ -34,14 +34,12 @@ const entries = [
     href: 'https://www.bilibili.com/v/popular/music',
     name: '全站音乐榜',
   },
-] as RankingEntry[]
-export default Vue.extend({
-  name: 'RankingPopup',
-  mixins: [popperMixin],
-  data() {
-    return {
-      entries,
-    }
+]
+
+const popper = usePopper(defineProps<UsePopperProps>())
+defineExpose({
+  popupShow() {
+    popper.popupShow()
   },
 })
 </script>

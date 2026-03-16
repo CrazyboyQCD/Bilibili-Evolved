@@ -88,7 +88,7 @@ export async function mux(
   ffmpeg.onProgress(callback)
   await ffmpeg.exec(args)
 
-  const output = await ffmpeg.readFile('output')
+  const output = (await ffmpeg.readFile('output')) as Uint8Array<ArrayBuffer>
   const outputBlob = new Blob([output], { type: format.mime })
 
   await Promise.all([

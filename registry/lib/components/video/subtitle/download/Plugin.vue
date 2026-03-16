@@ -2,7 +2,11 @@
   <div class="download-subtitle-config download-video-config-section">
     <div class="download-video-config-item">
       <div class="download-video-config-title">字幕:</div>
-      <VDropdown v-model="type" :items="items">
+      <VDropdown
+        :value="type"
+        :items="items"
+        @change="type = $event as SubtitleDownloadType | '无'"
+      >
         <template #item="{ item }">
           {{ item }}
         </template>
@@ -10,36 +14,30 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, watch, useAttrs } from 'vue'
 import { getComponentSettings } from '@/core/settings'
 import { VDropdown } from '@/ui'
 import { SubtitleDownloadType } from './utils'
+import { DownloadVideoOptions } from '../../download'
 
-interface Options {
-  subtitleType: SubtitleDownloadType | '无'
-}
-const options = getComponentSettings('downloadVideo').options as Options
+const { options } = getComponentSettings<
+  DownloadVideoOptions & {
+    subtitleType: SubtitleDownloadType | '无'
+  }
+>('downloadVideo')
 
-export default Vue.extend({
-  components: {
-    VDropdown,
-  },
-  data() {
-    return {
-      type: options.subtitleType ?? '无',
-      items: ['无', 'ass', 'json'],
-    }
-  },
-  computed: {
-    enabled() {
-      return this.type !== '无'
-    },
-  },
-  watch: {
-    type(newValue: SubtitleDownloadType) {
-      options.subtitleType = newValue
-    },
-  },
+const type = ref(options.subtitleType ?? '无')
+const items = ['无', 'ass', 'json']
+const enabled = computed(() => type.value !== '无')
+watch(type, newValue => {
+  options.subtitleType = newValue
+})
+const attrs = useAttrs() as { name: string }
+defineExpose({
+  type,
+  enabled,
+  attrs,
 })
 </script>
 <style lang="scss">

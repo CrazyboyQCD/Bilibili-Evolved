@@ -1,6 +1,6 @@
 import { defineComponentMetadata } from '@/components/define'
 import { playerAgent, PlayerAgentEventTypes } from '@/components/video/player-agent'
-import { videoChange, VideoChangeCallback } from '@/core/observer'
+import { videoChange, VideoChangeCallback } from '@/core/video'
 import { playerUrls } from '@/core/utils/urls'
 
 const entry = async () => {

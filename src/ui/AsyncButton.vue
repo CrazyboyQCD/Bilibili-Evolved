@@ -1,45 +1,27 @@
 <template>
-  <VButton
-    v-bind="$attrs"
-    :disabled="disabled || internalDisabled"
-    v-on="listeners"
-    @click="onClick"
-  >
+  <VButton v-bind="attrs" :disabled="disabled || internalDisabled" @click="onClick">
     <slot>Button</slot>
   </VButton>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, useAttrs } from 'vue'
 import VButton from './VButton.vue'
 
-export default Vue.extend({
-  components: {
-    VButton,
-  },
-  props: {
-    disabled: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  data() {
-    return {
-      internalDisabled: false,
-    }
-  },
-  computed: {
-    listeners() {
-      return lodash.omit(this.$listeners, 'click')
-    },
-    onClick() {
-      return async (...args: unknown[]) => {
-        try {
-          this.internalDisabled = true
-          await this.$listeners.click?.(...args)
-        } finally {
-          this.internalDisabled = false
-        }
-      }
-    },
-  },
-})
+const { disabled = false } = defineProps<{
+  disabled?: boolean
+}>()
+
+const internalDisabled = ref(false)
+
+const attrs = useAttrs()
+
+const onClick = async (event: Event) => {
+  try {
+    internalDisabled.value = true
+    const clickHandler = attrs.onClick as ((event: Event) => Promise<void> | void) | undefined
+    await clickHandler?.(event)
+  } finally {
+    internalDisabled.value = false
+  }
+}
 </script>

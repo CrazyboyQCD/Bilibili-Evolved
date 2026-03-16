@@ -9,7 +9,7 @@
  */
 export const getId = (root: string, entry: string) => {
   const relative = entry.replace(root, '').replace(/\\/g, '/')
-  return relative.replace(/\/[^\/]+$/, '')
+  return relative.replace(/\/[^/]+$/, '')
 }
 
 /**

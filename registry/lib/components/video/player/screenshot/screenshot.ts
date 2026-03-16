@@ -61,7 +61,7 @@ export class Screenshot {
       }, this.mimeType)
     } catch (error) {
       logError(
-        '视频截图失败: 操作被浏览器阻止. 这通常发生于电影的试看片段, 请在正片尝试使用截图功能.',
+        `视频截图失败: 操作被浏览器阻止. 这通常发生于电影的试看片段, 请在正片尝试使用截图功能.错误：${error}`,
       )
     }
   }

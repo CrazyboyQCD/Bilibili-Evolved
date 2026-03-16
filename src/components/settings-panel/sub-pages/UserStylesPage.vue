@@ -7,7 +7,7 @@
     </ManagePanel>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import { getHook } from '@/plugins/hook'
 import { UserStyle, installStyle, uninstallStyle, styles } from '@/plugins/style'
 import { ManageItem, ManagePanelConfig } from './manage-panel/manage-panel'
@@ -22,15 +22,8 @@ const config: ManagePanelConfig<StyleType> = {
   description:
     '可以在此处管理自定义样式, 自定义样式能简单修改界面元素以满足您的需求, 对于更复杂的样式, 推荐使用 Stylus 浏览器插件来管理.',
   list: styles,
-  listFilter: (item, search) => {
-    if (
-      search &&
-      !`${item.name}\n${item.displayName}`.toLowerCase().includes(search.toLowerCase())
-    ) {
-      return false
-    }
-    return true
-  },
+  listFilter: (item, search) =>
+    !(search && !`${item.name}\n${item.displayName}`.toLowerCase().includes(search.toLowerCase())),
   async onItemAdd(code, url) {
     const { before, after } = getHook('userStyles.add', code, url)
     await before()
@@ -48,20 +41,6 @@ const getItemConfig = (item: StyleType): ManageItem<StyleType> => ({
     await before()
     uninstallStyle(it.name)
     await after()
-  },
-})
-export default Vue.extend({
-  components: {
-    ManagePanel,
-    UserItem,
-  },
-  data() {
-    return {
-      config,
-    }
-  },
-  methods: {
-    getItemConfig,
   },
 })
 </script>

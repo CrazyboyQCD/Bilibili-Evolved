@@ -28,7 +28,8 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue'
 import { VButton, VIcon } from '@/ui'
 import { applyContentFilter } from '@/components/feeds/api'
 import SubHeader from '../../../SubHeader.vue'
@@ -36,41 +37,29 @@ import RankList from './RankList.vue'
 import CompactRankList from './CompactRankList.vue'
 import BangumiTimeline from './BangumiTimeline.vue'
 import { getBangumiRankListCards, PGCSeasonTypeMap } from './rank-list'
-import { compactRankListMixin } from '../../../../mixin'
+import { useCompactRankList } from '../../../../mixin'
 
-export default Vue.extend({
-  components: {
-    SubHeader,
-    BangumiTimeline,
-    RankList,
-    CompactRankList,
-    VButton,
-    VIcon,
-  },
-  mixins: [compactRankListMixin()],
-  props: {
-    region: {
-      type: Object,
-      required: true,
-    },
-  },
-  data() {
-    const { route } = this.region.category
-    const seasonType = PGCSeasonTypeMap[route]
-    return {
-      route,
-      timelineApi: `https://api.bilibili.com/pgc/web/timeline?types=${seasonType}&before=6&after=6`,
-      rankingsApi: `https://api.bilibili.com/pgc/season/rank/web/list?day=3&season_type=${seasonType}`,
-      rankingsLink: `https://www.bilibili.com/v/popular/rank/${route}`,
+const { region } = defineProps<{
+  region: {
+    category: {
+      route: keyof typeof PGCSeasonTypeMap
     }
-  },
-  methods: {
-    parseJson(json: any) {
-      const cards = getBangumiRankListCards(json).slice(0, 10)
-      return applyContentFilter(cards)
-    },
-  },
-})
+  }
+}>()
+
+const { isCompactRankList, toggleRankListMode } = useCompactRankList()
+
+const route = ref(region.category.route)
+const seasonType = PGCSeasonTypeMap[route.value]
+
+const timelineApi = `https://api.bilibili.com/pgc/web/timeline?types=${seasonType}&before=6&after=6`
+const rankingsApi = `https://api.bilibili.com/pgc/season/rank/web/list?day=3&season_type=${seasonType}`
+const rankingsLink = `https://www.bilibili.com/v/popular/rank/${route.value}`
+
+const parseJson = (json: any) => {
+  const cards = getBangumiRankListCards(json).slice(0, 10)
+  return applyContentFilter(cards)
+}
 </script>
 <style lang="scss">
 @import 'common';

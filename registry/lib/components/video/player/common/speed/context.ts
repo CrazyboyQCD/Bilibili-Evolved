@@ -1,6 +1,6 @@
 import { playerAgent } from '@/components/video/player-agent'
 import { LifeCycleEventTypes } from '@/core/life-cycle'
-import { videoChange } from '@/core/observer'
+import { videoChange } from '@/core/video'
 import { des } from '@/core/utils'
 import { ascendingSort } from '@/core/utils/sort'
 import { bindCallback, concat, firstValueFrom, fromEvent, of, subject, Subject } from '../mini-rxjs'
@@ -385,7 +385,11 @@ const buildMethodPart = (speedContext: ReturnType<typeof buildSubjectPart>) => {
 
     if (timeoutArg > 0) {
       promises.push(
-        new Promise((resolve, reject) => setTimeout(() => setTimeout(reject, timeoutArg))),
+        new Promise((resolve, reject) => {
+          setTimeout(() => {
+            setTimeout(reject, timeoutArg)
+          })
+        }),
       )
     }
 

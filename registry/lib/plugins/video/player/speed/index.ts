@@ -7,10 +7,8 @@ import {
 import { formatSpeedText } from '../../../../components/video/player/common/speed/utils'
 import type { RememberSpeedComponent } from '../../../../components/video/player/remember-speed/component'
 import '../../../../components/video/player/common/speed'
-import type {
-  KeyBindingAction,
-  KeyBindingActionContext,
-} from '../../../../components/utils/keymap/bindings'
+import type { KeyBindingAction } from '../../../../components/utils/keymap/bindings-types'
+import { KeyBindingActionContext } from '../../../../components/utils/keymap/bindings-types'
 
 interface CommonKeyBindingAction {
   videoSpeedIncrease: KeyBindingAction

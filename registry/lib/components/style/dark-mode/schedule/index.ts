@@ -44,16 +44,10 @@ class ScheduleTime {
     }
   }
   lessThan(other: ScheduleTime) {
-    if (this.hour < other.hour || (this.hour === other.hour && this.minute < other.minute)) {
-      return true
-    }
-    return false
+    return this.hour < other.hour || (this.hour === other.hour && this.minute < other.minute)
   }
   greaterThan(other: ScheduleTime) {
-    if (this.hour > other.hour || (this.hour === other.hour && this.minute > other.minute)) {
-      return true
-    }
-    return false
+    return this.hour > other.hour || (this.hour === other.hour && this.minute > other.minute)
   }
   equals(other: ScheduleTime) {
     return this.hour === other.hour && this.minute === other.minute

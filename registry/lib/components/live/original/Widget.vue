@@ -3,18 +3,8 @@
     <DefaultWidget name="返回原版直播间" icon="mdi-arrow-left-circle-outline" />
   </a>
 </template>
-<script lang="ts">
-import { DefaultWidget } from '@/ui'
+<script setup lang="ts">
 import { getOriginalLiveroomUrl } from './get-original-liveroom-url'
 
-export default Vue.extend({
-  components: {
-    DefaultWidget,
-  },
-  data() {
-    return {
-      href: getOriginalLiveroomUrl(document.URL),
-    }
-  },
-})
+const href = getOriginalLiveroomUrl(document.URL)
 </script>

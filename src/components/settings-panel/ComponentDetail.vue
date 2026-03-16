@@ -1,5 +1,5 @@
 <template>
-  <div class="component-detail">
+  <div ref="root" class="component-detail">
     <div v-if="!settings" class="component-not-found">
       未找到组件'{{ componentData.displayName }}' ({{ componentData.name }}), 可能已被卸载.
     </div>
@@ -8,15 +8,15 @@
         <div class="display-name">
           {{ componentData.displayName }}
         </div>
-        <VIcon class="close" icon="close" :size="18" @click="$emit('close')" />
+        <VIcon class="close" icon="close" :size="18" @click="emit('close')" />
       </div>
       <div class="component-detail-tags">
         <div v-for="t of componentData.tags" :key="t.name" class="tag">
-          <div class="tag-color" :style="{ backgroundColor: t.color }"></div>
+          <div class="tag-color" :style="{ backgroundColor: t.color }" />
           {{ t.displayName }}
         </div>
       </div>
-      <div class="component-detail-separator"></div>
+      <div class="component-detail-separator" />
       <template
         v-if="(componentData.options && generatedOptions.length > 0) || componentData.extraOptions"
       >
@@ -28,32 +28,32 @@
               :display-name="option.displayName"
               :option="option"
               :component="componentData"
-            ></ComponentOption>
+            />
           </div>
           <div v-if="componentData.extraOptions" class="extra-option">
-            <component :is="componentData.extraOptions" :component-data="componentData"></component>
+            <component :is="componentData.extraOptions" :component-data="componentData" />
           </div>
-          <slot></slot>
+          <slot />
         </div>
-        <div class="component-detail-separator"></div>
+        <div class="component-detail-separator" />
       </template>
       <template v-if="!(componentData.options && !componentData.description)">
         <ComponentDescription
           class="component-detail-description"
           :component-data="componentData"
         />
-        <!-- <div class="component-detail-separator"></div> -->
+        <!-- <div class="component-detail-separator" /> -->
       </template>
-      <div class="component-detail-grow"></div>
+      <div class="component-detail-grow" />
       <div class="component-detail-internal-data">
-        <div class="component-detail-separator"></div>
+        <div class="component-detail-separator" />
         <div v-if="componentData.commitHash" class="component-detail-internal-data-row">
           <div class="internal-name">Commit: {{ componentData.commitHash.substring(0, 9) }}</div>
         </div>
         <div class="component-detail-internal-data-row">
           <div class="internal-name">内部名称: {{ componentData.name }}</div>
           <MiniToast
-            v-if="componentData.configurable !== false && componentActions.length > 0"
+            v-if="componentData.configurable !== false && componentActionsComputed.length > 0"
             placement="bottom"
             trigger="click"
             class="extra-actions-wrapper"
@@ -63,10 +63,10 @@
             </div>
             <template #toast>
               <div class="extra-actions-list">
-                <div v-for="a of componentActions" :key="a.name">
+                <div v-for="a of componentActionsComputed" :key="a.name">
                   <component
                     :is="a.component"
-                    v-if="a.component"
+                    v-if="'component' in a"
                     :item="a"
                     :component="componentData"
                   />
@@ -87,61 +87,51 @@
   </div>
 </template>
 
-<script lang="ts">
-import { VButton, VIcon, SwitchBox, MiniToast } from '@/ui'
+<script setup lang="ts">
+import { ref, computed, onMounted, useTemplateRef, nextTick } from 'vue'
+import { VIcon, MiniToast } from '@/ui'
 import { visible } from '@/core/observer'
-import { OptionsMetadata } from '../component'
+import { ComponentMetadata, OptionsMetadata } from '../component'
 import ComponentDescription from './ComponentDescription.vue'
 import ComponentOption from './ComponentOption.vue'
-import { componentSettingsMixin } from './mixins'
-import { componentActions, ComponentConfigAction } from './component-actions/component-actions'
+import { componentActions } from './component-actions/component-actions'
+import { ComponentConfigAction } from './component-actions/types'
 import ComponentAction from './component-actions/ComponentAction.vue'
+import { getComponentSettings } from '@/core/settings'
 
-export default Vue.extend({
-  components: {
-    ComponentDescription,
-    ComponentOption,
-    ComponentAction,
-    VButton,
-    VIcon,
-    SwitchBox,
-    MiniToast,
-  },
-  mixins: [componentSettingsMixin],
-  data() {
-    return {
-      virtual: false,
-      componentActions: componentActions
-        .map(factory => factory((this as any).componentData))
-        .filter(it => {
-          if (it === undefined) {
-            return false
-          }
-          if ((it as ComponentConfigAction).visible === false) {
-            return false
-          }
-          return true
-        }),
-    }
-  },
-  computed: {
-    generatedOptions() {
-      return Object.entries((this.componentData.options ?? {}) as OptionsMetadata).filter(
-        ([, option]) => !option.hidden,
-      )
-    },
-  },
-  async mounted() {
-    const element = this.$el as HTMLElement
-    visible(element, records => {
-      records.forEach(record => {
-        this.virtual = !record.isIntersecting
-      })
+const { componentData } = defineProps<{
+  componentData: ComponentMetadata
+}>()
+
+const emit = defineEmits<{ close: []; mounted: [] }>()
+
+const root = useTemplateRef('root')
+
+const virtual = ref(false)
+const settings = ref(getComponentSettings(componentData))
+
+const componentActionsComputed = computed(() =>
+  componentActions
+    .map(factory => factory(componentData))
+    .filter(it => it && (it as ComponentConfigAction).visible),
+)
+
+const generatedOptions = computed(() =>
+  Object.entries((componentData.options ?? {}) as OptionsMetadata).filter(
+    ([, option]) => !option.hidden,
+  ),
+)
+
+onMounted(async () => {
+  const element = root.value
+  visible(element, records => {
+    records.forEach(record => {
+      virtual.value = !record.isIntersecting
     })
-    await this.$nextTick()
-    this.$emit('mounted')
-    console.log(this.componentActions)
-  },
+  })
+  await nextTick()
+  emit('mounted')
+  console.log(componentActionsComputed.value)
 })
 </script>
 

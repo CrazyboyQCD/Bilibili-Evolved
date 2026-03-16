@@ -1,6 +1,5 @@
 import { playerAgent } from '@/components/video/player-agent'
-import { SCALE_MAPPING, CUSTOM_SCALE_CONFIG } from './constants'
-import { ScalePreset } from './types'
+import { SCALE_MAPPING, CUSTOM_SCALE_CONFIG, type ScalePreset } from './constants'
 
 // 缩放状态管理
 export class ScaleState {

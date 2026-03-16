@@ -1,16 +1,14 @@
 import { addControlBarButton } from '@/components/video/video-control-bar'
 import { mountVueComponent } from '@/core/utils'
 import { playerUrls } from '@/core/utils/urls'
-import { KeyBindingAction } from '../../../utils/keymap/bindings'
-import { Screenshot, takeScreenshot } from './screenshot'
+import { KeyBindingAction } from '../../../utils/keymap/bindings-types'
+import { takeScreenshot } from './screenshot'
 import { defineComponentMetadata } from '@/components/define'
 import desc from './desc.md'
 import ScreenshotContainer from './VideoScreenshotContainer.vue'
 
 export const VideoScreenshotDisabledClass = 'video-screenshot-disable'
-let screenShotsList: Vue & {
-  screenshots: Screenshot[]
-}
+let screenShotsList: InstanceType<typeof ScreenshotContainer> | undefined
 const exitConfirmHandler = (e: BeforeUnloadEvent) => {
   if (screenShotsList?.screenshots.length > 0) {
     e.preventDefault()
@@ -29,8 +27,9 @@ const entry = async () => {
       if (video instanceof HTMLVideoElement) {
         const screenshot = takeScreenshot(video, e.shiftKey)
         if (!screenShotsList) {
-          screenShotsList = mountVueComponent(ScreenshotContainer)
-          document.body.insertAdjacentElement('beforeend', screenShotsList.$el)
+          const [el, vm] = mountVueComponent(ScreenshotContainer)
+          screenShotsList = vm
+          document.body.insertAdjacentElement('beforeend', el)
         }
         screenShotsList.screenshots.unshift(screenshot)
       } else {

@@ -8,6 +8,7 @@ import { ShadowRootEvents } from './types'
 export class ShadowDomObserver extends ShadowRootObserver {
   static enforceOpenRoot() {
     const originalAttachShadow = Element.prototype.attachShadow
+    // oxlint-disable-next-line no-extend-native
     Element.prototype.attachShadow = function attachShadow(options: ShadowRootInit) {
       return originalAttachShadow.call(this, {
         ...options,

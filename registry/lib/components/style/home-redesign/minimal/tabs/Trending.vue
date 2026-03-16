@@ -8,54 +8,46 @@
     <MinimalHomeOperations v-if="cards.length > 0" @refresh="loadCards" />
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import { VideoCard } from '@/components/feeds/video-card'
-import VideoCardComponent from '@/components/feeds/VideoCard.vue'
+// import VideoCardComponent from '@/components/feeds/VideoCard.vue'
 import { logError } from '@/core/utils/log'
-import { ascendingStringSort } from '@/core/utils/sort'
+// import { ascendingStringSort } from '@/core/utils/sort'
 import { VEmpty, VLoading } from '@/ui'
 import { getTrendingVideos } from '../../trending'
 import MinimalHomeOperations from '../MinimalHomeOperations.vue'
 import { minimalHomeOptions } from '../options'
 
-export default Vue.extend({
-  components: { VLoading, VEmpty, VideoCard: VideoCardComponent, MinimalHomeOperations },
-  data() {
-    return {
-      loading: true,
-      cards: [],
-      error: false,
-    }
-  },
-  computed: {
-    loaded() {
-      return !this.loading && !this.error
-    },
-    lastID() {
-      if (!this.cards.length) {
-        return null
-      }
-      const cards: VideoCard[] = [...this.cards]
-      return cards.sort(ascendingStringSort(c => c.id))[0].id
-    },
-  },
-  async mounted() {
-    this.loadCards()
-  },
-  methods: {
-    async loadCards() {
-      try {
-        this.cards = []
-        this.error = false
-        this.loading = true
-        this.cards = await getTrendingVideos(minimalHomeOptions.personalized)
-      } catch (error) {
-        logError(error)
-        this.error = true
-      } finally {
-        this.loading = false
-      }
-    },
-  },
+const loading = ref(true)
+const cards = ref<VideoCard[]>([])
+const error = ref(false)
+
+const loaded = computed(() => !loading.value && !error.value)
+
+// const lastID = computed(() => {
+//   if (!cards.value.length) {
+//     return null
+//   }
+//   const cardsList: VideoCard[] = [...cards.value]
+//   return cardsList.sort(ascendingStringSort(c => c.id))[0].id
+// })
+
+const loadCards = async () => {
+  try {
+    cards.value = []
+    error.value = false
+    loading.value = true
+    cards.value = await getTrendingVideos(minimalHomeOptions.personalized)
+  } catch (err) {
+    logError(err)
+    error.value = true
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadCards()
 })
 </script>

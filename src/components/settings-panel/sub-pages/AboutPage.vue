@@ -7,19 +7,19 @@
     <div class="be-about-page-content">
       <div class="script-meta-info">
         <div class="meta-info-name">
-          {{ meta.name }}
+          {{ metaRef.name }}
         </div>
         <div class="meta-info-version">
-          {{ meta.compilationInfo.versionWithTag }}
+          {{ metaRef.compilationInfo.versionWithTag }}
         </div>
         <div class="meta-info-description">
-          {{ meta.description }}
+          {{ metaRef.description }}
         </div>
         <!-- <div class="meta-info-commit">
           Commit Hash: {{ meta.compilationInfo.commitHash.substring(0, 8) }}
         </div> -->
       </div>
-      <div v-if="feedbackSupported" class="script-links">
+      <div v-if="feedbackSupportedRef" class="script-links">
         <a
           target="_blank"
           href="https://github.com/the1812/Bilibili-Evolved"
@@ -63,11 +63,11 @@
       </div>
       <div class="about-page-actions">
         <VButton
-          v-for="action of aboutPageActions"
+          v-for="action of aboutPageActionsRef"
           :key="action.name"
           :disabled="action.disabled"
           class="about-page-action"
-          @click="runAction(action, $event)"
+          @click="runAction(action, $event as MouseEvent)"
         >
           <VIcon :icon="action.icon" :size="action.iconSize || 20" />
           {{ action.displayName }}
@@ -77,47 +77,29 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue'
 import { meta } from '@/core/meta'
-import { formatDateTime } from '@/core/utils/formatters'
 import { VButton, VIcon } from '@/ui'
 import { AboutPageAction, aboutPageActions } from './about-page'
 
 const feedbackSupported = (() => {
   const namespace = GM_info.scriptMetaStr.match(/@namespace\s*(.+)/)
-  if (!namespace || !namespace[1]) {
-    return true
-  }
-  if (namespace[1].includes('greasyfork')) {
-    return false
-  }
-  return true
+  return !namespace?.[1]?.includes('greasyfork')
 })()
 
-export default Vue.extend({
-  components: {
-    VButton,
-    VIcon,
-  },
-  data() {
-    return {
-      meta,
-      aboutPageActions,
-      feedbackSupported,
-    }
-  },
-  methods: {
-    formatDateTime,
-    async runAction(action: AboutPageAction, event: MouseEvent) {
-      action.disabled = true
-      try {
-        await action.run(event)
-      } finally {
-        action.disabled = false
-      }
-    },
-  },
-})
+const metaRef = ref(meta)
+const aboutPageActionsRef = ref(aboutPageActions)
+const feedbackSupportedRef = ref(feedbackSupported)
+
+const runAction = async (action: AboutPageAction, event: MouseEvent) => {
+  action.disabled = true
+  try {
+    await action.run(event)
+  } finally {
+    action.disabled = false
+  }
+}
 </script>
 
 <style lang="scss">

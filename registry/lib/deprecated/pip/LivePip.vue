@@ -4,26 +4,19 @@
     icon="mdi-picture-in-picture-bottom-right"
     class="live-pip"
     @click="togglePip()"
-  ></DefaultWidget>
+  />
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { DefaultWidget } from '@/ui'
 
-export default Vue.extend({
-  components: {
-    DefaultWidget,
-  },
-  methods: {
-    async togglePip() {
-      if (document.pictureInPictureElement) {
-        document.exitPictureInPicture()
-      } else {
-        ;(dq('video') as HTMLVideoElement)?.requestPictureInPicture()
-      }
-    },
-  },
-})
+const togglePip = async () => {
+  if (document.pictureInPictureElement) {
+    document.exitPictureInPicture()
+  } else {
+    ;(dq('video') as HTMLVideoElement)?.requestPictureInPicture()
+  }
+}
 </script>
 
 <style lang="scss">

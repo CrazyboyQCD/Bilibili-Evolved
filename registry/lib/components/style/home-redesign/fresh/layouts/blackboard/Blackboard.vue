@@ -1,5 +1,10 @@
 <template>
-  <div class="fresh-home-blackboard" @mouseenter="destroyTimer" @mouseleave="createTimer">
+  <div
+    ref="root"
+    class="fresh-home-blackboard"
+    @mouseenter="destroyTimer"
+    @mouseleave="createTimer"
+  >
     <div class="fresh-home-header">
       <div class="fresh-home-header-title">活动</div>
       <a
@@ -8,7 +13,7 @@
         target="_blank"
       >
         <VButton round>
-          <VIcon icon="mdi-dots-horizontal" :size="20"></VIcon>
+          <VIcon icon="mdi-dots-horizontal" :size="20" />
           更多
         </VButton>
       </a>
@@ -46,71 +51,72 @@
     </div>
     <div class="fresh-home-blackboard-jump-dots">
       <label v-for="(b, i) of blackboards" :key="i" :for="'blackboard' + i">
-        <div class="fresh-home-blackboard-jump-dot"></div>
+        <div class="fresh-home-blackboard-jump-dot" />
       </label>
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, onMounted, onBeforeUnmount, useTemplateRef } from 'vue'
 import { VButton, VIcon, DpiImage } from '@/ui'
 import { getBlackboards } from './api'
 
-export default Vue.extend({
-  components: {
-    VButton,
-    VIcon,
-    DpiImage,
-  },
-  data() {
-    return {
-      blackboards: [],
-      timer: 0,
+interface Blackboard {
+  url: string
+  title: string
+  imageUrl: string
+  isAd: boolean
+}
+
+const root = useTemplateRef('root')
+
+const blackboards = ref<Blackboard[]>([])
+const timer = ref(0)
+
+const cardsContainer = computed(
+  () => root.value.querySelector('.fresh-home-blackboard-cards') as HTMLElement,
+)
+
+const createTimer = () => {
+  if (timer.value) {
+    return
+  }
+  const radioClass = 'fresh-home-blackboard-radio'
+  timer.value = window.setInterval(() => {
+    if (!document.hasFocus() || root.value.matches(':hover')) {
+      return
     }
-  },
-  computed: {
-    cardsContainer() {
-      return this.$el.querySelector('.fresh-home-blackboard-cards')
-    },
-  },
-  async created() {
-    const blackboards = await getBlackboards()
-    this.blackboards = blackboards.filter(b => !b.isAd)
-  },
-  mounted() {
-    this.createTimer()
-  },
-  beforeDestroy() {
-    this.destroyTimer()
-  },
-  methods: {
-    createTimer() {
-      if (this.timer) {
-        return
-      }
-      const radioClass = 'fresh-home-blackboard-radio'
-      this.timer = window.setInterval(() => {
-        if (!document.hasFocus() || this.$el.matches(':hover')) {
-          return
-        }
-        const currentIndex = parseInt(dq(`.${radioClass}:checked`).getAttribute('data-index'))
-        let targetIndex: number
-        if (currentIndex === this.blackboards.length - 1) {
-          targetIndex = 0
-        } else {
-          targetIndex = currentIndex + 1
-        }
-        ;(dq(`.${radioClass}[data-index='${targetIndex}']`) as HTMLInputElement).checked = true
-      }, 5000)
-    },
-    destroyTimer() {
-      if (!this.timer) {
-        return
-      }
-      window.clearInterval(this.timer)
-      this.timer = 0
-    },
-  },
-})
+    const currentIndex = parseInt(dq(`.${radioClass}:checked`).getAttribute('data-index') || '0')
+    let targetIndex: number
+    if (currentIndex === blackboards.value.length - 1) {
+      targetIndex = 0
+    } else {
+      targetIndex = currentIndex + 1
+    }
+    const targetRadio = dq(`.${radioClass}[data-index='${targetIndex}']`) as HTMLInputElement
+    if (targetRadio) {
+      targetRadio.checked = true
+    }
+  }, 5000)
+}
+
+const destroyTimer = () => {
+  if (!timer.value) {
+    return
+  }
+  window.clearInterval(timer.value)
+  timer.value = 0
+}
+
+const init = async () => {
+  const boards = await getBlackboards()
+  blackboards.value = boards.filter(b => !b.isAd)
+}
+
+init()
+
+onMounted(createTimer)
+onBeforeUnmount(destroyTimer)
 </script>
 <style lang="scss">
 @import 'common';

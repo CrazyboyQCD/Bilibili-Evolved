@@ -2,21 +2,14 @@ import { getComponentSettings } from '@/core/settings'
 import { mountVueComponent } from '@/core/utils'
 import { addData, getData } from '@/plugins/data'
 import { BlackListDataKey } from './common'
+import type BlackListSettings from './BlackListSettings.vue'
+import { Options } from '.'
 
-type SettingsVmType = Vue & {
-  toggle: () => void
-  triggerElement: HTMLElement
-  list: string[]
-  save: (items: string[]) => void
-  titleName: string
-}
+type SettingsVmType = InstanceType<typeof BlackListSettings>
 let nameSettingsVM: SettingsVmType
 let regexSettingsVm: SettingsVmType
 
-const blackListOptions = getComponentSettings('blackList').options as {
-  up: string[]
-  upRegex: string[]
-}
+const blackListOptions = getComponentSettings<Options>('blackList').options
 
 export const setNameProps = (element: HTMLElement) => {
   if (!nameSettingsVM) {
@@ -53,9 +46,10 @@ export const loadNameSettings = async () => {
   if (nameSettingsVM) {
     return false
   }
-  const blackListSettings = await import('./BlackListSettings.vue').then(m => m.default)
-  nameSettingsVM = mountVueComponent(blackListSettings)
-  document.body.insertAdjacentElement('beforeend', nameSettingsVM.$el)
+  const blackListSettings = await import('./BlackListSettings.vue')
+  const [el, vm] = mountVueComponent(blackListSettings)
+  nameSettingsVM = vm
+  document.body.insertAdjacentElement('beforeend', el)
   return true
 }
 
@@ -63,9 +57,10 @@ export const loadRegexSettings = async () => {
   if (regexSettingsVm) {
     return false
   }
-  const blackListSettings = await import('./BlackListSettings.vue').then(m => m.default)
-  regexSettingsVm = mountVueComponent(blackListSettings)
-  document.body.insertAdjacentElement('beforeend', regexSettingsVm.$el)
+  const blackListSettings = await import('./BlackListSettings.vue')
+  const [el, vm] = mountVueComponent(blackListSettings)
+  regexSettingsVm = vm
+  document.body.insertAdjacentElement('beforeend', el)
   return true
 }
 export const toggleNameSettings = async () => {

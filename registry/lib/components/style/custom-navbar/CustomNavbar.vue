@@ -1,74 +1,72 @@
 <template>
   <div class="custom-navbar" :class="styles" role="navigation">
-    <div class="left-pad padding"></div>
+    <div class="left-pad padding" />
     <div class="custom-navbar-items" role="list">
-      <NavbarItem v-for="item of items" :key="item.name" :item="item"></NavbarItem>
+      <NavbarItem
+        v-for="item of items"
+        :key="item.name"
+        :item="item"
+        @updateItemRequestedPopup="(val: boolean) => item.requestedPopup = val"
+        @updateItemNotifyCount="(val: number) => item.notifyCount = val"
+      />
     </div>
-    <div class="right-pad padding"></div>
+    <div class="right-pad padding" />
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch, onMounted, reactive } from 'vue'
 import { addComponentListener } from '@/core/settings'
 import { ascendingSort } from '@/core/utils/sort'
 import { registerAndGetData } from '@/plugins/data'
 import { getBuiltInItems } from './built-in-items'
 import {
-  CustomNavbarItemInit,
   CustomNavbarItem,
   CustomNavbarItems,
   CustomNavbarRenderedItems,
 } from './custom-navbar-item'
-import CustomNavbarItemComponent from './CustomNavbarItem.vue'
+
+import NavbarItem from './CustomNavbarItem.vue'
 import { checkTransparentFill } from './transparent-fill'
 
 const [initItems] = registerAndGetData(CustomNavbarItems, getBuiltInItems())
 const [renderedItems] = registerAndGetData(CustomNavbarRenderedItems, {
-  items: [] as CustomNavbarItem[],
+  items: reactive([] as CustomNavbarItem[]),
 })
+
 const getItems = () => {
-  const items = (initItems as CustomNavbarItemInit[])
-    .map(it => new CustomNavbarItem(it))
-    .sort(ascendingSort(it => it.order))
+  const items = initItems.map(it => new CustomNavbarItem(it)).sort(ascendingSort(it => it.order))
   renderedItems.items = items
   return items
 }
-export default Vue.extend({
-  components: {
-    NavbarItem: CustomNavbarItemComponent,
-  },
-  data() {
-    return {
-      initItems,
-      items: getItems(),
-      styles: [],
-      height: CustomNavbarItem.navbarOptions.height,
-    }
-  },
-  watch: {
-    initItems() {
-      this.items = getItems()
+
+const items = ref(getItems())
+const styles = ref<string[]>([])
+
+watch(initItems, () => {
+  items.value = getItems()
+})
+
+const toggleStyle = (value: boolean, style: string) => {
+  if (value && !styles.value.includes(style)) {
+    styles.value.push(style)
+  } else if (!value && styles.value.includes(style)) {
+    styles.value.splice(styles.value.indexOf(style), 1)
+  }
+}
+
+onMounted(async () => {
+  addComponentListener(
+    'customNavbar.height',
+    (value: number) => {
+      document.documentElement.style.setProperty('--navbar-height', `${value}px`)
     },
-  },
-  async mounted() {
-    addComponentListener(
-      'customNavbar.height',
-      (value: number) => {
-        document.documentElement.style.setProperty('--navbar-height', `${value}px`)
-      },
-      true,
-    )
-    await checkTransparentFill(this)
-  },
-  methods: {
-    toggleStyle(value: boolean, style: string) {
-      if (value && !this.styles.includes(style)) {
-        this.styles.push(style)
-      } else if (!value && this.styles.includes(style)) {
-        this.styles.splice(this.styles.indexOf(style), 1)
-      }
-    },
-  },
+    true,
+  )
+  await checkTransparentFill({ toggleStyle })
+})
+defineExpose({
+  toggleStyle,
 })
 </script>
 

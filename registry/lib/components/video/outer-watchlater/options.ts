@@ -17,4 +17,4 @@ export const options = defineOptionsMetadata({
   },
 })
 
-export type Options = OptionsOfMetadata<typeof options>
+export type OuterWatchlaterOptions = OptionsOfMetadata<typeof options>

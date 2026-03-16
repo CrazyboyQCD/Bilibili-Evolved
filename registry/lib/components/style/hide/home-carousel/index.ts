@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from 'vue'
 import { defineComponentMetadata } from '@/components/define'
 import { ComponentEntry } from '@/components/types'
 import { addComponentListener } from '@/core/settings'
@@ -6,7 +7,7 @@ import { createComponentWithProps } from '@/core/utils'
 import { useScopedConsole } from '@/core/utils/log'
 import { RadioItem } from '@/ui'
 
-const componentName = 'hideHomeCarousel'
+const componentName = 'hideHomeCarousel' as const
 
 const logger = useScopedConsole(componentName)
 
@@ -71,21 +72,21 @@ const entry: ComponentEntry = async ({ metadata }) => {
   })
 }
 
-const items: Record<string, RadioItem> = {
+const items = {
   full: {
     name: 'full',
     isOption: true,
-  },
+  } as RadioItem,
   transparent: {
     name: 'transparent',
     isOption: true,
-  },
+  } as RadioItem,
   custom: {
     name: 'custom',
     isOption: true,
     optionsIncluded: ['disableCarousel', 'blur', 'picture', 'footerText'],
-  },
-}
+  } as RadioItem,
+} as const
 
 const props = {
   title: '隐藏首页轮播图选项',
@@ -93,7 +94,7 @@ const props = {
   items,
   componentName,
   icon: 'mdi-checkbox-marked-circle-outline',
-}
+} as const
 
 export const component = defineComponentMetadata({
   name: componentName,
@@ -150,18 +151,20 @@ export const component = defineComponentMetadata({
       hidden: true,
     },
   },
-  extraOptions: () =>
-    import('@/ui').then(m =>
-      createComponentWithProps(m.OptionRadioGroup, {
+  extraOptions: defineAsyncComponent(() =>
+    import('@/ui').then(({ OptionRadioGroup }) =>
+      createComponentWithProps(OptionRadioGroup, {
         ...props,
         isPopup: false,
         hasContainer: false,
-      }),
+      } as const),
     ),
+  ),
   widget: {
-    component: () =>
-      import('@/ui').then(m =>
-        createComponentWithProps(m.OptionRadioGroup, { ...props, isPopup: true }),
+    component: defineAsyncComponent(() =>
+      import('@/ui').then(({ OptionRadioGroup }) =>
+        createComponentWithProps(OptionRadioGroup, { ...props, isPopup: true }),
       ),
+    ),
   },
 })

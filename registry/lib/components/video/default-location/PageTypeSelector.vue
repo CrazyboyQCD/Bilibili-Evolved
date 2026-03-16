@@ -1,6 +1,6 @@
 <template>
   <div class="video-default-location-page-type-selector">
-    <VDropdown v-model="curItem" :items="items" @change="onChange">
+    <VDropdown :value="curItem" :items="items" @change="onChange">
       <template #arrow>
         <div class="video-default-location-page-type-selector-icon">
           <VIcon :size="15" icon="mdi-chevron-down" />
@@ -10,7 +10,8 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch } from 'vue'
 import { VDropdown, VIcon } from '@/ui'
 import { pageTypeInfos } from '.'
 
@@ -23,38 +24,30 @@ interface Item {
   name: string
   displayName: string
 }
+const emit = defineEmits<{
+  change: [value: string]
+}>()
+const { pageType } = defineProps<{
+  pageType: string
+}>()
 
-export default Vue.extend({
-  components: { VDropdown, VIcon },
-  model: {
-    prop: 'value',
-    event: 'change',
-  },
-  props: {
-    value: {
-      type: String,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      items: Object.values(itemsMap),
-      curItem: itemsMap[this.value],
+const items = Object.values(itemsMap)
+const curItem = ref<Item>(itemsMap[pageType])
+
+watch(
+  () => pageType,
+  newValue => {
+    if (curItem.value.name !== newValue) {
+      curItem.value = itemsMap[newValue]
     }
   },
-  watch: {
-    value(value: string) {
-      if (this.curItem.name !== value) {
-        this.curItem = itemsMap[value]
-      }
-    },
-  },
-  methods: {
-    onChange(item: string | Item) {
-      this.$emit('change', item.name)
-    },
-  },
-})
+)
+
+const onChange = (item: Item) => {
+  curItem.value = item
+  const itemName = item.name
+  emit('change', itemName)
+}
 </script>
 
 <style lang="scss">

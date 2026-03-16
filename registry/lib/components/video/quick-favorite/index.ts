@@ -2,9 +2,9 @@ import { defineComponentMetadata } from '@/components/define'
 import { ComponentEntry } from '@/components/types'
 import { getUID, matchUrlPattern, mountVueComponent } from '@/core/utils'
 import { favoriteListUrls, videoUrls } from '@/core/utils/urls'
-import { KeyBindingAction } from '../../utils/keymap/bindings'
+import { KeyBindingAction } from '../../utils/keymap/bindings-types'
 import { addVideoActionButton } from '@/components/video/video-actions'
-import { videoChange } from '@/core/observer'
+import { videoChange } from '@/core/video'
 import { options, Options } from './options'
 
 const entry: ComponentEntry<Options> = async ({ settings }) => {
@@ -15,11 +15,8 @@ const entry: ComponentEntry<Options> = async ({ settings }) => {
     return
   }
   const QuickFavorite = await import('./QuickFavorite.vue')
-  const vm: Vue & {
-    aid: string
-    syncFavoriteState: () => Promise<void>
-  } = mountVueComponent(QuickFavorite)
-  await addVideoActionButton(() => vm.$el)
+  const [el, vm] = mountVueComponent(QuickFavorite)
+  await addVideoActionButton(() => el)
   videoChange(() => {
     vm.aid = unsafeWindow.aid
     vm.syncFavoriteState()

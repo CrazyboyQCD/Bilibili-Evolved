@@ -2,6 +2,7 @@ import { RuntimeLibrary, RuntimeLibraryDefinition } from '@/core/runtime-library
 import { Toast } from '@/core/toast'
 import { formatDuration, formatFileSize, formatPercent } from '@/core/utils/formatters'
 import { getOrLoad, storeNames } from './database'
+import { logError } from '@/core/utils/log'
 
 type OnProgress = (received: number, total: number, speed: number) => void
 
@@ -50,8 +51,7 @@ export async function httpGet(url: string, onprogress: OnProgress) {
   let lastTime = Date.now()
   let lastReceived = 0
   let lastSpeed = 0
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
+  for (; ;) {
     const { done, value } = await reader.read()
     if (done) {
       break
@@ -86,7 +86,8 @@ export async function getContentLength(url: string) {
   try {
     const response = await fetch(url, { method: 'HEAD' })
     return response.ok ? parseContentLength(response) : -1
-  } catch (_) {
+  } catch (error) {
+    logError(error)
     return -1
   }
 }
@@ -108,7 +109,7 @@ export async function getCacheOrFetch(
   })
 }
 
-export function toBlobUrl(buffer: Uint8Array, mimeType: string) {
+export function toBlobUrl(buffer: Uint8Array<ArrayBuffer>, mimeType: string) {
   const blob = new Blob([buffer], { type: mimeType })
   return URL.createObjectURL(blob)
 }

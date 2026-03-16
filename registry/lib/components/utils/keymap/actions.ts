@@ -1,78 +1,12 @@
+import { reactive } from 'vue'
 import { playerAgent } from '@/components/video/player-agent'
 import { getComponentSettings } from '@/core/settings'
 import { registerAndGetData } from '@/plugins/data'
-import { Options } from '.'
-import { KeyBindingAction, KeyBindingActionContext } from './bindings'
-import { getActiveElement, simulateClick } from '@/core/utils'
+import { Options } from './options'
+import { KeyBindingAction } from './bindings-types'
+import { getActiveElement } from '@/core/utils'
+import { keyboardEventToPointer, showTip, useClickElement } from './actions-fns'
 
-export const keyboardEventToPointer = (event: KeyboardEvent): PointerEventInit => {
-  return {
-    ...lodash.pick(event, 'ctrlKey', 'shiftKey', 'altKey', 'metaKey'),
-    bubbles: true,
-    cancelable: true,
-    view: unsafeWindow,
-  }
-}
-export const clickElement = (target: string | HTMLElement, context: KeyBindingActionContext) => {
-  const { event } = context
-  const eventParams = keyboardEventToPointer(event)
-  if (typeof target === 'string') {
-    const targetElement = dq(target) as HTMLElement
-    if (!targetElement) {
-      return false
-    }
-    simulateClick(targetElement, eventParams)
-  } else {
-    if (!target) {
-      return false
-    }
-    simulateClick(target, eventParams)
-  }
-  return true
-}
-export const useClickElement =
-  (target: string | HTMLElement) => (context: KeyBindingActionContext) =>
-    clickElement(target, context)
-export const changeVideoTime = (delta: number | (() => number)) => () =>
-  playerAgent.changeTime(typeof delta === 'number' ? delta : delta())
-/** 提示框用的`setTimeout`句柄 */
-let tipTimeoutHandle: number
-/**
- * 显示提示框
- * @param text 文字 (可以 HTML)
- * @param icon MDI 图标 class
- */
-export const showTip = async (text: string, icon: string) => {
-  let tip = dq('.keymap-tip') as HTMLDivElement
-  if (!tip) {
-    const player = (await playerAgent.query.playerArea()) as HTMLElement
-    if (!player) {
-      return
-    }
-    player.insertAdjacentHTML(
-      'afterbegin',
-      /* html */ `
-      <div class="keymap-tip-container">
-        <i class="keymap-tip-icon mdi ${icon}"></i>
-        <div class="keymap-tip">${text}</div>
-      </div>
-    `,
-    )
-    tip = dq('.keymap-tip') as HTMLDivElement
-  }
-  tip.innerHTML = text
-  const container = dq('.keymap-tip-container') as HTMLDivElement
-  const iconElement = dq(container, '.mdi') as HTMLElement
-  iconElement.classList.remove(...iconElement.classList.values())
-  iconElement.classList.add('mdi', icon)
-  if (tipTimeoutHandle) {
-    clearTimeout(tipTimeoutHandle)
-  }
-  container.classList.add('show')
-  tipTimeoutHandle = window.setTimeout(() => {
-    container.classList.remove('show')
-  }, 2000)
-}
 export const builtInActions: Record<string, KeyBindingAction> = {
   fullscreen: {
     displayName: '全屏',
@@ -156,7 +90,7 @@ export const builtInActions: Record<string, KeyBindingAction> = {
     run: (() => {
       /** 长按 `L` 三连使用的记忆变量 */
       let likeClick = true
-      return (context: KeyBindingActionContext) => {
+      return (context: { event: KeyboardEvent }) => {
         const { event } = context
         const likeButton = dq(
           '.video-toolbar .like, .tool-bar .like-info, .video-toolbar-v1 .like, .toolbar .like, .video-toolbar-container .video-like',
@@ -275,4 +209,4 @@ export const builtInActions: Record<string, KeyBindingAction> = {
     },
   },
 }
-export const [actions] = registerAndGetData('keymap.actions', builtInActions)
+export const [actions] = registerAndGetData('keymap.actions', reactive(builtInActions))

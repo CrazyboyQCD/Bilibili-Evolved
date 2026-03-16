@@ -1,11 +1,10 @@
+import { defineAsyncComponent } from 'vue'
 import { Toast } from '@/core/toast'
 import { PluginMetadata } from '@/plugins/plugin'
 import { DownloadVideoOutput } from '../../../../components/video/download/types'
 import { run } from './handler'
 import { Options } from './types'
-
-export const title = 'WASM 混流输出'
-const desc = '使用 WASM 在浏览器中下载并合并音视频, 支持批量下载'
+import { title, desc } from './common'
 
 export const plugin: PluginMetadata = {
   name: 'downloadVideo.outputs.wasm',
@@ -34,7 +33,7 @@ export const plugin: PluginMetadata = {
             Toast.error(String(error), title)
           }
         },
-        component: () => import('./Config.vue').then(m => m.default),
+        component: defineAsyncComponent(() => import('./Config.vue')),
       })
     })
   },

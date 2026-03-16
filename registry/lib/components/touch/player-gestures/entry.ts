@@ -1,29 +1,21 @@
 import { playerAgent } from '@/components/video/player-agent'
-import { GesturePreviewParams, ProgressSeekMode } from './gesture-preview'
+import { ProgressSeekMode } from './gesture-preview'
+import type GesturePreview from './GesturePreview.vue'
 
 export const entry = async () => {
-  const { videoChange } = await import('@/core/observer')
+  const { videoChange } = await import('@/core/video')
   videoChange(async () => {
     const video = await playerAgent.query.video.element()
     if (!video) {
       return
     }
-    let gestureVM: Vue & {
-      opened: boolean
-      sync: () => void
-      startPreview: (params: GesturePreviewParams) => void
-      cancelPreview: () => void
-      endPreview: () => void
-      apply: (params: GesturePreviewParams) => Promise<void>
-      preview: {
-        seekMode: ProgressSeekMode
-      }
-    }
+    let gestureVM: InstanceType<typeof GesturePreview> | undefined
     if (!dq('.gesture-preview')) {
       const GesturePreview = await import('./GesturePreview.vue')
       const { mountVueComponent } = await import('@/core/utils')
-      gestureVM = mountVueComponent(GesturePreview)
-      playerAgent.query.video.subtitle.sync()?.insertAdjacentElement('beforebegin', gestureVM.$el)
+      const [el, vm] = mountVueComponent(GesturePreview)
+      gestureVM = vm
+      playerAgent.query.video.subtitle.sync()?.insertAdjacentElement('beforebegin', el)
     }
     const { Swiper } = await import('./swiper')
     const swiper = new Swiper(playerAgent.query.video.container.sync())

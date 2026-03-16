@@ -1,5 +1,5 @@
 import { addComponentListener, getComponentSettings } from '@/core/settings'
-import { videoChange } from '@/core/observer'
+import { videoChange } from '@/core/video'
 import { defineComponentMetadata } from '@/components/define'
 import { addControlBarButton } from '@/components/video/video-control-bar'
 import { ScaleState, applyScale, updateScaleFromSettings } from './scale-service'
@@ -10,8 +10,8 @@ import {
   SCALE_PRESETS,
   TOAST_DURATION_CONFIG,
   NO_TOAST_TIME_THRESHOLD,
+  type ScalePreset,
 } from './constants'
-import { ScalePreset } from './types'
 import desc from './index.md'
 
 // 创建选项元数据对象，用于动态修改

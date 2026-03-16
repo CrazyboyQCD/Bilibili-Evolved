@@ -6,7 +6,7 @@ import { Toast } from '@/core/toast'
 import { getVue2Data, matchUrlPattern, retrieveImageUrl } from '@/core/utils'
 import { formatTitle, getTitleVariablesFromDate } from '@/core/utils/title'
 import { feedsUrls } from '@/core/utils/urls'
-import { Options } from '.'
+import { ImageExporterOptions } from './options'
 import { useScopedConsole } from '@/core/utils/log'
 
 const isSameImage = (imageUrl: string, otherUrl: string) => {
@@ -16,7 +16,7 @@ const isSameImage = (imageUrl: string, otherUrl: string) => {
     return false
   }
 }
-export const setupFeedImageExporter: ComponentEntry<Options> = async ({
+export const setupFeedImageExporter: ComponentEntry<ImageExporterOptions> = async ({
   settings: { options },
 }) => {
   if (!feedsUrls.some(url => matchUrlPattern(url))) {

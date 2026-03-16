@@ -6,71 +6,73 @@
       :value="value"
       maxlength="30"
       @keydown.enter="send()"
-      @input="updateValue($event.target.value)"
+      @input="updateValue(($event.target as HTMLInputElement).value)"
     />
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
 import { select } from '@/core/spin-query'
 import { raiseEvent } from '@/core/utils'
 import { originalTextAreaSelector, sendButtonSelector } from './original-elements'
 
 let changeEventHook = false
-export default Vue.extend({
-  data() {
-    return {
-      originalTextArea: null,
-      sendButton: null,
-      value: '',
-    }
-  },
-  async mounted() {
-    const originalTextArea = (await select(originalTextAreaSelector)) as HTMLTextAreaElement
-    const sendButton = (await select(sendButtonSelector)) as HTMLButtonElement
-    if (!originalTextArea || !sendButton) {
-      throw new Error(
-        `[danmakuSendBar] ref elements not found. originalTextArea = ${
-          originalTextArea === null
-        } sendButton = ${sendButton === null}`,
-      )
-    }
-    // console.log(originalTextArea, sendButton)
-    this.originalTextArea = originalTextArea
-    this.sendButton = sendButton
-    this.value = originalTextArea.value
-    originalTextArea.addEventListener('input', this.listenChange)
-    originalTextArea.addEventListener('change', this.listenChange)
-    if (!changeEventHook) {
-      const original = Object.getOwnPropertyDescriptors(HTMLTextAreaElement.prototype).value
-      Object.defineProperty(originalTextArea, 'value', {
-        ...original,
-        set(value: string) {
-          original.set?.call(this, value)
-          raiseEvent(originalTextArea, 'input')
-        },
-      })
-      changeEventHook = true
-    }
-  },
-  beforeDestroy() {
-    this.originalTextArea.removeEventListener('input', this.listenChange)
-    this.originalTextArea.removeEventListener('change', this.listenChange)
-  },
-  methods: {
-    updateValue(newValue: string) {
-      this.originalTextArea.value = newValue
-      raiseEvent(this.originalTextArea, 'input')
-    },
-    send() {
-      if (!this.sendButton.disabled) {
-        this.value = ''
-        this.sendButton.click()
-      }
-    },
-    listenChange(e: InputEvent) {
-      this.value = (e.target as HTMLTextAreaElement).value
-    },
-  },
+
+const originalTextArea = ref<HTMLTextAreaElement | null>(null)
+const sendButton = ref<HTMLButtonElement | null>(null)
+const value = ref('')
+
+const updateValue = (newValue: string) => {
+  if (originalTextArea.value) {
+    originalTextArea.value.value = newValue
+    raiseEvent(originalTextArea.value, 'input')
+  }
+}
+
+const send = () => {
+  if (sendButton.value && !sendButton.value.disabled) {
+    value.value = ''
+    sendButton.value.click()
+  }
+}
+
+const listenChange = (e: InputEvent) => {
+  value.value = (e.target as HTMLTextAreaElement).value
+}
+
+onMounted(async () => {
+  const textArea = (await select(originalTextAreaSelector)) as HTMLTextAreaElement
+  const button = (await select(sendButtonSelector)) as HTMLButtonElement
+  if (!textArea || !button) {
+    throw new Error(
+      `[danmakuSendBar] ref elements not found. originalTextArea = ${
+        textArea === null
+      } sendButton = ${button === null}`,
+    )
+  }
+  originalTextArea.value = textArea
+  sendButton.value = button
+  value.value = textArea.value
+  textArea.addEventListener('input', listenChange)
+  textArea.addEventListener('change', listenChange)
+  if (!changeEventHook) {
+    const original = Object.getOwnPropertyDescriptors(HTMLTextAreaElement.prototype).value
+    Object.defineProperty(textArea, 'value', {
+      ...original,
+      set(newValue: string) {
+        original.set?.call(this, newValue)
+        raiseEvent(textArea, 'input')
+      },
+    })
+    changeEventHook = true
+  }
+})
+
+onUnmounted(() => {
+  if (originalTextArea.value) {
+    originalTextArea.value.removeEventListener('input', listenChange)
+    originalTextArea.value.removeEventListener('change', listenChange)
+  }
 })
 </script>
 <style lang="scss">

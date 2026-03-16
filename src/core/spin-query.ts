@@ -1,4 +1,4 @@
-import { allMutations, videoChange } from './observer'
+import { allMutations } from './observer'
 import { bwpVideoFilter, waitForForeground } from './utils'
 
 /** 轮询设置 */
@@ -205,15 +205,3 @@ export const count = <T extends { length: number }>(
 // ) => {
 //   await sq(() => unsafeWindow.$, jq => jq !== undefined, config)
 // }
-
-let hasVideoPromiseCache: Promise<string>
-/**
- * 等待视频加载, 可获取到 `cid` 时结束, 返回 `boolean` 值代表是否存在视频
- */
-export const hasVideo = async () => {
-  if (!hasVideoPromiseCache) {
-    hasVideoPromiseCache = new Promise(resolve => videoChange(() => resolve(unsafeWindow.cid)))
-  }
-  const cid = await hasVideoPromiseCache
-  return Boolean(cid)
-}

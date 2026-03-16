@@ -1,16 +1,10 @@
 <template>
   <div class="custom-navbar-search">
-    <LaunchBar></LaunchBar>
+    <LaunchBar />
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import LaunchBar from '@/components/launch-bar/LaunchBar.vue'
-
-export default Vue.extend({
-  components: {
-    LaunchBar,
-  },
-})
 </script>
 <style lang="scss">
 .custom-navbar {

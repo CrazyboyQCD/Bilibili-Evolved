@@ -1,11 +1,12 @@
-import { Executable, VueModule } from '../common-types'
+import { type Component } from 'vue'
 import Dialog from './Dialog.vue'
+import { mountVueComponent } from '../utils'
 
 export interface DialogInputs {
   icon?: string
-  title?: string | Executable<VueModule>
+  title?: string | Component
   zIndex?: number
-  content: string | Executable<VueModule>
+  content: string | Component
   contentProps?: Record<string, unknown>
 }
 export interface DialogInstance extends Required<DialogInputs> {
@@ -15,27 +16,20 @@ export interface DialogInstance extends Required<DialogInputs> {
 }
 export const showDialog = (inputs: DialogInputs) => {
   const { icon, title, zIndex, content, contentProps } = inputs
-  const dialogElement = new Dialog({
-    propsData: {
-      icon,
-      title,
-      zIndex,
-      content,
-      contentProps,
-    },
-    data: {
-      open: false,
-      closeListeners: [
-        () => {
-          dialogElement.$destroy()
-          dialogElement.$el.remove()
-        },
-      ],
-    },
-  }).$mount() as Vue & DialogInstance
-  document.body.appendChild(dialogElement.$el)
-  setTimeout(() => {
-    dialogElement.open = true
+  const [el, vm, app] = mountVueComponent(Dialog, {
+    icon,
+    title,
+    zIndex,
+    content,
+    contentProps,
   })
-  return dialogElement
+  vm.closeListeners.push(() => {
+    app.unmount()
+    el.remove()
+  })
+  document.body.appendChild(el)
+  setTimeout(() => {
+    vm.open = true
+  })
+  return vm as DialogInstance
 }

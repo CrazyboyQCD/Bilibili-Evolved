@@ -7,7 +7,7 @@ import {
   CommentItemCallback,
 } from './types'
 import { CommentArea } from './areas/base'
-import { deleteValue } from '@/core/utils'
+import { deleteValue, dqa } from '@/core/utils'
 
 export class CommentAreaManager {
   /** 当前页面所有的评论区列表 */

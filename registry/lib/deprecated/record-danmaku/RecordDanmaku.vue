@@ -4,31 +4,27 @@
     icon="mdi-record-rec"
     class="record-live-danmaku"
     @click="startRecord()"
-  ></DefaultWidget>
+  />
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { DefaultWidget } from '@/ui'
+import type DanmakuRecorder from './DanmakuRecorder.vue'
 
-let recorderVM: Vue & { opened: boolean }
-export default Vue.extend({
-  components: {
-    DefaultWidget,
-  },
-  methods: {
-    async startRecord() {
-      if (dq('.live-danmaku-recorder')) {
-        recorderVM.opened = !recorderVM.opened
-      } else {
-        const DanmakuRecorder = await import('./DanmakuRecorder.vue')
-        const { mountVueComponent } = await import('@/core/utils')
-        recorderVM = mountVueComponent(DanmakuRecorder)
-        document.body.insertAdjacentElement('beforeend', recorderVM.$el)
-        recorderVM.opened = true
-      }
-    },
-  },
-})
+let recorderVM: InstanceType<typeof DanmakuRecorder> | undefined
+
+const startRecord = async () => {
+  if (dq('.live-danmaku-recorder')) {
+    recorderVM.opened = !recorderVM.opened
+  } else {
+    const DanmakuRecorder = await import('./DanmakuRecorder.vue')
+    const { mountVueComponent } = await import('@/core/utils')
+    const [el, vm] = mountVueComponent(DanmakuRecorder)
+    recorderVM = vm
+    document.body.insertAdjacentElement('beforeend', el)
+    recorderVM.opened = true
+  }
+}
 </script>
 
 <style lang="scss">

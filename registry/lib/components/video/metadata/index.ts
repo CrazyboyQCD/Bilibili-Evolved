@@ -1,15 +1,15 @@
+import { defineAsyncComponent } from 'vue'
 import { defineComponentMetadata } from '@/components/define'
 import { PackageEntry } from '@/core/download'
-import { hasVideo } from '@/core/spin-query'
+import { hasVideo } from '@/core/video'
 import { Toast } from '@/core/toast'
 import { videoAndBangumiUrls } from '@/core/utils/urls'
 import { DownloadVideoAssets } from '../download/types'
 import { generateByType } from './metadata'
 import { options } from './options'
 import { MetadataType } from './types'
-
-export const title = '保存视频元数据'
-export const name = 'saveVideoMetadata'
+import type Plugin from './Plugin.vue'
+import { name, title } from './common'
 
 const author = [
   {
@@ -33,7 +33,7 @@ export const component = defineComponentMetadata({
   options,
   widget: {
     condition: hasVideo,
-    component: () => import('./SaveMetadata.vue').then(m => m.default),
+    component: defineAsyncComponent(() => import('./SaveMetadata.vue')),
   },
   plugin: {
     displayName: `下载视频 - ${title}支持`,
@@ -43,13 +43,7 @@ export const component = defineComponentMetadata({
         assets.push({
           name,
           displayName: title,
-          getAssets: async (
-            infos,
-            instance: {
-              type: MetadataType
-              enabled: boolean
-            },
-          ) => {
+          getAssets: async (infos, instance: InstanceType<typeof Plugin>) => {
             const { type, enabled } = instance
             if (enabled) {
               const toast = Toast.info('获取视频元数据中...', title)
@@ -57,7 +51,7 @@ export const component = defineComponentMetadata({
               for (const info of infos) {
                 result.push({
                   name: `${info.input.title}.${type}.txt`,
-                  data: await generateByType(type, info.input.aid, info.input.cid),
+                  data: await generateByType(type as MetadataType, info.input.aid, info.input.cid),
                   options: {},
                 })
               }
@@ -67,7 +61,7 @@ export const component = defineComponentMetadata({
             }
             return []
           },
-          component: () => import('./Plugin.vue').then(m => m.default),
+          component: defineAsyncComponent(() => import('./Plugin.vue')),
         })
       })
     },

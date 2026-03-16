@@ -1,7 +1,8 @@
+import { createApp } from 'vue'
 import { DialogInstance, showDialog } from '@/core/dialog'
 import type { Settings } from '@/core/settings/types'
 import { Toast } from '@/core/toast'
-import { getRandomId, mountVueComponent, delay } from '@/core/utils'
+import { getRandomId, delay } from '@/core/utils'
 import { useScopedConsole } from '@/core/utils/log'
 import type { RecordValue } from '../types'
 import type { BisectNext, BisectReturn } from './bisect'
@@ -15,7 +16,7 @@ let bisectorOptions: BisectorOptions
 let scopedConsole: ReturnType<typeof useScopedConsole>
 let bisectorGenerator: Generator<BisectNext<UserComponent>, BisectReturn<UserComponent>>
 let groupedComponents: Awaited<ReturnType<typeof classifyComponents>>
-let dialog: DialogInstance
+let dialog: DialogInstance | undefined
 
 export const setOptions = (options: BisectorOptions) => {
   if (!bisectorOptions) {
@@ -118,14 +119,11 @@ export const next = async (seeingBad?: boolean, autoReload?: boolean) => {
     const elementId = `bisector-result-toast-content-${getRandomId()}`
     Toast.info(/* html */ `<div id="${elementId}"></div>`, '组件二等分结果')
     await delay()
-    const vm = mountVueComponent<{ userComponent: UserComponent }>(
-      ResultToastContent,
-      `#${elementId}`,
-    )
-    vm.userComponent = value.target
-    vm.$on('restore', () => {
-      stop()
+    const vueApp = createApp(ResultToastContent, {
+      userComponent: value.target,
+      onRestore: stop,
     })
+    vueApp.mount(`#${elementId}`)
   } else {
     const { slice, low, high } = value as BisectNext<UserComponent>
     const needEnabled = slice

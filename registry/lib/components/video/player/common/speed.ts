@@ -95,7 +95,7 @@ export class EntrySpeedComponent<O extends UnknownOptions = UnknownOptions>
   readonly decreaseVideoSpeed: () => Promise<void>
 
   getSpeedContextMixin?(context: SpeedContext): Partial<SpeedContext>
-  onSpeedContext?(context: SpeedContext): TeardownLogic | any
+  onSpeedContext?(context: SpeedContext): TeardownLogic | void
   protected migrate?(): void
 }
 

@@ -4,7 +4,7 @@ import { bilibiliApi, getJsonWithCredentials } from '@/core/ajax'
 import { meta } from '@/core/meta'
 import { getComponentSettings } from '@/core/settings'
 import { Toast } from '@/core/toast'
-import { name as componentName, title as pluginTitle } from '.'
+import { name as componentName, title as pluginTitle } from './common'
 import { FieldsMode, Options } from './options'
 import { MetadataType, Tag, ViewPoint } from './types'
 import { bangumiSkipToViewPoints, escape, fixBgmTag, formatTime, tagWithId } from './utils'
@@ -171,13 +171,11 @@ async function generateFFMetadata(aid: string = unsafeWindow.aid, cid: string = 
   if (data.viewPoints.length > 0) {
     for (const chapter of data.viewPoints) {
       lines.push(
-        ...[
-          '[CHAPTER]',
-          'TIMEBASE=1/1',
-          ff('START', chapter.from, false),
-          ff('END', chapter.to, false),
-          ff('title', chapter.content, false),
-        ],
+        '[CHAPTER]',
+        'TIMEBASE=1/1',
+        ff('START', chapter.from, false),
+        ff('END', chapter.to, false),
+        ff('title', chapter.content, false),
       )
     }
   }
@@ -215,15 +213,15 @@ export async function generateByType(
   aid: string = unsafeWindow.aid,
   cid: string = unsafeWindow.cid,
 ) {
-  let method: (aid, cid) => Promise<string>
+  let method: (aid: string, cid: string) => Promise<string> | undefined
   switch (type) {
     case 'ogm':
       method = generateChapterFile
       break
-    default:
     case 'ffmetadata':
+    default:
       method = generateFFMetadata
       break
   }
-  return method(aid, cid)
+  return method?.(aid, cid)
 }

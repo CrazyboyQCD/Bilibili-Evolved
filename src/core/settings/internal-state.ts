@@ -1,7 +1,7 @@
 import { components } from '@/components/component'
 import { plugins } from '@/plugins/plugin'
-import { componentToSettings } from './helpers'
 import { Settings } from './types'
+import { componentToSettings } from './helpers'
 
 /** 默认设置 */
 const internalSettings = {
@@ -15,6 +15,7 @@ export const settingsInternalState = {
   internalSettings,
   settingsLoaded: false,
 }
+
 export const initInternalSettings = () => {
   // 载入插件设置
   plugins.forEach(plugin => {

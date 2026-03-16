@@ -5,65 +5,52 @@
   </VButton>
 </template>
 
-<script lang="ts">
-import { VButton, VIcon } from '@/ui'
+<script setup lang="ts">
+import { ref } from 'vue'
 
-export default Vue.extend({
-  components: {
-    VButton,
-    VIcon,
-  },
-  props: {
-    list: {
-      type: Array,
-      default: null,
-    },
-  },
-  data() {
-    return {
-      isClick: false,
-      isLike: false,
-      totalLikeCnt: 0,
-      curLikeCnt: 0,
-      feedsLikeQueue: [] as HTMLElement[],
+const list = ref<string[] | null>(null)
+const isClick = ref(false)
+const isLike = ref(false)
+const totalLikeCnt = ref(0)
+const curLikeCnt = ref(0)
+const feedsLikeQueue = ref<HTMLElement[]>([])
+
+const like = () => {
+  if (isClick.value) {
+    return
+  }
+  isClick.value = true
+  const likeButtons: HTMLElement[] = []
+  for (const e of Array.from(
+    document.getElementsByClassName('bili-dyn-title__text'),
+  ) as HTMLElement[]) {
+    if (list.value?.includes(e.textContent.trim())) {
+      continue
     }
-  },
-  methods: {
-    like() {
-      if (this.isClick) {
-        return
-      }
-      this.isClick = true
-      // forEachFeedsCard异步执行顺序有问题，不能及时同步，用dqa代替
-      const likeButtons = (
-        Array.from(document.getElementsByClassName('bili-dyn-title__text')) as HTMLElement[]
-      ).reduce((buttons, e) => {
-        if (this.list.includes(e.textContent.trim())) {
-          return buttons
-        }
-        const likeButton = e.closest('.bili-dyn-item__main').querySelector('.bili-dyn-action.like')
-        if (likeButton && !likeButton.classList.contains('active')) {
-          buttons.push(likeButton as HTMLElement)
-        }
-        return buttons
-      }, [] as HTMLElement[])
-      this.feedsLikeQueue.push(...likeButtons)
-      this.totalLikeCnt = this.feedsLikeQueue.length
-      this.curLikeCnt = 0
-      this.isLike = true
-      const t = window.setInterval(() => {
-        if (this.feedsLikeQueue.length === 0) {
-          this.isLike = false
-          this.isClick = false
-          clearInterval(t)
-          return
-        }
-        const button = this.feedsLikeQueue.shift()
-        button?.click()
-        this.curLikeCnt++
-      }, 1200)
-    },
-  },
+    const likeButton = e.closest('.bili-dyn-item__main').querySelector('.bili-dyn-action.like')
+    if (likeButton && !likeButton.classList.contains('active')) {
+      likeButtons.push(likeButton as HTMLElement)
+    }
+  }
+  feedsLikeQueue.value.push(...likeButtons)
+  totalLikeCnt.value = feedsLikeQueue.value.length
+  curLikeCnt.value = 0
+  isLike.value = true
+  const t = window.setInterval(() => {
+    if (feedsLikeQueue.value.length === 0) {
+      isLike.value = false
+      isClick.value = false
+      clearInterval(t)
+      return
+    }
+    const button = feedsLikeQueue.value.shift()
+    button?.click()
+    curLikeCnt.value++
+  }, 1200)
+}
+
+defineExpose({
+  list,
 })
 </script>
 
@@ -73,14 +60,17 @@ export default Vue.extend({
   z-index: 1001;
   height: 30px;
   position: fixed;
+
   * {
     color: rgb(251, 114, 153);
   }
+
   #text {
     overflow: hidden;
     white-space: nowrap;
     max-width: 0px;
     transition: max-width 0.4s linear !important;
+
     &.like {
       max-width: 150px;
     }

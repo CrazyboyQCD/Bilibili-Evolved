@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import {
   addComponentListener,
   getComponentSettings,
@@ -12,12 +13,13 @@ import { getBuiltInComponents } from './built-in-components'
 
 /** 可根据组件名称检索对应的`ComponentMetadata` */
 export const componentsMap: { [name: string]: ComponentMetadata } = {}
+/** 获取包含所有组件的响应式数组（单例） */
 const getAllComponents = lodash.once(() => {
   const builtIns = getBuiltInComponents()
   builtIns.forEach(c => (componentsMap[c.name] = c))
-  return builtIns
+  return reactive(builtIns)
 })
-/** 包含所有组件的数组 */
+/** 包含所有组件的响应式数组 */
 export const components: ComponentMetadata[] = getAllComponents()
 
 /** 载入组件的 i18n 数据 */

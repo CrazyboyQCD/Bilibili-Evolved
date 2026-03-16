@@ -4,21 +4,12 @@
       <template v-if="typeof config.content === 'string' && config.content.length > 0">
         {{ config.content }}
       </template>
-      <component :is="config.content" v-if="typeof config.content !== 'string'"></component>
+      <component :is="config.content" v-if="typeof config.content !== 'string'" />
     </slot>
   </div>
 </template>
-<script lang="ts">
-import { loadingContent } from './v-loading'
-
-export default Vue.extend({
-  name: 'VLoading',
-  data() {
-    return {
-      config: loadingContent,
-    }
-  },
-})
+<script setup lang="ts">
+import { loadingContent as config } from './v-loading'
 </script>
 <style lang="scss">
 @import 'common';

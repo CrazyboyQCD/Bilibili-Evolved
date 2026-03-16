@@ -2,19 +2,19 @@
   <div class="gesture-preview" :class="{ opened }">
     <div class="gesture-preview-content">
       <div class="brightness">
-        <ProgressRing :size="100" :progress="preview.brightness * 100"></ProgressRing>
+        <ProgressRing :size="100" :progress="preview.brightness * 100" />
         <div class="label">
           <div class="name">亮度</div>
           <div class="value">
-            {{ preview.brightness | percent }}
+            {{ percent(preview.brightness) }}
           </div>
         </div>
       </div>
       <div class="progress">
-        <div class="videoshot" :style="videoshotStyle"></div>
+        <div class="videoshot" :style="videoshotStyle" />
         <div v-show="preview.progress !== null" class="preview">
           <div v-if="!progressNaN" class="diff">
-            {{ (preview.progress - store.progress) | progressDiff }}
+            {{ progressDiff(preview.progress - store.progress) }}
           </div>
           <div class="seek-mode">
             {{ !progressNaN ? preview.seekMode : '取消调整' }}
@@ -22,15 +22,15 @@
         </div>
         <div v-show="preview.progress === null" class="name">进度</div>
         <div class="progress-label">
-          {{ (progressValid ? preview.progress : store.progress) | progress }}
+          {{ progress(progressValid ? preview.progress : store.progress) }}
         </div>
       </div>
       <div class="volume">
-        <ProgressRing :size="100" :progress="preview.volume * 100"></ProgressRing>
+        <ProgressRing :size="100" :progress="preview.volume * 100" />
         <div class="label">
           <div class="name">音量</div>
           <div class="value">
-            {{ preview.volume | percent }}
+            {{ percent(preview.volume) }}
           </div>
         </div>
       </div>
@@ -39,11 +39,12 @@
       <ProgressBar
         :progress="progressValid ? preview.progress : store.progress"
         :max="video.duration"
-      ></ProgressBar>
+      />
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, reactive, computed } from 'vue'
 import { ProgressBar, ProgressRing } from '@/ui'
 import { fixed } from '@/core/utils'
 import { formatPercent, formatDuration } from '@/core/utils/formatters'
@@ -71,6 +72,7 @@ const secondsToTime = (sec: number) => {
 
   return result
 }
+
 const normalize = (current: number, add: number, max = 1, min = 0) => {
   const finalValue = current + add
   if (finalValue > max) {
@@ -81,124 +83,123 @@ const normalize = (current: number, add: number, max = 1, min = 0) => {
   }
   return finalValue
 }
-export default Vue.extend({
-  components: {
-    ProgressRing,
-    ProgressBar,
-  },
-  filters: {
-    percent: formatPercent,
-    progress: (p: number) => formatDuration(p, 1),
-    progressDiff(diff: number) {
-      const symbol = diff > 0 ? '+' : '-'
-      return `${symbol}${secondsToTime(diff)}`
-    },
-  },
-  data() {
-    const defaultStore = {
-      progress: 0,
-      brightness: 1,
-      volume: 0.66,
+
+const opened = ref(false)
+const video = ref<HTMLVideoElement | null>(null)
+const videoshot = new Videoshot()
+const videoshotStyle = ref({})
+
+const defaultStore = {
+  progress: 0,
+  brightness: 1,
+  volume: 0.66,
+}
+
+const store = reactive({ ...defaultStore })
+
+const preview = reactive({
+  ...defaultStore,
+  /**
+   * - `null`: 未在调整时间
+   * - `number`: 预览即将跳跃到的时间
+   * - `NaN`: 取消时间调整
+   */
+  progress: null as number | null,
+  seekMode: ProgressSeekMode.Fast,
+})
+
+const progressNaN = computed(() => Number.isNaN(preview.progress))
+const progressNull = computed(() => preview.progress === null)
+const progressValid = computed(() => !progressNaN.value && !progressNull.value)
+
+const percent = formatPercent
+const progress = (p: number) => formatDuration(p, 1)
+const progressDiff = (diff: number) => {
+  const symbol = diff > 0 ? '+' : '-'
+  return `${symbol}${secondsToTime(diff)}`
+}
+
+const apply = async ({ brightness, volume, progress: progressParam }: GesturePreviewParams) => {
+  const videoElement = video.value
+  if (!videoElement) {
+    return
+  }
+  if (brightness !== undefined) {
+    const { setBrightness } = await import('./brightness')
+    setBrightness(videoElement, preview.brightness)
+  } else if (volume !== undefined) {
+    const { setVolume } = await import('./volume')
+    setVolume(videoElement, preview.volume)
+  } else if (progressParam !== undefined) {
+    const { setProgress } = await import('./progress')
+    setProgress(videoElement, progressParam)
+  }
+}
+
+const sync = () => {
+  const videoElement = dq('video') as HTMLVideoElement
+  video.value = videoElement
+  store.volume = videoElement.volume
+  store.progress = videoElement.currentTime
+  store.brightness = (() => {
+    if (videoElement.style.filter) {
+      const match = videoElement.style.filter.match(/brightness\((.+)\)/)
+      if (match) {
+        return parseFloat(match[1])
+      }
+      return 1
     }
-    return {
-      opened: false,
-      video: dq('video'),
-      videoshot: new Videoshot(),
-      videoshotStyle: {},
-      store: defaultStore,
-      preview: {
-        ...defaultStore,
-        /**
-         * - `null`: 未在调整时间
-         * - `number`: 预览即将跳跃到的时间
-         * - `NaN`: 取消时间调整
-         */
-        progress: null,
-        seekMode: ProgressSeekMode.Fast,
-      },
+    return 1
+  })()
+  Object.assign(preview, { ...preview, ...store, progress: null })
+}
+
+const startPreview = ({ brightness, volume, progress: progressParam }: GesturePreviewParams) => {
+  opened.value = true
+  if (progressParam !== undefined) {
+    preview.progress = normalize(store.progress, progressParam, video.value?.duration || 0)
+    const videoshotInstance = videoshot as Videoshot
+    videoshotInstance.getVideoshot(preview.progress as number).then(style => {
+      videoshotStyle.value = style
+    })
+  } else {
+    if (brightness !== undefined) {
+      preview.brightness = normalize(store.brightness, brightness, Infinity)
+    } else if (volume !== undefined) {
+      preview.volume = normalize(store.volume, volume)
     }
-  },
-  computed: {
-    progressNaN() {
-      return Number.isNaN(this.preview.progress)
-    },
-    progressNull() {
-      return this.preview.progress === null
-    },
-    progressValid() {
-      return !this.progressNaN && !this.progressNull
-    },
-  },
-  methods: {
-    sync() {
-      const video = dq('video') as HTMLVideoElement
-      this.video = video
-      this.store.volume = video.volume
-      this.store.progress = video.currentTime
-      this.store.brightness = (() => {
-        if (video.style.filter) {
-          const match = video.style.filter.match(/brightness\((.+)\)/)
-          if (match) {
-            return parseFloat(match[1])
-          }
-          return 1
-        }
-        return 1
-      })()
-      this.preview = { ...this.preview, ...this.store, progress: null }
-    },
-    startPreview({ brightness, volume, progress }: GesturePreviewParams) {
-      this.opened = true
-      if (progress !== undefined) {
-        this.preview.progress = normalize(this.store.progress, progress, this.video.duration)
-        const videoshot = this.videoshot as Videoshot
-        videoshot.getVideoshot(this.preview.progress).then(style => {
-          this.videoshotStyle = style
-        })
-      } else {
-        if (brightness !== undefined) {
-          this.preview.brightness = normalize(this.store.brightness, brightness, Infinity)
-        } else if (volume !== undefined) {
-          this.preview.volume = normalize(this.store.volume, volume)
-        }
-        this.apply({ brightness, volume })
-      }
-    },
-    cancelPreview() {
-      this.preview.progress = NaN
-    },
-    endPreview() {
-      if (!unsafeWindow.touchGestureDebug) {
-        this.opened = false
-      }
-      if (this.store.volume !== this.preview.volume) {
-        syncVolumeUI(this.preview.volume)
-      }
-      if (Number.isNaN(this.preview.progress)) {
-        this.preview.progress = null
-        return
-      }
-      if (this.store.progress !== this.preview.progress && this.preview.progress !== null) {
-        this.apply({ progress: this.preview.progress })
-      }
-    },
-    async apply({ brightness, volume, progress }: GesturePreviewParams) {
-      const video = this.video as HTMLVideoElement
-      if (!video) {
-        return
-      }
-      if (brightness !== undefined) {
-        const { setBrightness } = await import('./brightness')
-        setBrightness(video, this.preview.brightness)
-      } else if (volume !== undefined) {
-        const { setVolume } = await import('./volume')
-        setVolume(video, this.preview.volume)
-      } else if (progress !== undefined) {
-        const { setProgress } = await import('./progress')
-        setProgress(video, progress)
-      }
-    },
-  },
+    apply({ brightness, volume })
+  }
+}
+
+const cancelPreview = () => {
+  preview.progress = NaN
+}
+
+const endPreview = () => {
+  if (!unsafeWindow.touchGestureDebug) {
+    opened.value = false
+  }
+  if (store.volume !== preview.volume) {
+    syncVolumeUI(preview.volume)
+  }
+  if (Number.isNaN(preview.progress)) {
+    preview.progress = null
+    return
+  }
+  if (store.progress !== preview.progress && preview.progress !== null) {
+    apply({ progress: preview.progress })
+  }
+}
+
+sync()
+
+defineExpose({
+  startPreview,
+  cancelPreview,
+  endPreview,
+  sync,
+  preview,
 })
 </script>
 <style lang="scss">

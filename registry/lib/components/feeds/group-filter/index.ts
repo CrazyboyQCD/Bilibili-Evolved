@@ -18,7 +18,7 @@ const entry = async () => {
   }
   const FilterPanel = await import('./FilterPanel.vue')
   const { mountVueComponent } = await import('@/core/utils')
-  leftPanel.insertAdjacentElement('afterbegin', mountVueComponent(FilterPanel).$el)
+  leftPanel.insertAdjacentElement('afterbegin', mountVueComponent(FilterPanel, {})[0])
 }
 
 export const component = defineComponentMetadata({

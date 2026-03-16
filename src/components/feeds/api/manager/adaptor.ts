@@ -1,24 +1,10 @@
-import { TestPattern } from '@/core/common-types'
 import { childList, childListSubtree } from '@/core/observer'
 import { select } from '@/core/spin-query'
 import { liveUrls } from '@/core/utils/urls'
 import { addData } from '@/plugins/data'
-import { FeedsCardsManager } from './base'
+import { FeedsCardsListAdaptor } from './base'
+import { ListAdaptorKey } from './ListAdaptorKey'
 
-/** 表示一个动态卡片列表适配器, 可以对在不同页面的地方里的动态列表提供支持 */
-export interface FeedsCardsListAdaptor {
-  /** 名称 */
-  name: string
-  /** 匹配的网址 */
-  match: TestPattern
-  /**
-   * 开始监测
-   * @param manager `FeedsCardsManager` 的实例
-   * @returns 是否监测成功
-   */
-  watchCardsList: (manager: FeedsCardsManager) => Promise<boolean>
-}
-export const ListAdaptorKey = 'feeds.manager.listAdaptors'
 addData(ListAdaptorKey, (adaptors: FeedsCardsListAdaptor[]) => {
   adaptors.push(
     {

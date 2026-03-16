@@ -49,14 +49,9 @@ export const component = defineComponentMetadata({
             return false
           }
           const element = e.target as HTMLElement
-          if (
-            ['.jump-link.search-word', '.icon.search-word'].some(selector =>
-              element.matches(selector),
-            )
-          ) {
-            return true
-          }
-          return false
+          return ['.jump-link.search-word', '.icon.search-word'].some(selector =>
+            element.matches(selector),
+          )
         })
       }
     })

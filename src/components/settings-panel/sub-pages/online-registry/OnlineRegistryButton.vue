@@ -3,17 +3,7 @@
     <slot />
   </VButton>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import { VButton } from '@/ui'
 import { initPopup, togglePopup } from './vm'
-
-export default Vue.extend({
-  components: {
-    VButton,
-  },
-  methods: {
-    initPopup,
-    togglePopup,
-  },
-})
 </script>

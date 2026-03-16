@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from 'vue'
 import { ComponentEntry, componentsTags } from '@/components/types'
 import { meta } from '@/core/meta'
 import { getComponentSettings, getGeneralSettings, isUserComponent } from '@/core/settings'
@@ -9,18 +10,24 @@ import {
   OptionsOfMetadata,
 } from '@/components/define'
 import { LaunchBarActionProvider } from '../launch-bar/launch-bar-action'
-import { ComponentAction } from '../settings-panel/component-actions/component-actions'
+import { ComponentAction } from '../settings-panel/component-actions/types'
 import { isLocalItem, name, UpdateCheckItem } from './utils'
-import * as checkerMethods from './checker'
-import { SearchBarAction } from '../settings-panel/search-bar-actions'
-
-const {
+import {
   checkComponentsUpdate,
   checkLastFeature,
   forceCheckUpdate,
   forceCheckUpdateAndReload,
   silentCheckUpdate,
-} = checkerMethods
+} from './checker'
+import { SearchBarAction } from '../settings-panel/search-bar-actions-types'
+
+const checkerMethods = {
+  checkComponentsUpdate,
+  checkLastFeature,
+  forceCheckUpdate,
+  forceCheckUpdateAndReload,
+  silentCheckUpdate,
+}
 
 const optionsMetadata = defineOptionsMetadata({
   lastUpdateCheck: {
@@ -90,7 +97,7 @@ export const component = defineComponentMetadata({
   },
   tags: [componentsTags.utils],
   options: optionsMetadata,
-  extraOptions: () => import('./ExtraOptions.vue').then(m => m.default),
+  extraOptions: defineAsyncComponent(() => import('./ExtraOptions.vue')),
   entry,
   plugin: {
     displayName: '自动更新器 - 功能扩展',
@@ -194,13 +201,13 @@ export const component = defineComponentMetadata({
               return
             }
             const { Toast } = await import('@/core/toast')
-            const { isBuiltInComponent } = await import('@/components/built-in-components')
             if (context.selectedComponents.length === 0) {
               const toast = Toast.info('正在检查更新...', '检查所有更新')
               forceCheckUpdateAndReload()
               await forceCheckUpdateAndReload()
               toast.close()
             } else {
+              const { isBuiltInComponent } = await import('@/components/built-in-components')
               context.selectedComponents.forEach(async ({ name: componentName }) => {
                 if (isBuiltInComponent(componentName)) {
                   Toast.info('内置组件不能更新', '检查更新', 3000)

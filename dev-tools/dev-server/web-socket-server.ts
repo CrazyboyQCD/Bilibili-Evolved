@@ -2,9 +2,9 @@ import exitHook from 'async-exit-hook'
 import { Server } from 'http'
 import { WebSocketServer } from 'ws'
 import { Payload } from './payload'
-import { stopInstance, watchers } from './registry-watcher'
+import { watchers, stopInstance } from './watcher-common'
 
-let server: WebSocketServer
+let server: WebSocketServer | undefined
 
 export const sendMessage = (message: Payload) => {
   if (!server) {
@@ -32,17 +32,16 @@ export const startWebSocketServer = (httpServer: Server) =>
           const payload: Payload = JSON.parse(data.toString())
           console.log('收到 DevClient 消息:', payload)
           switch (payload.type) {
-            default: {
-              break
-            }
             case 'itemStop': {
               const { path } = payload
               const watcherIndex = watchers.findIndex(it => it.url === path)
               if (watcherIndex !== -1) {
                 const [watcher] = watchers.splice(watcherIndex, 1)
-                stopInstance(watcher.instance, () => {
-                  console.log(`功能编译器已退出: ${watcher.url}`)
-                })
+                if (watcher.instance) {
+                  stopInstance(watcher.instance, () => {
+                    console.log(`功能编译器已退出: ${watcher.url}`)
+                  })
+                }
               }
               break
             }
@@ -50,15 +49,18 @@ export const startWebSocketServer = (httpServer: Server) =>
               sendMessage({ type: 'querySessionsResponse', sessions: watchers.map(it => it.url) })
               break
             }
+            default: {
+              break
+            }
           }
         } catch (error) {
-          console.error('无效信息', data)
+          console.error('无效信息', data, error)
         }
       })
     })
     server.on('error', error => console.error(error))
     exitHook(exit =>
-      server.close(error => {
+      (server as WebSocketServer).close(error => {
         if (error) {
           console.error(error)
         }

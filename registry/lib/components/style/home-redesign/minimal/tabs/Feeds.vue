@@ -1,68 +1,64 @@
 <template>
   <div class="minimal-home-tab" :class="{ loading, loaded, error }">
     <div class="minimal-home-tab-cards">
-      <VideoCard v-for="c of cards" :key="c.id" :data="c" />
+      <VideoCardComponent v-for="c of cards" :key="c.id" :data="c" />
     </div>
     <VEmpty v-if="!loading && cards.length === 0" />
     <ScrollTrigger v-if="!error" ref="scrollTrigger" detect-viewport @trigger="loadCards" />
     <MinimalHomeOperations v-if="cards.length > 0" @refresh="refresh" />
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, useTemplateRef } from 'vue'
+import VideoCardComponent from '@/components/feeds/VideoCard.vue'
 import { getVideoFeeds } from '@/components/feeds/api'
 import { VideoCard } from '@/components/feeds/video-card'
-import VideoCardComponent from '@/components/feeds/VideoCard.vue'
 import { logError } from '@/core/utils/log'
 import { ascendingStringSort } from '@/core/utils/sort'
 import { VEmpty, ScrollTrigger } from '@/ui'
 import MinimalHomeOperations from '../MinimalHomeOperations.vue'
 
-export default Vue.extend({
-  components: { ScrollTrigger, VEmpty, VideoCard: VideoCardComponent, MinimalHomeOperations },
-  data() {
-    return {
-      loading: true,
-      cards: [],
-      error: false,
-    }
-  },
-  computed: {
-    loaded() {
-      return !this.loading && !this.error
-    },
-    lastID() {
-      if (!this.cards.length) {
-        return null
-      }
-      const cards: VideoCard[] = [...this.cards]
-      return cards.sort(ascendingStringSort(c => c.id))[0].id
-    },
-  },
-  methods: {
-    async loadCards() {
-      try {
-        this.error = false
-        this.loading = true
-        this.$refs.scrollTrigger.setLoadState('loading')
-        this.cards = lodash.uniqBy(
-          [...this.cards, ...(await getVideoFeeds('video', this.lastID))],
-          it => it.id,
-        )
-      } catch (error) {
-        logError(error)
-        this.error = true
-        this.$refs.scrollTrigger.setLoadState('error')
-      } finally {
-        this.loading = false
-        if (this.loaded) {
-          this.$refs.scrollTrigger.setLoadState('loaded')
-        }
-      }
-    },
-    async refresh() {
-      this.cards = []
-      this.$refs.scrollTrigger.resetIsFirstLoad()
-    },
-  },
+const scrollTrigger = useTemplateRef('scrollTrigger')
+
+const loading = ref(true)
+const cards = ref<VideoCard[]>([])
+const error = ref(false)
+
+const loaded = computed(() => {
+  return !loading.value && !error.value
 })
+
+const lastID = computed(() => {
+  if (!cards.value.length) {
+    return null
+  }
+  const videoCards: VideoCard[] = [...cards.value]
+  return videoCards.sort(ascendingStringSort(c => c.id))[0].id
+})
+
+const loadCards = async () => {
+  try {
+    error.value = false
+    loading.value = true
+    scrollTrigger.value?.setLoadState('loading')
+    cards.value = lodash.uniqBy(
+      [...cards.value, ...(await getVideoFeeds('video', lastID.value))],
+      it => it.id,
+    )
+  } catch (err) {
+    logError(err)
+    error.value = true
+    scrollTrigger.value?.setLoadState('error')
+  } finally {
+    loading.value = false
+    if (loaded.value) {
+      scrollTrigger.value?.setLoadState('loaded')
+    }
+  }
+}
+
+const refresh = async () => {
+  cards.value = []
+  scrollTrigger.value?.resetIsFirstLoad()
+}
 </script>

@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import { registerAndGetData } from '@/plugins/data'
 import { ComponentTag, ComponentMetadata } from '../types'
 
@@ -32,12 +33,7 @@ const builtInTagFilters: TagFilter[] = [
           count: 0,
           ...t,
           filter: components =>
-            components.filter(c => {
-              if (t.name === 'all') {
-                return true
-              }
-              return c.tags.some(tag => tag.name === t.name)
-            }),
+            components.filter(c => t.name === 'all' || c.tags.some(tag => tag.name === t.name)),
         })
       }),
     )
@@ -47,4 +43,7 @@ const builtInTagFilters: TagFilter[] = [
       .map(t => ({ ...t, count: counts[t.name] } as SettingsTag))
   },
 ]
-export const [tagFilters] = registerAndGetData('settingsPanel.tagFilters', builtInTagFilters)
+export const [tagFilters] = registerAndGetData(
+  'settingsPanel.tagFilters',
+  reactive(builtInTagFilters),
+)

@@ -36,12 +36,9 @@ export const checkUpdate = async (config: CheckUpdateConfig) => {
     .forEach(key => {
       delete items[key]
     })
-  const shouldUpdate = (itemName: string) => {
-    if (filterNames.length === 0) {
-      return true
-    }
-    return filterNames.includes(itemName)
-  }
+  const shouldUpdate = (itemName: string) =>
+    filterNames.length === 0 || filterNames.includes(itemName)
+
   let updatedCount = 0
   const updateItems = Object.entries(items).filter(
     ([itemName, item]) => shouldUpdate(itemName) && Boolean(item.url),

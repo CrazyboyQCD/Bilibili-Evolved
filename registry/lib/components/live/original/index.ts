@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from 'vue'
 import { defineComponentMetadata } from '@/components/define'
 import { isIframe, isNotHtml, matchUrlPattern } from '@/core/utils'
 import { getOriginalLiveroomUrl } from './get-original-liveroom-url'
@@ -27,7 +28,7 @@ export const component = defineComponentMetadata({
     /^https:\/\/live\.bilibili\.com\/[\d]+/,
   ],
   widget: {
-    component: () => import('./Widget.vue').then(m => m.default),
+    component: defineAsyncComponent(() => import('./Widget.vue')),
     condition: () => matchUrlPattern(/^https:\/\/live\.bilibili\.com\/([\d]+)/),
   },
 })

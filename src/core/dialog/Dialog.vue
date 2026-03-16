@@ -1,5 +1,5 @@
 <template>
-  <div class="be-dialog" :style="{ zIndex }" :class="{ open }">
+  <div ref="root" class="be-dialog" :style="{ zIndex }" :class="{ open }">
     <div class="be-dialog-header">
       <div v-if="icon" class="be-dialog-header-icon">
         <VIcon :icon="icon" :size="18" />
@@ -20,60 +20,56 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { Component, ref, useTemplateRef } from 'vue'
 import { VIcon, VButton } from '@/ui'
 
-export default Vue.extend({
-  components: {
-    VIcon,
-    VButton,
-  },
-  props: {
-    icon: {
-      type: String,
-      default: '',
-    },
-    title: {
-      default: null,
-    },
-    zIndex: {
-      type: Number,
-      default: 100002,
-    },
-    content: {
-      default: null,
-    },
-    contentProps: {
-      default: () => ({}),
-    },
-  },
-  data() {
-    return {
-      open: false,
-      closeListeners: [],
+const {
+  icon = '',
+  title = null,
+  zIndex = 100002,
+  content = null,
+  contentProps = {},
+} = defineProps<{
+  icon?: string
+  title?: string | object
+  zIndex?: number
+  content?: string | Component
+  contentProps?: Record<string, any>
+}>()
+
+const emit = defineEmits<{
+  close: []
+}>()
+
+const root = useTemplateRef('root')
+
+const open = ref(false)
+const closeListeners = ref<(() => void)[]>([])
+
+const close = () => {
+  return new Promise<void>(resolve => {
+    const element = root.value as HTMLElement
+    const listeners: (() => void)[] = closeListeners.value
+    listeners.push(() => {
+      emit('close')
+      resolve()
+    })
+    const handler = (e: TransitionEvent) => {
+      if (e.target !== root.value) {
+        return
+      }
+      element.removeEventListener('transitionend', handler)
+      listeners.forEach(it => it())
     }
-  },
-  methods: {
-    close() {
-      return new Promise<void>(resolve => {
-        const element = this.$el as HTMLElement
-        const listeners: (() => void)[] = this.closeListeners
-        listeners.push(() => {
-          this.$emit('close')
-          resolve()
-        })
-        const handler = (e: TransitionEvent) => {
-          if (e.target !== this.$el) {
-            return
-          }
-          element.removeEventListener('transitionend', handler)
-          listeners.forEach(it => it())
-        }
-        element.addEventListener('transitionend', handler)
-        this.open = false
-      })
-    },
-  },
+    element.addEventListener('transitionend', handler)
+    open.value = false
+  })
+}
+defineExpose({
+  open,
+  close,
+  closeListeners,
 })
 </script>
 <style lang="scss">

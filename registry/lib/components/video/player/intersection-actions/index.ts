@@ -1,7 +1,7 @@
 import { defineComponentMetadata } from '@/components/define'
 import { playerAgent } from '@/components/video/player-agent'
 import { lightOff, lightOn } from '@/components/video/player-light'
-import { videoChange } from '@/core/observer'
+import { videoChange } from '@/core/video'
 import { addComponentListener, getComponentSettings } from '@/core/settings'
 import { allVideoUrls } from '@/core/utils/urls'
 

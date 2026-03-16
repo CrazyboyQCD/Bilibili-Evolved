@@ -34,14 +34,25 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-import { ArrayContent } from '@/core/common-types'
+<script setup lang="ts">
+import { ref, onMounted, useTemplateRef } from 'vue'
+
 import { Reorder } from '@/core/reorder'
 import { ascendingSort } from '@/core/utils/sort'
 import { VButton, VIcon } from '@/ui'
 import { freshHomeOptions } from '../../options'
 import { supportedCategories } from './filter'
 import { getContent } from './content/content'
+import { Category } from '@/components/utils/categories/data'
+
+interface Tab {
+  id: number
+  name: string
+  displayName: string
+  category: Category
+  href: string
+  order: number
+}
 
 const tabs = Object.entries(supportedCategories).map(([name, category]) => ({
   id: category.code as number,
@@ -51,56 +62,52 @@ const tabs = Object.entries(supportedCategories).map(([name, category]) => ({
   href: category.link,
   order: 0,
 }))
-type TabType = ArrayContent<typeof tabs>
-export default Vue.extend({
-  components: {
-    VButton,
-    VIcon,
-  },
-  data() {
-    const orderMap = (freshHomeOptions.categoriesOrder ?? {}) as Record<string, number>
-    const orderedTabs = [...tabs].sort(ascendingSort(t => orderMap[t.name]))
-    return {
-      tabs: orderedTabs,
-      isReordering: false,
-      reorder: null,
-      selectedTab: orderedTabs[0],
-      content: getContent(orderedTabs[0].name),
-    }
-  },
-  mounted() {
-    const tabsContainer = this.$refs.tabs as HTMLElement
-    const reorder = new Reorder(tabsContainer)
-    reorder.addEventListener('reorder', ({ detail: items }) => {
-      const newOrder = Object.fromEntries(
-        items.map(it => {
-          const name = it.element.getAttribute('data-name') as string
-          return [name, it.order]
-        }),
-      )
-      console.log(items, newOrder)
-      freshHomeOptions.categoriesOrder = newOrder
-    })
-    this.reorder = reorder
-  },
-  methods: {
-    toggleReorder() {
-      this.reorder.toggle()
-      this.isReordering = this.reorder.enabled
-    },
-    selectTab(tab: TabType) {
-      if (this.isReordering) {
-        return
-      }
-      if (this.selectedTab === tab) {
-        window.open(tab.href, '_blank')
-        return
-      }
-      this.selectedTab = tab
-      this.content = getContent(tab.name)
-    },
-  },
+
+type TabType = Tab
+
+const tabsRef = useTemplateRef('tabs')
+
+const orderMap = (freshHomeOptions.categoriesOrder ?? {}) as Record<string, number>
+const orderedTabs = [...tabs].sort(ascendingSort(t => orderMap[t.name]))
+
+const isReordering = ref(false)
+const reorder = ref<Reorder | null>(null)
+const selectedTab = ref<Tab>(orderedTabs[0])
+const content = ref(getContent(orderedTabs[0].name))
+
+onMounted(() => {
+  const reorderInstance = new Reorder(tabsRef.value)
+  reorderInstance.addEventListener('reorder', ({ detail: items }) => {
+    const newOrder = Object.fromEntries(
+      items.map(it => {
+        const name = it.element.getAttribute('data-name') as string
+        return [name, it.order]
+      }),
+    )
+    console.log(items, newOrder)
+    freshHomeOptions.categoriesOrder = newOrder
+  })
+  reorder.value = reorderInstance
 })
+
+const toggleReorder = () => {
+  if (reorder.value) {
+    reorder.value.toggle()
+    isReordering.value = reorder.value.enabled
+  }
+}
+
+const selectTab = (tab: TabType) => {
+  if (isReordering.value) {
+    return
+  }
+  if (selectedTab.value === tab) {
+    window.open(tab.href, '_blank')
+    return
+  }
+  selectedTab.value = tab
+  content.value = getContent(tab.name)
+}
 </script>
 <style lang="scss">
 @import 'common';

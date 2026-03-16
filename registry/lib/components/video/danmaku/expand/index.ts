@@ -1,6 +1,6 @@
 import { ComponentEntry } from '@/components/types'
 import { defineComponentMetadata } from '@/components/define'
-import { videoChange } from '@/core/observer'
+import { videoChange } from '@/core/video'
 import { select } from '@/core/spin-query'
 import { matchUrlPattern } from '@/core/utils'
 import { useScopedConsole } from '@/core/utils/log'

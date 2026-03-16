@@ -82,8 +82,8 @@ const entry: ComponentEntry<Options> = async ({ metadata }) => {
   )
   requestIdleCallback(async () => {
     const Container = await import('./SettingsContainer.vue')
-    const instance = mountVueComponent(Container)
-    document.body.insertAdjacentElement('beforeend', instance.$el)
+    const [el] = mountVueComponent(Container)
+    document.body.insertAdjacentElement('beforeend', el)
   })
 }
 

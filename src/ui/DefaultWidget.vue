@@ -1,8 +1,8 @@
 <template>
-  <VButton class="default-widget" v-bind="$attrs" v-on="$listeners">
+  <VButton ref="root" class="default-widget" v-bind="attrs">
     <div class="widget-icon">
       <slot name="icon">
-        <VIcon :type="iconType" :icon="icon"></VIcon>
+        <VIcon :type="iconType" :icon="icon" />
       </slot>
     </div>
     <div class="widget-name">
@@ -11,29 +11,24 @@
   </VButton>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { useAttrs, useTemplateRef } from 'vue'
 import VIcon from './icon/VIcon.vue'
 import VButton from './VButton.vue'
 
-export default Vue.extend({
-  components: {
-    VIcon,
-    VButton,
-  },
-  props: {
-    name: {
-      type: String,
-      default: '',
-    },
-    icon: {
-      type: String,
-      default: '',
-    },
-    iconType: {
-      type: String,
-      default: '',
-    },
-  },
+const attrs = useAttrs()
+const {
+  name = '',
+  icon = '',
+  iconType = '',
+} = defineProps<{
+  name?: string
+  icon?: string
+  iconType?: string
+}>()
+const root = useTemplateRef('root')
+defineExpose({
+  root,
 })
 </script>
 

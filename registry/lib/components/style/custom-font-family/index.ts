@@ -1,4 +1,9 @@
-import { defineComponentMetadata } from '@/components/define'
+import { defineAsyncComponent } from 'vue'
+import {
+  defineComponentMetadata,
+  defineOptionsMetadata,
+  OptionsOfMetadata,
+} from '@/components/define'
 import { addComponentListener } from '@/core/settings'
 import { fontFamilyDefaultValue, coverOptionsName, coverOptionsDefaultValue } from './data'
 
@@ -50,7 +55,7 @@ const entry = () => {
   }
 }
 
-const options = {
+const options = defineOptionsMetadata({
   fontFamily: {
     displayName: '字体',
     defaultValue: fontFamilyDefaultValue,
@@ -60,7 +65,9 @@ const options = {
     displayName: '禁用标题标点符号缩进',
     defaultValue: true,
   },
-}
+})
+
+export type CustomFontFamilyOptions = OptionsOfMetadata<typeof options>
 
 const invokeCoverOptions = () => {
   for (const coverOptionName of coverOptionsName) {
@@ -74,7 +81,7 @@ const invokeCoverOptions = () => {
 
 invokeCoverOptions()
 
-const extraOptions = () => import('./extra-options/Entry.vue').then(m => m.default)
+const extraOptions = defineAsyncComponent(() => import('./extra-options/Entry.vue'))
 
 const instantStyles = [
   {

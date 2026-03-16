@@ -4,30 +4,7 @@ import { branches } from '@/core/meta'
 import { getComponentsDoc } from './components-doc'
 import { generatePackageDocs } from './packages-doc'
 import { getPluginsDoc } from './plugins-doc'
-
-/** 表示一个合集包 */
-export interface Package {
-  name: string
-  displayName: string
-  description?: string
-  components?: string[]
-  plugins?: string[]
-}
-/** 表示一个支持在线安装的功能 */
-export interface DocSourceItem {
-  type: 'component' | 'plugin'
-  name: string
-  displayName: string
-  description?: string
-  descriptionText?: string
-  fullAbsolutePath: string
-  fullRelativePath: string
-  owner?: string
-}
-export type DocSource = (rootPath: string) => Promise<{
-  title: string
-  items: DocSourceItem[]
-}>
+import { DocSourceItem } from './types'
 
 const entry = () => {
   unsafeWindow.generateDocs = async (output = 'zip') => {

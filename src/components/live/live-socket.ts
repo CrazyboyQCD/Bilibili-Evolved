@@ -105,13 +105,9 @@ class LiveTimeExtractor {
         '.bilibili-live-player-video-controller-duration-btn span',
       ) as HTMLElement
       const [observer] = childList(timeElement, records => {
-        const isTimeChanged =
-          records.length > 0 &&
-          records.some(
-            r =>
-              r.addedNodes.length > 0 &&
-              [...r.addedNodes].every(it => it.nodeType === Node.TEXT_NODE),
-          )
+        const isTimeChanged = records.some(r =>
+          Array.from(r.addedNodes).every(it => it.nodeType === Node.TEXT_NODE),
+        )
         if (isTimeChanged) {
           observer.disconnect()
           const time = records[0].addedNodes[0].textContent as string

@@ -11,77 +11,60 @@
         :download="filename"
       ></a>
       <button class="save" title="保存" @click="save">
-        <VIcon :size="28" icon="mdi-content-save-outline"></VIcon>
+        <VIcon :size="28" icon="mdi-content-save-outline" />
       </button>
       <button class="copy" title="复制" @click="copy">
-        <VIcon :size="24" :icon="showCopyTip ? 'mdi-check' : 'mdi-content-copy'"></VIcon>
+        <VIcon :size="24" :icon="showCopyTip ? 'mdi-check' : 'mdi-content-copy'" />
       </button>
       <button class="discard" title="丢弃" @click="discard">
-        <VIcon :size="28" icon="mdi-delete-forever-outline"></VIcon>
+        <VIcon :size="28" icon="mdi-delete-forever-outline" />
       </button>
       <span class="time">{{ time }}</span>
     </div>
-    <div v-else class="loading" @click="discard"></div>
+    <div v-else class="loading" @click="discard" />
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, useTemplateRef } from 'vue'
 import { VIcon } from '@/ui'
 import { Screenshot } from './screenshot'
 
-export default Vue.extend({
-  components: {
-    VIcon,
-  },
-  props: {
-    screenshot: {
-      type: Screenshot,
-      required: true,
+const { screenshot } = defineProps<{
+  screenshot: Screenshot
+}>()
+
+const emit = defineEmits<{ discard: [] }>()
+
+const link = useTemplateRef('link')
+const showCopyTip = ref(false)
+
+const objectUrl = computed(() => screenshot.url)
+const filename = computed(() => screenshot.filename)
+const time = computed(() => screenshot.time)
+
+const discard = () => {
+  emit('discard')
+}
+
+const copy = async () => {
+  await navigator.clipboard.write([new ClipboardItem({ [screenshot.mimeType]: screenshot.blob })])
+  showCopyTip.value = true
+  setTimeout(() => {
+    showCopyTip.value = false
+  }, 1000)
+}
+
+const save = () => {
+  link.value.addEventListener(
+    'click',
+    e => {
+      e.stopPropagation()
     },
-  },
-  data() {
-    return {
-      showCopyTip: false,
-    }
-  },
-  computed: {
-    objectUrl() {
-      return this.screenshot.url
-    },
-    filename() {
-      return this.screenshot.filename
-    },
-    time() {
-      return this.screenshot.time
-    },
-  },
-  methods: {
-    discard() {
-      this.$emit('discard')
-    },
-    async copy() {
-      const screenshot = this.screenshot as Screenshot
-      await navigator.clipboard.write([
-        new ClipboardItem({ [screenshot.mimeType]: screenshot.blob }),
-      ])
-      this.showCopyTip = true
-      setTimeout(() => {
-        this.showCopyTip = false
-      }, 1000)
-    },
-    save() {
-      const link = this.$refs.link as HTMLAnchorElement
-      link.addEventListener(
-        'click',
-        e => {
-          e.stopPropagation()
-        },
-        { capture: true, once: true },
-      )
-      link.click()
-      this.discard()
-    },
-  },
-})
+    { capture: true, once: true },
+  )
+  link.value.click()
+  discard()
+}
 </script>
 <style lang="scss">
 .video-screenshot-thumbnail {

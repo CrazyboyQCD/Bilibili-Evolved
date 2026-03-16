@@ -1,0 +1,136 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["vue", "typescript", "unicorn"],
+  "categories": {
+    "correctness": "off"
+  },
+  "env": {
+    "builtin": true,
+    "es2020": true,
+    "browser": true
+  },
+  "globals": {
+    "AnimationEffectReadOnly": "readonly",
+    "AnimationEffectTiming": "readonly",
+    "AnimationEffectTimingReadOnly": "readonly",
+    "applicationCache": "readonly",
+    "ApplicationCache": "readonly",
+    "ApplicationCacheErrorEvent": "readonly",
+    "AudioWorkletGlobalScope": "readonly",
+    "AudioWorkletProcessor": "readonly",
+    "BudgetService": "readonly",
+    "defaultstatus": "readonly",
+    "defaultStatus": "readonly",
+    "HTMLContentElement": "readonly",
+    "HTMLShadowElement": "readonly",
+    "KeyframeEffectReadOnly": "readonly",
+    "MediaSettingsRange": "readonly",
+    "MediaStreamConstraints": "readonly",
+    "openDatabase": "readonly",
+    "PhotoCapabilities": "readonly",
+    "registerProcessor": "readonly",
+    "RTCIceGatherer": "readonly",
+    "RTCRtpContributingSource": "readonly",
+    "SVGDiscardElement": "readonly"
+  },
+  "rules": {
+    "vue/no-arrow-functions-in-watch": "error",
+    "vue/no-export-in-script-setup": "error",
+    "vue/valid-define-emits": "error",
+    "vue/valid-define-props": "error",
+    "vue/no-multiple-slot-args": "warn",
+    "@typescript-eslint/ban-ts-comment": "error",
+    "no-array-constructor": "error",
+    "@typescript-eslint/no-duplicate-enum-values": "error",
+    "@typescript-eslint/no-empty-object-type": "error",
+    "@typescript-eslint/no-extra-non-null-assertion": "error",
+    "@typescript-eslint/no-misused-new": "error",
+    "@typescript-eslint/no-namespace": "error",
+    "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
+    "@typescript-eslint/no-require-imports": "error",
+    "@typescript-eslint/no-this-alias": "error",
+    "@typescript-eslint/no-unnecessary-type-constraint": "error",
+    "@typescript-eslint/no-unsafe-declaration-merging": "error",
+    "@typescript-eslint/no-unsafe-function-type": "error",
+    "no-unused-expressions": ["error", { "allowShortCircuit": true, "allowTernary": true }],
+    "no-unused-vars": "error",
+    "@typescript-eslint/no-wrapper-object-types": "error",
+    "@typescript-eslint/prefer-as-const": "error",
+    "@typescript-eslint/prefer-namespace-keyword": "error",
+    "@typescript-eslint/triple-slash-reference": "error",
+    "curly": ["error", "all"],
+    // "prettier/prettier": "error",
+    "no-empty-function": [
+      "error",
+      {
+        "allow": ["constructors"]
+      }
+    ],
+    "no-return-assign": ["error", "except-parens"],
+    "no-redeclare": "error",
+    "no-shadow": [
+      "error",
+      {
+        "builtinGlobals": false
+      }
+    ],
+    "no-use-before-define": ["error"],
+    // "radix": ["error", "as-needed"],
+    "prefer-destructuring": [
+      "error",
+      {
+        "VariableDeclarator": {
+          "array": false,
+          "object": true
+        },
+        "AssignmentExpression": {
+          "array": false,
+          "object": false
+        }
+      }
+    ]
+  },
+  // "jsPlugins": ["eslint-plugin-prettier"],
+  "ignorePatterns": [
+    "**/packages/",
+    "**/typings/",
+    "**/dist/",
+    "**/dev/",
+    "**/node_modules/",
+    "!**/.github-json/",
+    "**/.eslintrc.*"
+  ],
+  "overrides": [
+    {
+      "files": [],
+      "rules": {
+        "constructor-super": "off",
+        "getter-return": "off",
+        "no-class-assign": "off",
+        "no-const-assign": "off",
+        "no-dupe-class-members": "off",
+        "no-dupe-keys": "off",
+        "no-func-assign": "off",
+        "no-import-assign": "off",
+        "no-new-native-nonconstructor": "off",
+        "no-obj-calls": "off",
+        "no-setter-return": "off",
+        "no-this-before-super": "off",
+        "no-unreachable": "off",
+        "no-unsafe-negation": "off",
+        "no-var": "error",
+        "no-with": "off",
+        "prefer-const": "error",
+        "prefer-rest-params": "error",
+        "prefer-spread": "error"
+      }
+    },
+    {
+      "files": ["**/*.vue", "**/shims.d.ts", "webpack/**/*.ts", "registry/webpack/**/*.ts"],
+      "rules": {
+        "import/no-default-export": "off"
+      },
+      "plugins": ["import"]
+    }
+  ]
+}

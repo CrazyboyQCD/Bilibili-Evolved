@@ -1,5 +1,5 @@
 import { getDescriptionMarkdown } from '@/components/description'
-import { DocSourceItem } from '.'
+import { DocSourceItem } from './types'
 
 export const thirdPartyComponents: DocSourceItem[] = [
   {

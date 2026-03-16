@@ -1,8 +1,9 @@
+import { defineAsyncComponent } from 'vue'
 import { defineComponentMetadata } from '@/components/define'
 import { select } from '@/core/spin-query'
 import { matchUrlPattern, playerReady } from '@/core/utils'
 import { feedsUrls, videoAndBangumiUrls } from '@/core/utils/urls'
-import { KeyBindingAction } from '../keymap/bindings'
+import { KeyBindingAction } from '../keymap/bindings-types'
 import { forEachFeedsCard } from '@/components/feeds/api'
 import { BlackListDataKey, loadlikeButton } from './vm'
 import { getData, registerData } from '@/plugins/data'
@@ -36,7 +37,7 @@ export const component = defineComponentMetadata({
       hidden: true,
     },
   },
-  extraOptions: () => import('./settings.vue').then(m => m.default),
+  extraOptions: defineAsyncComponent(() => import('./settings.vue')),
   entry: async ({ settings: { options } }) => {
     if (options.video && videoAndBangumiUrls.some(url => matchUrlPattern(url))) {
       await playerReady()

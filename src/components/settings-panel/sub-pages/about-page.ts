@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import { registerAndGetData } from '@/plugins/data'
 
 export interface AboutPageAction {
@@ -50,4 +51,7 @@ export const builtInActions: AboutPageAction[] = [
     },
   },
 ]
-export const [aboutPageActions] = registerAndGetData('settingsPanel.about.actions', builtInActions)
+export const [aboutPageActions] = registerAndGetData(
+  'settingsPanel.about.actions',
+  reactive(builtInActions),
+)

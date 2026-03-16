@@ -14,7 +14,7 @@ export const addVideoActionButton = async (getButton: Executable<Element>) => {
   if (!favoriteButton) {
     return null
   }
-  const { hasVideo } = await import('@/core/spin-query')
+  const { hasVideo } = await import('@/core/video')
   await hasVideo()
   const button = await getButton()
   if (favoriteButton.classList.contains('video-fav')) {

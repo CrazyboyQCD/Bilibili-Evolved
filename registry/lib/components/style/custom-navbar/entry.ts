@@ -54,13 +54,10 @@ export const entry: ComponentEntry = async ({ metadata: { name } }) => {
   }
   migrateOrders()
   const CustomNavbar = await import('./CustomNavbar.vue')
-  const customNavbar: Vue & {
-    styles: string[]
-    toggleStyle: (value: boolean, style: string) => void
-  } = mountVueComponent(CustomNavbar)
-  document.body.insertAdjacentElement('beforeend', customNavbar.$el)
+  const [el, vm] = mountVueComponent(CustomNavbar)
+  document.body.insertAdjacentElement('beforeend', el)
   ;['fill', 'shadow', 'blur'].forEach(style => {
-    addComponentListener(`${name}.${style}`, value => customNavbar.toggleStyle(value, style), true)
+    addComponentListener(`${name}.${style}`, value => vm.toggleStyle(value, style), true)
   })
   setupNotifyStyle()
   setupLinkPopupContentAlignStyle()

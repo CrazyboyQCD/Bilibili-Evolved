@@ -47,6 +47,7 @@
     "eslint-plugin-vue": "^9.15.1",
     "fast-sass-loader": "^2.0.0",
     "glob": "^10.2.6",
+    "oxlint": "^1.55.0",
     "postcss": "^8.1.0",
     "postcss-loader": "^4.0.4",
     "postcss-preset-env": "^7.5.0",
@@ -58,10 +59,10 @@
     "terser": ">=5.3.8 <6",
     "terser-webpack-plugin": "^5.0.1",
     "to-string-loader": "^1.2.0",
-    "ts-node": "^10.7.0",
-    "typescript": "5.8.3",
+    "ts-node": "^10.9.2",
+    "typescript": "5.9.3",
     "vue-eslint-parser": "^9.4.3",
-    "vue-loader": "^15.10.1",
+    "vue-loader": "^17.4.2",
     "webpack": "^5.31.2",
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-cli": "^4.6.0",
@@ -79,7 +80,7 @@
     "protobufjs": "^6.11.2",
     "streamsaver": "^2.0.6",
     "tippy.js": "^6.3.1",
-    "vue": "^2.7.14"
+    "vue": "^3.5.30"
   },
   "pnpm": {
     "overrides": {

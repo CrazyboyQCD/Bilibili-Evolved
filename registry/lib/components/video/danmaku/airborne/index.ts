@@ -2,7 +2,7 @@ import { toggleStyle } from '@/components/styled-component'
 import { defineComponentMetadata } from '@/components/define'
 import { playerAgent } from '@/components/video/player-agent'
 import { DanmakuRecord, forEachVideoDanmaku } from '@/components/video/video-danmaku'
-import { videoChange } from '@/core/observer'
+import { videoChange } from '@/core/video'
 import { playerUrls } from '@/core/utils/urls'
 
 export const component = defineComponentMetadata({

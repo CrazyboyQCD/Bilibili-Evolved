@@ -1,12 +1,21 @@
 import { registerAndGetData } from '@/plugins/data'
 
 export const CustomIcons = 'ui.icons'
-const context = require.context('./custom', true, /\.svg$/)
-export const customIcons: {
-  [name: string]: string
-} = lodash.fromPairs(
-  context.keys().map(key => [key.replace(/.*\/([^/]+?)\.svg$/, '$1'), context(key)]),
+const context = import.meta.glob<string>('./custom/*.svg', {
+  eager: true,
+  query: '?raw',
+  import: 'default',
+})
+export const customIcons = Object.entries(context).reduce(
+  (acc, [key, value]) => {
+    acc[key.replace(/.*\/([^/]+?)\.svg$/, '$1')] = value
+    return acc
+  },
+  {} as {
+    [name: string]: string
+  },
 )
+
 const [icons] = registerAndGetData(CustomIcons, customIcons)
 
 /**

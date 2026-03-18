@@ -29,13 +29,12 @@ export const injectDescription: InjectMetadataAction = ({ filename }) => {
       parseExpression(
         `
 (() => {
-  const context = require.context('./', false, ${regex})
+  const context = import.meta.glob('./index.*.md', { eager: true, query: '?raw', import: 'default' })
   return {
     ...Object.fromEntries(context
-      .keys()
-      .map(path => {
+      .entries()
+      .map([path, value] => {
         const key = path.match(${regex})[1]
-        const value = context(path)
         return [key, value]
       })),
     'zh-CN': () => import('./index.md').then(m => m.default),

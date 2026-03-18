@@ -56,24 +56,29 @@ export const component = wrapSwitchOptions({
       shadowRootStyles.toggleWithComponent(metadata.name, { id: name, style: v3Style })
     } else {
       const { shadowRootStyles } = await import('@/core/shadow-root')
-      const firefoxStyles = require.context('./comments-v3-firefox', false, /\.scss$/)
+      const firefoxStyles = import.meta.glob<string>('./comments-v3-firefox/*.scss', {
+        eager: true,
+        query: '?inline',
+        import: 'default',
+      })
+      const firefoxStylesNames = Object.keys(firefoxStyles)
 
-      Object.keys(settings.options).forEach(key => {
+      for (const key of Object.keys(settings.options)) {
         if (!key.startsWith('switch-')) {
-          return
+          continue
         }
         const id = `${component.name}.${key}`
         const styleName = lodash.kebabCase(key.replace(/^switch-/, ''))
         const path = `./${styleName}.scss`
-        if (!firefoxStyles.keys().includes(path)) {
-          return
+        if (!firefoxStylesNames.includes(path)) {
+          continue
         }
 
         addComponentListener(
           id,
           (value: boolean) => {
             if (value) {
-              const style = firefoxStyles(path) as string
+              const style = firefoxStyles[path]
               addStyle(style, styleName)
               shadowRootStyles.addStyle({
                 id,
@@ -86,7 +91,7 @@ export const component = wrapSwitchOptions({
           },
           true,
         )
-      })
+      }
     }
   },
   instantStyles: [

@@ -1,5 +1,5 @@
 import lodash from 'lodash'
-import webpack, { Configuration } from 'webpack'
+import webpack, { Configuration } from '@rspack/core'
 import { getBanner, getDefaultConfig } from './webpack.config'
 import previewMeta from '../src/client/bilibili-evolved.preview.meta.json'
 

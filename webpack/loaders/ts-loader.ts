@@ -1,4 +1,4 @@
-import { RuleSetUseItem } from 'webpack'
+import { RuleSetUseItem } from '@rspack/core'
 import { injectMetadata } from '../inject-metadata'
 
 const babelLoader: RuleSetUseItem = {

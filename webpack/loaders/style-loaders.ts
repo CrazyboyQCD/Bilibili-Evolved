@@ -1,6 +1,6 @@
 import postcssPresetEnv from 'postcss-preset-env'
 import autoPrefixer from 'autoprefixer'
-import { RuleSetUseItem } from 'webpack'
+import { RuleSetUseItem } from '@rspack/core'
 
 export const cssLoader: RuleSetUseItem = {
   loader: 'css-loader',

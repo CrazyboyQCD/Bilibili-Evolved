@@ -33,20 +33,15 @@ export type PluginMetadata = PartialRequired<PluginMinimalData, 'displayName'>
 /** 可根据插件名称检索对应的内置插件 */
 export const pluginsMap: { [name: string]: PluginMetadata } = {}
 const getBuiltInPlugins = lodash.once(() => {
-  const context = require.context('@/plugins', true, /index\.ts$/)
-  const pluginPaths = context.keys()
+  const context = import.meta.glob<PluginMetadata>('@/plugins/**/index.ts', {
+    eager: true,
+    import: 'plugin',
+  })
   return reactive(
-    pluginPaths
-      .map(path => {
-        const m = context(path)
-        if ('plugin' in m) {
-          const plugin = m.plugin as PluginMetadata
-          pluginsMap[plugin.name] = plugin
-          return plugin
-        }
-        return undefined
-      })
-      .filter(it => it !== undefined) as PluginMetadata[],
+    Object.values(context).map(plugin => {
+      pluginsMap[plugin.name] = plugin
+      return plugin
+    }),
   )
 })
 /** 包含所有插件的响应式数组 */

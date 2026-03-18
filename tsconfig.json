@@ -12,10 +12,9 @@
     "strict": false,
     "noImplicitAny": false,
     "sourceMap": true,
+    "types": ["vite/client"],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
   "vueCompilerOptions": {
@@ -28,12 +27,7 @@
     "webpack/**/*",
     "registry/webpack/**/*"
   ],
-  "exclude": [
-    "node_modules",
-    "dev",
-    "packages",
-    "typings"
-  ],
+  "exclude": ["node_modules", "dev", "packages", "typings"],
   "ts-node": {
     "compilerOptions": {
       "module": "CommonJS"

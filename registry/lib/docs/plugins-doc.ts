@@ -5,27 +5,17 @@ import { getId } from '../id'
 import { getThirdPartyDescription, thirdPartyPlugins } from './third-party'
 
 export const getPluginsDoc: DocSource = async rootPath => {
-  const pluginsContext = require.context('../plugins', true, /index\.ts$/)
-  const pluginsPaths = pluginsContext
-    .keys()
-    .map(path => {
-      const module = pluginsContext(path)
-      if ('plugin' in module) {
-        const plugin = module.plugin as PluginMetadata
-        return {
-          plugin,
-          path,
-        }
-      }
-      return undefined
-    })
-    .filter(it => it !== undefined)
-    .map(async it => {
+  const pluginsContext = import.meta.glob<PluginMetadata>('../plugins/**/index.ts', {
+    eager: true,
+    import: 'plugin',
+  })
+  const pluginsPaths = Object.entries(pluginsContext)
+    .map(async ([path, plugin]) => {
       const root = `${rootPath}plugins/`
-      const fullRelativePath = `${root}${getId(root, it.path.replace(/^\.?\//, ''))}.js`
+      const fullRelativePath = `${root}${getId(root, path.replace(/^\.?\//, ''))}.js`
       const fullAbsolutePath = fullRelativePath.replace(/^(\.\.?\/)*/, '')
-      const { name, displayName } = it.plugin
-      const description = await getDescriptionMarkdown(it.plugin)
+      const { name, displayName } = plugin
+      const description = await getDescriptionMarkdown(plugin)
       return {
         type: 'plugin',
         name,

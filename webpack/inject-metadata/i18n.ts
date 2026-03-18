@@ -28,13 +28,12 @@ export const injectI18n: InjectMetadataAction = ({ filename }) => {
       parseExpression(
         `
 (() => {
-  const context = require.context('./', false, ${regex})
+  const context = import.meta.glob('./index.*.ts', { eager: true, import: 'default' })
   return {
     ...Object.fromEntries(context
-      .keys()
-      .map(path => {
+      .entries()
+      .map(([path, value]) => {
         const key = path.match(${regex})[1]
-        const value = context(path)
         return [key, value]
       })),
   }

@@ -1,6 +1,6 @@
 import { VueLoaderPlugin } from 'vue-loader'
 import TerserPlugin from 'terser-webpack-plugin'
-import webpack, { Configuration } from 'webpack'
+import webpack, { Configuration } from '@rspack/core'
 import path from 'path'
 import get from 'lodash/get'
 import { cssStyleLoaders, sassStyleLoaders } from './loaders/style-loaders'
@@ -125,12 +125,7 @@ export const getDefaultConfig = (src = relativePath('src')): Configuration => {
       }),
       // new HardSourcePlugin(),
     ],
-    cache: {
-      type: 'filesystem',
-      buildDependencies: {
-        config: [__filename],
-      },
-    },
+    cache: true,
   }
 }
 

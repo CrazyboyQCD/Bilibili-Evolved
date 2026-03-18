@@ -7,38 +7,26 @@ const generateDescription = (pack: Package, containedItems: DocSourceItem[]) => 
   return pack.description ? `${pack.description}\n\n${finalDescription}` : finalDescription
 }
 export const generatePackageDocs = async (allItems: DocSourceItem[]) => {
-  const packagesContext = require.context('./packages', true, /\.ts$/)
-  const packagesPaths = packagesContext
-    .keys()
-    .map(path => {
-      const module = packagesContext(path)
-      if ('pack' in module) {
-        const pack = module.pack as Package
-        return {
-          pack,
-          // path,
-        }
-      }
-      return undefined
-    })
-    .filter(it => it !== undefined)
-    .map(it => {
-      const { pack } = it
-      const { components = [], plugins = [] } = pack
-      const getDocSource = (type: string, name: string) => {
-        const docSource = allItems.find(item => item.type === type && item.name === name)
-        return docSource
-      }
-      const docSourceItems = components
-        .map(item => getDocSource('component', item))
-        .concat(plugins.map(item => getDocSource('plugin', item)))
-      return {
-        ...pack,
-        items: docSourceItems,
-        description: generateDescription(pack, docSourceItems),
-        // path,
-      }
-    })
+  const packagesContext = import.meta.glob<Package>('./packages/*.ts', {
+    eager: true,
+    import: 'pack',
+  })
+  const packagesPaths = Object.values(packagesContext).map(pack => {
+    const { components = [], plugins = [] } = pack
+    const getDocSource = (type: string, name: string) => {
+      const docSource = allItems.find(item => item.type === type && item.name === name)
+      return docSource
+    }
+    const docSourceItems = components
+      .map(item => getDocSource('component', item))
+      .concat(plugins.map(item => getDocSource('plugin', item)))
+    return {
+      ...pack,
+      items: docSourceItems,
+      description: generateDescription(pack, docSourceItems),
+      // path,
+    }
+  })
   // const allPackExcludes = [
   //   'darkModeSchedule',
   //   'vLoading.reimu',

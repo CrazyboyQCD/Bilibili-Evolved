@@ -5,27 +5,19 @@ import { getThirdPartyDescription, thirdPartyComponents } from './third-party'
 
 export const getComponentsDoc: DocSource = async rootPath => {
   const { getDescriptionMarkdown } = await import('@/components/description')
-  const componentsContext = require.context('../components', true, /index\.ts$/)
-  const componentsPaths = componentsContext
-    .keys()
-    .map(path => {
-      const module = componentsContext(path)
-      if ('component' in module) {
-        const component = module.component as ComponentMetadata
-        return {
-          component,
-          path,
-        }
-      }
-      return undefined
-    })
-    .filter(it => it !== undefined)
-    .map(async it => {
+  const componentsContext = import.meta.glob<{ component?: ComponentMetadata }>(
+    '../components/**/index.ts',
+    { eager: true, import: 'default' },
+  )
+  const componentsPaths = Object.entries(componentsContext)
+    // 检查模块中是否存在 component 属性（命名导出）
+    .filter(module => 'component' in module)
+    .map(async ([path, { component }]) => {
       const root = `${rootPath}components/`
-      const fullRelativePath = `${root}${getId(root, it.path.replace(/^\.?\//, ''))}.js`
+      const fullRelativePath = `${root}${getId(root, path.replace(/^\.?\//, ''))}.js`
       const fullAbsolutePath = fullRelativePath.replace(/^(\.\.?\/)*/, '')
-      const { name, displayName } = it.component
-      const description = await getDescriptionMarkdown(it.component)
+      const { name, displayName } = component
+      const description = await getDescriptionMarkdown(component)
       return {
         type: 'component',
         name,

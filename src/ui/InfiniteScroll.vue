@@ -11,84 +11,82 @@
     </div>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 /**
  * @deprecated use ScrollTrigger.vue instead.
  */
-export default Vue.extend({
-  name: 'InfiniteScroll',
-  props: {
-    initialItems: {
-      type: Array,
-      default: () => [],
-    },
-    fetchData: {
-      type: Function,
-      required: true,
-    },
-    keyMapper: {
-      type: Function,
-      default: () => (item: any) => item,
-    },
-  },
-  data() {
-    return {
-      items: [...this.initialItems],
-      loadingPromise: null,
-      page: 1,
-      observer: null,
-      end: false,
+import { ref, onMounted, useTemplateRef, nextTick } from 'vue'
+
+const {
+  initialItems = [],
+  fetchData,
+  keyMapper = (item: any) => item as number | string | symbol,
+} = defineProps<{
+  initialItems?: any[]
+  fetchData: (page: number) => Promise<any[] | false>
+  keyMapper?: (item: any) => number | string | symbol
+}>()
+
+const emit = defineEmits<{
+  'next-page': []
+  'prev-page': []
+}>()
+
+const container = useTemplateRef('container')
+const scrollTrigger = useTemplateRef('scrollTrigger')
+
+const items = ref([...initialItems])
+const loadingPromise = ref<Promise<any[] | false> | null>(null)
+const page = ref(1)
+const observer = ref<IntersectionObserver | null>(null)
+const end = ref(false)
+
+const loadNextPage = async (pageNum: number = page.value) => {
+  try {
+    const promise = fetchData(pageNum)
+    page.value++
+    emit('next-page')
+    loadingPromise.value = promise
+    const newItems = await promise
+    loadingPromise.value = null
+    if (newItems === false) {
+      observer.value?.disconnect()
+      end.value = true
+      return
     }
-  },
-  mounted() {
-    const scrollTrigger = this.$refs.scrollTrigger as HTMLElement
-    // const container = this.$refs.container as HTMLElement
-    const observer = new IntersectionObserver(
-      lodash.debounce(records => {
-        if (records.some(r => r.intersectionRatio > 0)) {
-          // console.log('observer')
-          this.loadNextPage()
-        }
-      }, 100),
-    )
-    observer.observe(scrollTrigger)
-    this.observer = observer
-  },
-  methods: {
-    async loadNextPage(page: number = this.page) {
-      try {
-        const func = this.fetchData as (page: number) => Promise<any[] | false>
-        const promise = func(page)
-        this.page++
-        this.$emit('next-page')
-        this.loadingPromise = promise
-        const items = await promise
-        this.loadingPromise = null
-        if (items === false) {
-          this.observer && this.observer.disconnect()
-          this.end = true
-          return
-        }
-        this.items.push(...items)
-        await this.$nextTick()
-        const scrollTrigger = this.$refs.scrollTrigger as HTMLElement
-        const container = this.$refs.container as HTMLElement
-        // console.log(
-        //   page,
-        //   scrollTrigger.offsetTop,
-        //   container.clientHeight + container.offsetTop
-        // )
-        if (scrollTrigger.offsetTop < container.clientHeight + container.offsetTop) {
-          this.loadNextPage()
-        }
-      } catch (error) {
-        console.error(error)
-        this.page--
-        this.$emit('prev-page')
-        this.loadNextPage(page)
+    items.value.push(...newItems)
+    await nextTick()
+    const scrollTriggerEl = scrollTrigger.value as HTMLElement
+    const containerEl = container.value as HTMLElement
+    // console.log(
+    //   pageNum,
+    //   scrollTriggerEl.offsetTop,
+    //   containerEl.clientHeight + containerEl.offsetTop
+    // )
+    if (scrollTriggerEl.offsetTop < containerEl.clientHeight + containerEl.offsetTop) {
+      loadNextPage()
+    }
+  } catch (error) {
+    console.error(error)
+    page.value--
+    emit('prev-page')
+    loadNextPage(pageNum)
+  }
+}
+
+onMounted(() => {
+  const scrollTriggerEl = scrollTrigger.value as HTMLElement
+  // const containerEl = container.value as HTMLElement
+  const obs = new IntersectionObserver(
+    lodash.debounce(records => {
+      if (records.some(r => r.intersectionRatio > 0)) {
+        // console.log('observer')
+        loadNextPage()
       }
-    },
-  },
+    }, 100),
+  )
+  obs.observe(scrollTriggerEl)
+  observer.value = obs
 })
 </script>
 <style lang="scss" scoped>

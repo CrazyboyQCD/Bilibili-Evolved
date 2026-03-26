@@ -1,5 +1,5 @@
 import { defineComponentMetadata } from '@/components/define'
-import { CommentReplyItem, forEachCommentItem } from '@/components/utils/comment-apis'
+import { type CommentReplyItem, forEachCommentItem } from '@/components/utils/comment-apis'
 import { sq } from '@/core/spin-query'
 import { getData } from '@/plugins/data'
 import type { CommentContentReplaceHandler } from './handlers/types'

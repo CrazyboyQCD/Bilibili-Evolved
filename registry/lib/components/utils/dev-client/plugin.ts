@@ -1,7 +1,10 @@
-import { PluginSetupParameters } from '@/plugins/plugin'
-import { ComponentAction } from '@/components/settings-panel/component-actions/component-actions'
+import { type PluginSetupParameters } from '@/plugins/plugin'
+import { type ComponentAction } from '@/components/settings-panel/component-actions/types'
 import { isIframe } from '@/core/utils'
-import { LaunchBarAction, LaunchBarActionProvider } from '@/components/launch-bar/launch-bar-action'
+import {
+  type LaunchBarAction,
+  type LaunchBarActionProvider,
+} from '@/components/launch-bar/launch-bar-action'
 import { autoUpdateOptions } from './options'
 
 export const setupPlugin = async ({ addData }: PluginSetupParameters) => {

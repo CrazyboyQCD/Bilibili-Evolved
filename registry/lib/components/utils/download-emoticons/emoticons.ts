@@ -1,5 +1,5 @@
 import { monkey } from '@/core/ajax'
-import { useScopedConsole } from '@/core/utils/log'
+import { logError, useScopedConsole } from '@/core/utils/log'
 
 const logger = useScopedConsole('表情包下载')
 
@@ -47,6 +47,7 @@ export class Emoticons {
       }
       return response.data.data.slice(2)
     } catch (error) {
+      logError(error)
       throw new Error('获取表情包失败')
     }
   }
@@ -82,6 +83,7 @@ export class Emoticons {
       }
       return response.data.room_id
     } catch (error) {
+      logError(error)
       throw new Error('获取直播间id失败')
     }
   }

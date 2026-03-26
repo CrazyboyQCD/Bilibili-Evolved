@@ -15,17 +15,17 @@
 import { computed, reactive, ref } from 'vue'
 import { VDropdown } from '@/ui'
 import { bilibiliApi, getJsonWithCredentials } from '@/core/ajax'
-import { FollowingListID, FollowingListItem, RawFollowingListItem } from './types'
+import { type FollowingListID, type FollowingListItem, type RawFollowingListItem } from './types'
 import { UnselectedListID } from './options'
 
-const props = defineProps<{
+const { value: _value } = defineProps<{
   value: FollowingListID
 }>()
 const emit = defineEmits<{
-  (e: 'change', value: FollowingListID): void
+  change: [value: FollowingListID]
 }>()
 
-const followingListID = computed<FollowingListID>(() => props.value)
+const followingListID = computed<FollowingListID>(() => _value)
 const handleFollowingListChange = (value: FollowingListItem) => {
   emit('change', value.id)
 }
@@ -52,12 +52,9 @@ const loadFollowingList = async () => {
       count: item.count,
     })),
   ]
-  if (
-    props.value !== UnselectedListID &&
-    !followingList.value.some(item => item.id === props.value)
-  ) {
+  if (_value !== UnselectedListID && !followingList.value.some(item => item.id === _value)) {
     followingList.value.unshift({
-      id: props.value,
+      id: _value,
       displayName: '<已删除的分组>',
       count: 0,
     })

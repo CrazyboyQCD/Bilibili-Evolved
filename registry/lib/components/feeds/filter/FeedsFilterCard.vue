@@ -17,11 +17,12 @@
         :class="{ 'pattern-disabled': !p.enabled }"
       >
         <TextBox
-          v-model="p.pattern"
+          :text="p.pattern"
           placeholder="支持正则表达式 /^xxx$/"
           type="text"
           @blur="savePatternConfig()"
           @keydown.enter="savePatternConfig()"
+          @change="p.pattern = $event"
         />
         <div class="pattern-actions">
           <VIcon
@@ -41,10 +42,11 @@
     </div>
     <div class="add-pattern">
       <TextBox
-        v-model="newPattern"
+        :text="newPattern"
         placeholder="支持正则表达式 /^xxx$/"
         type="text"
         @keydown.enter="addPattern(newPattern)"
+        @change="newPattern = $event"
       />
       <VButton type="transparent" @click.native="addPattern(newPattern)">
         <VIcon title="添加" icon="mdi-plus" :size="18" />
@@ -67,20 +69,20 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, defineAsyncComponent } from 'vue'
 import {
-  FeedsCard,
+  type FeedsCard,
   type FeedsCardsManager,
-  FeedsCardType,
+  type FeedsCardType,
   feedsCardTypes,
   forEachFeedsCard,
-  RepostFeedsCard,
+  type RepostFeedsCard,
 } from '@/components/feeds/api'
 import { getComponentSettings } from '@/core/settings'
 import { select } from '@/core/spin-query'
 import { getRandomId } from '@/core/utils'
 import { attributes, attributesSubtree } from '@/core/observer'
 import { VIcon, TextBox, VButton } from '@/ui'
-import { FeedsFilterOptions, FeedsFilterPatternConfig } from './options'
-import { BlockableCard, hasBlockedPattern } from './pattern'
+import { type FeedsFilterOptions, type FeedsFilterPatternConfig } from './options'
+import { type BlockableCard, hasBlockedPattern } from './pattern'
 
 const FilterTypeSwitch = defineAsyncComponent(() => import('./FilterTypeSwitch.vue'))
 const FilterSideCard = defineAsyncComponent(() => import('./FilterSideCard.vue'))

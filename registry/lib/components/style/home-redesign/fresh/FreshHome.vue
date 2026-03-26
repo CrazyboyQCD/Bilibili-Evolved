@@ -7,22 +7,10 @@
     </div>
   </HomeRedesignBase>
 </template>
-<script lang="ts">
+<script setup lang="ts">
 import HomeRedesignBase from '../HomeRedesignBase.vue'
 import FreshLayoutItem from './FreshLayoutItem.vue'
 import { layouts } from './layouts/layouts'
-
-export default Vue.extend({
-  components: {
-    HomeRedesignBase,
-    FreshLayoutItem,
-  },
-  data() {
-    return {
-      layouts,
-    }
-  },
-})
 </script>
 <style lang="scss">
 @import 'common';

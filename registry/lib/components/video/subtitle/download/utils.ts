@@ -1,7 +1,7 @@
 import { bilibiliApi, getJson, getJsonWithCredentials } from '@/core/ajax'
 import { Toast } from '@/core/toast'
 import { getFriendlyTitle } from '@/core/utils/title'
-import { SubtitleConverterConfig } from '../subtitle-converter'
+import { type SubtitleConverterConfig } from '../subtitle-converter'
 
 export interface SubtitleSettings {
   bilingual: boolean
@@ -120,8 +120,8 @@ export const getSubtitleBlob = async (
         type: 'text/ass',
       })
     }
-    default:
-    case 'json': {
+    case 'json':
+    default: {
       return new Blob([JSON.stringify(rawData, undefined, 2)], {
         type: 'text/json',
       })

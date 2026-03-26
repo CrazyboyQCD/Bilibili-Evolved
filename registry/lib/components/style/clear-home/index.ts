@@ -1,9 +1,9 @@
 import {
-  OptionsOfMetadata,
+  type OptionsOfMetadata,
   defineComponentMetadata,
   defineOptionsMetadata,
 } from '@/components/define'
-import { ComponentEntry } from '@/components/types'
+import { type ComponentEntry } from '@/components/types'
 import { addComponentListener } from '@/core/settings'
 
 type Options = OptionsOfMetadata<typeof options>

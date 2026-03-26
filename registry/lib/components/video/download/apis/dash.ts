@@ -1,33 +1,20 @@
 import { bilibiliApi, getJsonWithCredentials } from '@/core/ajax'
 import { formData, matchUrlPattern } from '@/core/utils'
 import { ascendingSort, descendingSort } from '@/core/utils/sort'
-import { allQualities, VideoQuality } from '@/components/video/video-quality'
+import { allQualities, type VideoQuality } from '@/components/video/video-quality'
 import { bangumiUrls } from '@/core/utils/urls'
 import { compareQuality } from '../error'
 import {
-  DownloadVideoApi,
-  DownloadVideoFragment,
+  type DownloadVideoApi,
+  type DownloadVideoFragment,
   DownloadVideoInfo,
-  DownloadVideoInputItem,
+  type DownloadVideoInputItem,
 } from '../types'
 import { bangumiApi, videoApi } from './url'
-import { Options } from '..'
+import { type DownloadVideoOptions } from '..'
 import { getComponentSettings } from '@/core/settings'
+import { DefaultDashExtensions, DashCodec, DashFragmentExtension } from './dash-base'
 
-/** dash 格式更明确的扩展名 */
-export const DefaultDashExtensions = {
-  video: '.mp4',
-  audio: '.m4a',
-  flacAudio: '.flac',
-}
-/** dash 格式原本的扩展名 */
-export const DashFragmentExtension = '.m4s'
-/** dash 格式支持的编码类型 */
-export enum DashCodec {
-  Avc = 'AVC/H.264',
-  Hevc = 'HEVC/H.265',
-  Av1 = 'AV1',
-}
 export interface Dash {
   type: keyof typeof DefaultDashExtensions
   bandWidth: number
@@ -53,7 +40,7 @@ export interface DashFilters {
   audio?: (dash: AudioDash) => boolean
 }
 const getDashExtensions = (type: keyof typeof DefaultDashExtensions): string => {
-  const { options } = getComponentSettings<Options>('downloadVideo')
+  const { options } = getComponentSettings<DownloadVideoOptions>('downloadVideo')
   if (type === 'video') {
     return options.dashVideoExtension
   }
@@ -135,8 +122,8 @@ const downloadDash = async (
         return DashCodec.Hevc
       case 13:
         return DashCodec.Av1
-      default:
       case 7:
+      default:
         return DashCodec.Avc
     }
   }
@@ -206,7 +193,7 @@ const downloadDash = async (
     if (allAvailableQualities.length > 0) {
       return allAvailableQualities
     }
-    const { options } = getComponentSettings<Options>('downloadVideo')
+    const { options } = getComponentSettings<DownloadVideoOptions>('downloadVideo')
     const fallbackQualities = filterByCodec(options.dashCodecFallback)
     if (fallbackQualities.length > 0) {
       return fallbackQualities

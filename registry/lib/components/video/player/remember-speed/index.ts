@@ -1,7 +1,7 @@
 import { meta } from '@/core/meta'
 import { playerUrls } from '@/core/utils/urls'
 import { MAX_BROWSER_SPEED_VALUE, MIN_BROWSER_SPEED_VALUE } from '../common/speed'
-import { Options, RememberSpeedComponent } from './component'
+import { type Options, RememberSpeedComponent } from './component'
 
 export const component = RememberSpeedComponent.create<Options>({
   name: 'rememberVideoSpeed',

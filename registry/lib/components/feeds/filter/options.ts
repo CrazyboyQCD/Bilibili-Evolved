@@ -1,4 +1,4 @@
-import { OptionsOfMetadata, defineOptionsMetadata } from '@/components/define'
+import { type OptionsOfMetadata, defineOptionsMetadata } from '@/components/define'
 
 export interface FeedsFilterPatternConfig {
   key: string

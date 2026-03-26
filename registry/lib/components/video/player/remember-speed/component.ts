@@ -1,6 +1,6 @@
 import { Toast } from '@/core/toast'
-import { EntrySpeedComponent, VideoIdObject } from '../common/speed'
-import { NoSuchSpeedMenuItemElementError, SpeedContext } from '../common/speed/context'
+import { EntrySpeedComponent, type VideoIdObject } from '../common/speed'
+import { NoSuchSpeedMenuItemElementError, type SpeedContext } from '../common/speed/context'
 import { formatSpeedText } from '../common/speed/utils'
 
 export type Options = {

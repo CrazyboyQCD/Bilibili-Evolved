@@ -1,6 +1,6 @@
 import { PlayerAgent, selectorWrap } from './base'
 import { bpxSelectors } from './bpx'
-import { AgentType, PlayerQuery, ElementQuery } from './types'
+import { type AgentType, type PlayerQuery, type ElementQuery } from './types'
 
 export class BangumiPlayerAgent extends PlayerAgent {
   type: AgentType = 'bangumi'

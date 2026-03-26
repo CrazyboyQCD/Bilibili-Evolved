@@ -1,5 +1,5 @@
-import { PluginMetadata } from '@/plugins/plugin'
-import { DownloadVideoOutput } from '../../../../components/video/download/types'
+import { type PluginMetadata } from '@/plugins/plugin'
+import { type DownloadVideoOutput } from '../../../../components/video/download/types'
 import { mpvPlaylist } from './mpv-playlist'
 
 export const plugin: PluginMetadata = {

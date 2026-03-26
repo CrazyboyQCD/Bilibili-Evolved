@@ -1,4 +1,4 @@
-import { ComponentEntry } from '@/components/types'
+import { type ComponentEntry } from '@/components/types'
 import { defineComponentMetadata } from '@/components/define'
 
 const getBvidFromWatcherLaterVideoPage = () => {

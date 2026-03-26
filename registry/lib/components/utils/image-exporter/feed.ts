@@ -1,12 +1,17 @@
-import { FeedsCard, addMenuItem, forEachFeedsCard, RepostFeedsCard } from '@/components/feeds/api'
-import { ComponentEntry } from '@/components/types'
+import {
+  type FeedsCard,
+  addMenuItem,
+  forEachFeedsCard,
+  type RepostFeedsCard,
+} from '@/components/feeds/api'
+import { type ComponentEntry } from '@/components/types'
 import { getBlob } from '@/core/ajax'
 import { DownloadPackage } from '@/core/download'
 import { Toast } from '@/core/toast'
 import { getVue2Data, matchUrlPattern, retrieveImageUrl } from '@/core/utils'
 import { formatTitle, getTitleVariablesFromDate } from '@/core/utils/title'
 import { feedsUrls } from '@/core/utils/urls'
-import { Options } from '.'
+import { type ImageExporterOptions } from './options'
 import { useScopedConsole } from '@/core/utils/log'
 
 const isSameImage = (imageUrl: string, otherUrl: string) => {
@@ -16,7 +21,7 @@ const isSameImage = (imageUrl: string, otherUrl: string) => {
     return false
   }
 }
-export const setupFeedImageExporter: ComponentEntry<Options> = async ({
+export const setupFeedImageExporter: ComponentEntry<ImageExporterOptions> = async ({
   settings: { options },
 }) => {
   if (!feedsUrls.some(url => matchUrlPattern(url))) {

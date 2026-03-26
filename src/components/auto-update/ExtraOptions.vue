@@ -4,34 +4,24 @@
     立即检查所有更新
   </VButton>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue'
 import { Toast } from '@/core/toast'
 import { VButton, VIcon } from '@/ui'
 import { forceCheckUpdateAndReload } from './checker'
 
-export default Vue.extend({
-  components: {
-    VButton,
-    VIcon,
-  },
-  data() {
-    return {
-      disabled: false,
-    }
-  },
-  methods: {
-    async checkUpdates() {
-      try {
-        this.disabled = true
-        const toast = Toast.info('正在检查更新...', '检查所有更新')
-        await forceCheckUpdateAndReload()
-        toast.close()
-      } finally {
-        this.disabled = false
-      }
-    },
-  },
-})
+const disabled = ref(false)
+
+const checkUpdates = async () => {
+  try {
+    disabled.value = true
+    const toast = Toast.info('正在检查更新...', '检查所有更新')
+    await forceCheckUpdateAndReload()
+    toast.close()
+  } finally {
+    disabled.value = false
+  }
+}
 </script>
 <style lang="scss" scoped>
 .check-all-updates {

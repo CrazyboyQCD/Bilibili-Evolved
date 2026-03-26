@@ -1,6 +1,6 @@
 import { getDescriptionMarkdown } from '@/components/description'
-import { PluginMetadata } from '@/plugins/plugin'
-import { DocSource, DocSourceItem } from '.'
+import { type PluginMetadata } from '@/plugins/plugin'
+import { type DocSource, type DocSourceItem } from './types'
 import { getId } from '../id'
 import { getThirdPartyDescription, thirdPartyPlugins } from './third-party'
 

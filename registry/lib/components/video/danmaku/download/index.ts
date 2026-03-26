@@ -1,10 +1,11 @@
+import { defineAsyncComponent } from 'vue'
 import { defineComponentMetadata } from '@/components/define'
-import { PackageEntry } from '@/core/download'
-import { hasVideo } from '@/core/spin-query'
+import { type PackageEntry } from '@/core/download'
+import { hasVideo } from '@/core/video'
 import { Toast } from '@/core/toast'
 import { videoAndBangumiUrls } from '@/core/utils/urls'
-import { DownloadVideoAssets } from '../../download/types'
-import { DanmakuDownloadType } from './utils'
+import { type DownloadVideoAssets } from '../../download/types'
+import { type DanmakuDownloadType } from './utils'
 import { downloadDanmakuOptions } from './options'
 
 export const component = defineComponentMetadata({
@@ -58,7 +59,7 @@ export const component = defineComponentMetadata({
             toast.message = `获取完成. 成功 ${success.length} 个, 失败 ${fail.length} 个.`
             return success.map(it => it.value)
           },
-          component: () => import('./Plugin.vue').then(m => m.default),
+          component: defineAsyncComponent(() => import('./Plugin.vue')),
         })
       })
     },
@@ -66,6 +67,6 @@ export const component = defineComponentMetadata({
   urlInclude: videoAndBangumiUrls,
   widget: {
     condition: hasVideo,
-    component: () => import('./DownloadDanmaku.vue').then(m => m.default),
+    component: defineAsyncComponent(() => import('./DownloadDanmaku.vue')),
   },
 })

@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import { settings } from '@/core/settings'
 import { deleteValue } from '@/core/utils'
 
@@ -21,7 +22,9 @@ export interface UserStyle {
   /** 注入模式, 默认为`CustomStyleMode.default` */
   mode?: UserStyleMode
 }
-export const styles: Required<UserStyle>[] = Object.values(settings.userStyles)
+
+/** 包含所有样式的响应式数组 */
+export const styles: Required<UserStyle>[] = reactive(Object.values(settings.userStyles))
 /**
  * 安装自定义样式
  * @param input 自定义样式数据
@@ -68,12 +71,9 @@ export const installStyle = async (input: UserStyle | string) => {
  * @param nameOrDisplayName 样式的名称(`name`或`displayName`)
  */
 export const uninstallStyle = async (nameOrDisplayName: string) => {
-  const existingStyle = Object.entries(settings.userStyles).find(([name, { displayName }]) => {
-    if (name === nameOrDisplayName || displayName === nameOrDisplayName) {
-      return true
-    }
-    return false
-  })
+  const existingStyle = Object.entries(settings.userStyles).find(
+    ([name, { displayName }]) => name === nameOrDisplayName || displayName === nameOrDisplayName,
+  )
   if (!existingStyle) {
     throw new Error(`没有找到与名称'${nameOrDisplayName}'相关联的样式`)
   }

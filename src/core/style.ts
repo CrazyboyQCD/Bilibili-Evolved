@@ -1,7 +1,7 @@
 import {
-  ComponentMetadata,
-  DomInstantStyleDefinition,
-  ShadowDomInstantStyleDefinition,
+  type ComponentMetadata,
+  type DomInstantStyleDefinition,
+  type ShadowDomInstantStyleDefinition,
 } from '@/components/types'
 import { contentLoaded } from './life-cycle'
 import { shadowRootStyles } from './shadow-root'

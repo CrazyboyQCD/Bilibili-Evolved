@@ -1,5 +1,5 @@
 import lodash from 'lodash'
-import webpack, { Configuration } from 'webpack'
+import webpack, { type Configuration } from 'webpack'
 import { getBanner, getDefaultConfig } from './webpack.config'
 import previewConfig from './webpack.dev'
 import mainMeta from '../src/client/bilibili-evolved.meta.json'
@@ -20,7 +20,7 @@ mainConfig.plugins.push(
 )
 
 // see src/client/init-vue.ts
-lodash.set(mainConfig, 'resolve.alias.vue$', 'vue/dist/vue.runtime.common.prod.js')
+lodash.set(mainConfig, 'resolve.alias.vue$', 'vue/dist/vue.runtime.esm-browser.prod.js')
 
 previewConfig.output.filename = 'bilibili-evolved.preview.user.js'
 previewConfig.mode = 'production'

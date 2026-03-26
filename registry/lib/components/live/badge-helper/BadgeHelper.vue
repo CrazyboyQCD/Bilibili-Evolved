@@ -2,9 +2,10 @@
   <div ref="element" class="multiple-widgets">
     <VPopup
       ref="medalPopup"
-      v-model="medalOpen"
+      :open="medalOpen"
       class="badge-popup widgets-popup medal"
-      :trigger-element="$refs.medalButton"
+      :trigger-element="medalButton.root.root"
+      @popup-change="medalOpen = $event"
     >
       <ul>
         <li
@@ -27,10 +28,10 @@
     </DefaultWidget>
 
     <VPopup
-      ref="titlePopup"
-      v-model="titleOpen"
+      :open="titleOpen"
       class="badge-popup widgets-popup title"
-      :trigger-element="$refs.titleButton"
+      :trigger-element="titleButton.root.root"
+      @popup-change="titleOpen = $event"
     >
       <ul>
         <li
@@ -51,17 +52,19 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, type Ref, ref, useTemplateRef } from 'vue'
 import { addComponentListener, getComponentSettings } from '@/core/settings'
 import { descendingSort } from '@/core/utils/sort'
 import { DefaultWidget, VPopup } from '@/ui'
-import { Medal, Title, Badge, getMedalList, getTitleList } from './badge'
-import { BadgeHelperOptions } from './options'
+import { Medal, Title, type Badge, getMedalList, getTitleList } from './badge'
+import { type BadgeHelperOptions } from './options'
 
 const { options } = getComponentSettings<BadgeHelperOptions>('badgeHelper')
-const element = ref<HTMLElement>()
-const medalList = ref<Medal[]>([])
-const titleList = ref<Title[]>([])
+const medalButton = useTemplateRef('medalButton')
+const titleButton = useTemplateRef('titleButton')
+const element = useTemplateRef('element')
+const medalList = ref([]) as Ref<Medal[]>
+const titleList = ref([]) as Ref<Title[]>
 const medalOpen = ref(false)
 const titleOpen = ref(false)
 const grayEffect = ref(true)

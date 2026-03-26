@@ -86,7 +86,7 @@ export const init = async () => {
     document.head.insertAdjacentElement('afterbegin', prefetchLink)
 
     requestIdleCallback(async () => {
-      const { getGeneralSettings } = await import('@/core/settings/helpers')
+      const { getGeneralSettings } = await import('@/core/settings')
       const { devMode } = getGeneralSettings()
       if (devMode) {
         const { promiseLoadTime, promiseResolveTime } = await import(

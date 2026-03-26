@@ -1,4 +1,5 @@
-import { CustomNavbarItemInit } from '../custom-navbar-item'
+import { defineAsyncComponent, markRaw } from 'vue'
+import { type CustomNavbarItemInit } from '../custom-navbar-item'
 
 export const games: CustomNavbarItemInit = {
   name: 'games',
@@ -10,5 +11,5 @@ export const games: CustomNavbarItemInit = {
 
   boundingWidth: 420,
   noPopupPadding: true,
-  popupContent: () => import('./GamesPopup.vue').then(m => m.default),
+  popupContent: markRaw(defineAsyncComponent(() => import('./GamesPopup.vue'))),
 }

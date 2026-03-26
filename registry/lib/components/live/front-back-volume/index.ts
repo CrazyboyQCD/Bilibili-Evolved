@@ -1,7 +1,7 @@
 import {
   defineComponentMetadata,
   defineOptionsMetadata,
-  OptionsOfMetadata,
+  type OptionsOfMetadata,
 } from '@/components/define'
 import { liveUrls } from '@/core/utils/urls'
 import { select } from '@/core/spin-query'

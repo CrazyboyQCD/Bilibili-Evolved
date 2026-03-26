@@ -1,4 +1,4 @@
-import { ComponentMetadata } from '@/components/types'
+import { type ComponentMetadata } from '@/components/types'
 
 /**
  * 视频播放器变化接口

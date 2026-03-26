@@ -1,9 +1,9 @@
 import {
-  ComponentMetadata,
-  EmptyOptions,
-  OptionMetadata,
-  OptionsMetadata,
-  UnknownOptions,
+  type ComponentMetadata,
+  type EmptyOptions,
+  type OptionMetadata,
+  type OptionsMetadata,
+  type UnknownOptions,
 } from './types'
 
 /** 从 OptionsMetadata 中获取 Options（即 OptionsMetadata 的类型参数） */

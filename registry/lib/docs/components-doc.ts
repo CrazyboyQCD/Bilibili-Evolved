@@ -1,5 +1,5 @@
-import { ComponentMetadata } from '@/components/types'
-import { DocSource, DocSourceItem } from '.'
+import { type ComponentMetadata } from '@/components/types'
+import { type DocSource, type DocSourceItem } from './types'
 import { getId } from '../id'
 import { getThirdPartyDescription, thirdPartyComponents } from './third-party'
 

@@ -1,4 +1,4 @@
-import { ShadowDomEntry, ShadowDomEntrySymbol } from '@/core/shadow-root/dom-entry'
+import { type ShadowDomEntry, ShadowDomEntrySymbol } from '@/core/shadow-root/dom-entry'
 
 /** 表示一条评论回复 */
 export class CommentReplyItem extends EventTarget {

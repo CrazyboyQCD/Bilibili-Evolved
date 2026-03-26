@@ -5,13 +5,13 @@ import { descendingSort } from '@/core/utils/sort'
 import { isFeatureAcceptable } from '@/core/version'
 import {
   name,
-  CheckUpdateConfig,
+  type CheckUpdateConfig,
   defaultExistPredicate,
   localhost,
-  CheckSingleTypeUpdate,
-  UpdateRecord,
-  UpdateCheckItem,
-  CheckSingleTypeUpdateConfig,
+  type CheckSingleTypeUpdate,
+  type UpdateRecord,
+  type UpdateCheckItem,
+  type CheckSingleTypeUpdateConfig,
 } from './utils'
 import type { Options } from '.'
 import { isDataSaveMode } from '@/core/utils'
@@ -27,7 +27,7 @@ export const checkUpdate = async (config: CheckUpdateConfig) => {
   if (isDataSaveMode()) {
     return '当前为流量计费网络, 跳过更新检查.'
   }
-  const now = Number(new Date())
+  const now = Date.now()
   const { devMode } = getGeneralSettings()
   const { options } = getComponentSettings<Options>(name)
   // Remove uninstalled items
@@ -36,12 +36,9 @@ export const checkUpdate = async (config: CheckUpdateConfig) => {
     .forEach(key => {
       delete items[key]
     })
-  const shouldUpdate = (itemName: string) => {
-    if (filterNames.length === 0) {
-      return true
-    }
-    return filterNames.includes(itemName)
-  }
+  const shouldUpdate = (itemName: string) =>
+    filterNames.length === 0 || filterNames.includes(itemName)
+
   let updatedCount = 0
   const updateItems = Object.entries(items).filter(
     ([itemName, item]) => shouldUpdate(itemName) && Boolean(item.url),
@@ -73,7 +70,7 @@ export const checkUpdate = async (config: CheckUpdateConfig) => {
       }
       const { installFeatureFromCode } = await import('@/core/install-feature')
       const { message } = await installFeatureFromCode(code, url)
-      item.lastUpdateCheck = Number(new Date())
+      item.lastUpdateCheck = Date.now()
       updatedCount++
       return `[${itemName}] ${message}`
     }),
@@ -134,7 +131,7 @@ export const checkAllUpdate = async (config: CheckSingleTypeUpdateConfig) => {
     (await checkPluginsUpdate(config)) || '暂无插件更新',
     (await checkStylesUpdate(config)) || '暂无样式更新',
   ]
-  options.lastUpdateCheck = Number(new Date())
+  options.lastUpdateCheck = Date.now()
   options.lastInstalledVersion = meta.version
   console.groupCollapsed('完成更新检查')
   updateMessages.forEach(message => console.log(message))

@@ -10,15 +10,16 @@
  * 可以通过 {@link SwitchOptionsOfMetadata} 或 {@link SwitchOptionsOfSwitchMetadata} 从包装器的设置中，获取被包装后的组件的 options 类型
  */
 
+import { defineAsyncComponent } from 'vue'
 import { getComponentSettings, addComponentListener } from '@/core/settings'
 import {
-  ComponentEntry,
-  ComponentMetadata,
-  OptionsMetadata,
-  OptionsOfMetadata,
-  UnknownOptions,
+  type ComponentEntry,
+  type ComponentMetadata,
+  type OptionsMetadata,
+  type OptionsOfMetadata,
+  type UnknownOptions,
 } from './component'
-import { Widget } from './widget'
+import { type Widget } from './widget'
 
 /**
  * 单个开关的设置
@@ -220,7 +221,7 @@ const newSwitchOptionsMetadataExtender = <S extends string>(
 const newWidget = <N extends string, S extends string>(
   options: SwitchMetadataOption<N, S>,
 ): Omit<Widget, 'name'> => ({
-  component: () => import('./SwitchOptions.vue').then(m => m.default),
+  component: defineAsyncComponent(() => import('./SwitchOptions.vue')),
   options,
 })
 

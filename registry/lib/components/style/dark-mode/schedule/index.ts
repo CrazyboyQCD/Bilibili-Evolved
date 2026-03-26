@@ -1,11 +1,11 @@
 import {
   defineComponentMetadata,
   defineOptionsMetadata,
-  OptionsOfMetadata,
+  type OptionsOfMetadata,
 } from '@/components/define'
 import { fullyLoaded } from '@/core/life-cycle'
-import { ComponentSettings, getComponentSettings } from '@/core/settings'
-import { Range } from '@/ui/range'
+import { type ComponentSettings, getComponentSettings } from '@/core/settings'
+import { type Range } from '@/ui/range'
 import { darkExcludes } from '../dark-urls'
 
 class ScheduleTime {
@@ -44,16 +44,10 @@ class ScheduleTime {
     }
   }
   lessThan(other: ScheduleTime) {
-    if (this.hour < other.hour || (this.hour === other.hour && this.minute < other.minute)) {
-      return true
-    }
-    return false
+    return this.hour < other.hour || (this.hour === other.hour && this.minute < other.minute)
   }
   greaterThan(other: ScheduleTime) {
-    if (this.hour > other.hour || (this.hour === other.hour && this.minute > other.minute)) {
-      return true
-    }
-    return false
+    return this.hour > other.hour || (this.hour === other.hour && this.minute > other.minute)
   }
   equals(other: ScheduleTime) {
     return this.hour === other.hour && this.minute === other.minute

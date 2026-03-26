@@ -1,9 +1,9 @@
 import marked from 'marked'
-import { ComponentMetadata } from './component'
+import { type ComponentMetadata } from './component'
 import { getSelectedLanguage } from './i18n/helpers'
-import { Executable } from '@/core/common-types'
+import { type Executable } from '@/core/common-types'
 
-type ItemWithDescription = Pick<ComponentMetadata, 'description' | 'author'>
+export type ItemWithDescription = Pick<ComponentMetadata, 'description' | 'author'>
 
 /**
  * 读取功能的 `description` 和 `author`, 生成描述 (Markdown)

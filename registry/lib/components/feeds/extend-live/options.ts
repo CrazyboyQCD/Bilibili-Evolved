@@ -1,5 +1,5 @@
-import { defineOptionsMetadata, OptionsOfMetadata } from '@/components/define'
-import { FollowingListID } from './types'
+import { defineOptionsMetadata, type OptionsOfMetadata } from '@/components/define'
+import { type FollowingListID } from './types'
 
 export const UnselectedListID: FollowingListID = -1
 

@@ -1,4 +1,4 @@
-import { PluginMetadata } from '@/plugins/plugin'
+import { type PluginMetadata } from '@/plugins/plugin'
 import { getComponentSettings } from '@/core/settings'
 import type { CustomNavbarItemInit } from '../../../components/style/custom-navbar/custom-navbar-item'
 import type { CustomNavbarOptions } from '../../../components/style/custom-navbar'

@@ -4,7 +4,7 @@ import { videoUrls } from '@/core/utils/urls'
 
 const console = useScopedConsole('activeVideoLinks')
 let observer: MutationObserver | null = null
-const webRegex = /(?<!(\>|'|"|\/))(http:\/\/|https:\/\/|www\.)[^(\s,;())]+/g
+const webRegex = /(?<!(>|'|"|\/))(http:\/\/|https:\/\/|www\.)[^(\s,;())]+/g
 
 const processAcgLinks = () => {
   const links = document.querySelectorAll('a[href*="acg.tv"][href*="sm"]')

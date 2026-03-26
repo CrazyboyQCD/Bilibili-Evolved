@@ -1,7 +1,7 @@
 import { addData } from '@/plugins/data'
 import {
-  LaunchBarAction,
-  LaunchBarActionProvider,
+  type LaunchBarAction,
+  type LaunchBarActionProvider,
   LaunchBarActionProviders,
 } from '../launch-bar/launch-bar-action'
 import { aboutPageActions } from './sub-pages/about-page'

@@ -1,5 +1,5 @@
 import { matchUrlPattern } from '@/core/utils'
-import { AutoplayActionType } from '../AutoplayActionType'
+import { type AutoplayActionType } from '../AutoplayActionType'
 import { BaseAutoplayHandler } from './BaseAutoplayHandler'
 import { bangumiUrls, favoriteListUrls, watchlaterUrls } from '@/core/utils/urls'
 

@@ -26,107 +26,76 @@
   </CollapsibleContainer>
 </template>
 
-<script lang="ts">
-import { computed, defineComponent, shallowRef } from 'vue'
+<script setup lang="ts">
+import { computed, shallowRef } from 'vue'
 import { RadioButton } from '@/ui'
 import CollapsibleContainer from './CollapsibleContainer.vue'
 
-export default defineComponent({
-  components: {
-    RadioButton,
-    CollapsibleContainer,
-  },
-  props: {
-    /** 选项文本 */
-    title: {
-      type: String,
-      default: '',
-    },
+const {
+  title = '',
+  expanded,
+  defaultExpanded = false,
+  hideExpandButton = false,
+  disableContent = false,
+  checked,
+  allowUncheck = false,
+  group = '',
+  checkedIcon = 'mdi-radiobox-marked',
+  notCheckedIcon = 'mdi-radiobox-blank',
+} = defineProps<{
+  /** 选项文本 */
+  title?: string
 
-    // #region CollapsibleContainer 参数
-    /** 当前展开状态 */
-    expanded: {
-      type: Boolean,
-      default: undefined,
-    },
-    /** 初始展开状态 */
-    defaultExpanded: {
-      type: Boolean,
-      default: false,
-    },
-    /** 隐藏展开按钮 */
-    hideExpandButton: {
-      type: Boolean,
-      default: false,
-    },
-    /** 禁用内容区域 */
-    disableContent: {
-      type: Boolean,
-      default: false,
-    },
-    // #endregion
+  // #region CollapsibleContainer 参数
+  /** 当前展开状态 */
+  expanded?: boolean
+  /** 初始展开状态 */
+  defaultExpanded?: boolean
+  /** 隐藏展开按钮 */
+  hideExpandButton?: boolean
+  /** 禁用内容区域 */
+  disableContent?: boolean
+  // #endregion
 
-    // #region RadioButton 参数
-    checked: {
-      type: Boolean,
-      default: undefined,
-    },
-    allowUncheck: {
-      type: Boolean,
-      default: false,
-    },
-    group: {
-      type: String,
-      default: '',
-    },
-    checkedIcon: {
-      type: String,
-      default: 'mdi-radiobox-marked',
-    },
-    notCheckedIcon: {
-      type: String,
-      default: 'mdi-radiobox-blank',
-    },
-    // #endregion
-  },
-  emits: ['expanded', 'change'],
-  setup(props, { emit }) {
-    // 定义内部值以便在未传递参数时能正常工作
-    const internalExpanded = shallowRef(props.defaultExpanded)
-    const computedExpanded = computed(() =>
-      props.expanded !== undefined ? props.expanded : internalExpanded.value,
-    )
-    // 切换展开/收起状态
-    const onExpanded = (expanded: boolean) => {
-      if (props.expanded !== undefined) {
-        emit('expanded', expanded)
-      } else {
-        internalExpanded.value = expanded
-      }
-    }
+  // #region RadioButton 参数
+  checked?: boolean
+  allowUncheck?: boolean
+  group?: string
+  checkedIcon?: string
+  notCheckedIcon?: string
+  // #endregion
+}>()
 
-    // 定义内部值以便在未传递参数时能正常工作
-    const internalChecked = shallowRef(false)
-    const computedChecked = computed(() =>
-      props.checked !== undefined ? props.checked : internalChecked.value,
-    )
-    // 切换选择状态
-    const onRadioChanged = (checked: boolean) => {
-      if (props.checked !== undefined) {
-        emit('change', checked)
-      } else {
-        internalChecked.value = checked
-      }
-    }
+const emit = defineEmits<{
+  expanded: [expanded: boolean]
+  change: [checked: boolean]
+}>()
 
-    return {
-      computedExpanded,
-      onExpanded,
-      computedChecked,
-      onRadioChanged,
-    }
-  },
-})
+// 定义内部值以便在未传递参数时能正常工作
+const internalExpanded = shallowRef(defaultExpanded)
+const computedExpanded = computed(() =>
+  expanded !== undefined ? expanded : internalExpanded.value,
+)
+// 切换展开/收起状态
+const onExpanded = (expandedValue: boolean) => {
+  if (expanded !== undefined) {
+    emit('expanded', expandedValue)
+  } else {
+    internalExpanded.value = expandedValue
+  }
+}
+
+// 定义内部值以便在未传递参数时能正常工作
+const internalChecked = shallowRef(false)
+const computedChecked = computed(() => (checked !== undefined ? checked : internalChecked.value))
+// 切换选择状态
+const onRadioChanged = (checkedValue: boolean) => {
+  if (checked !== undefined) {
+    emit('change', checkedValue)
+  } else {
+    internalChecked.value = checkedValue
+  }
+}
 </script>
 <style lang="scss" scoped>
 @import 'common';

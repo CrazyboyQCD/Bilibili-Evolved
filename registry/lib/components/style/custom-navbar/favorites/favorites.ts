@@ -1,5 +1,6 @@
+import { defineAsyncComponent, markRaw } from 'vue'
 import { getUID } from '@/core/utils'
-import { CustomNavbarItemInit } from '../custom-navbar-item'
+import { type CustomNavbarItemInit } from '../custom-navbar-item'
 
 const href = `https://space.bilibili.com/${getUID()}/favlist`
 export const favorites: CustomNavbarItemInit = {
@@ -14,5 +15,5 @@ export const favorites: CustomNavbarItemInit = {
 
   boundingWidth: 380,
   noPopupPadding: true,
-  popupContent: () => import('./NavbarFavorites.vue').then(m => m.default),
+  popupContent: markRaw(defineAsyncComponent(() => import('./NavbarFavorites.vue'))),
 }

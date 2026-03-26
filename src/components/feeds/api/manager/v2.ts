@@ -2,7 +2,7 @@ import { childList } from '@/core/observer'
 import { descendingStringSort } from '@/core/utils/sort'
 import { pascalCase, getVue2Data } from '@/core/utils'
 import { createNodeValidator, FeedsCardsManager, FeedsCardsManagerEventType } from './base'
-import { FeedsCard, FeedsCardType, feedsCardTypes, isRepostType } from '../types'
+import { type FeedsCard, type FeedsCardType, feedsCardTypes, isRepostType } from '../types'
 import { selectAll } from '@/core/spin-query'
 
 /** b 站的动态卡片 type 标记 -> FeedsCard.type */
@@ -57,9 +57,6 @@ const getText = (dynamicModule: any, cardType: FeedsCardType) => {
   })()
   const typeText = (() => {
     switch (cardType) {
-      default: {
-        return ''
-      }
       case feedsCardTypes.bangumi:
       case feedsCardTypes.column:
       case feedsCardTypes.video: {
@@ -72,6 +69,9 @@ const getText = (dynamicModule: any, cardType: FeedsCardType) => {
           const { title, summary } = major.opus
           return combineText(title, summary.text)
         }
+        return ''
+      }
+      default: {
         return ''
       }
     }

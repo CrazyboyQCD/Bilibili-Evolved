@@ -16,9 +16,9 @@ export const plugin: PluginMetadata = {
             return []
           }
           const [aidJson, cvJson, uidJson] = await Promise.all([
-            await getJsonWithCredentials(`https://api.bilibili.com/x/web-interface/view?aid=${id}`),
-            await getJson(`https://api.bilibili.com/x/article/viewinfo?id=${id}`),
-            await getJson(`https://api.bilibili.com/x/web-interface/card?mid=${id}`),
+            getJsonWithCredentials(`https://api.bilibili.com/x/web-interface/view?aid=${id}`),
+            getJson(`https://api.bilibili.com/x/article/viewinfo?id=${id}`),
+            getJson(`https://api.bilibili.com/x/web-interface/card?mid=${id}`),
           ])
           const { title: videoName } = lodash.get(aidJson, 'data', {})
           const { title: articleName } = lodash.get(cvJson, 'data', {})

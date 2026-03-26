@@ -5,7 +5,7 @@
       icon="logo"
       class="custom-navbar-logo"
       :class="{ theme: useThemeColor }"
-    ></VIcon>
+    />
     <div
       v-else
       class="custom-navbar-logo season"
@@ -14,53 +14,42 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, watch } from 'vue'
 import { addComponentListener } from '@/core/settings'
 import { getJson } from '@/core/ajax'
 import { VIcon } from '@/ui'
 
-export default Vue.extend({
-  name: 'NavbarLogo',
-  components: {
-    VIcon,
-  },
-  data() {
-    return {
-      seasonLogoUrl: '',
-      useThemeColor: true,
-    }
-  },
-  watch: {
-    seasonLogoUrl() {
-      document.body.classList.toggle('season-logo-enabled', Boolean(this.seasonLogoUrl))
-    },
-  },
-  async created() {
-    addComponentListener(
-      'customNavbar.seasonLogo',
-      async (value: boolean) => {
-        if (!value) {
-          this.seasonLogoUrl = ''
-          return
-        }
-        const json = await getJson('https://api.bilibili.com/x/web-show/page/header?resource_id=1')
-        if (json.code !== 0) {
-          this.seasonLogoUrl = ''
-          return
-        }
-        this.seasonLogoUrl = lodash.get(json, 'data.litpic', '').replace('http:', 'https:')
-      },
-      true,
-    )
-    addComponentListener(
-      'customNavbar.themeLogo',
-      async (value: boolean) => {
-        this.useThemeColor = value
-      },
-      true,
-    )
-  },
+const seasonLogoUrl = ref('')
+const useThemeColor = ref(true)
+
+watch(seasonLogoUrl, () => {
+  document.body.classList.toggle('season-logo-enabled', Boolean(seasonLogoUrl.value))
 })
+
+addComponentListener(
+  'customNavbar.seasonLogo',
+  async (value: boolean) => {
+    if (!value) {
+      seasonLogoUrl.value = ''
+      return
+    }
+    const json = await getJson('https://api.bilibili.com/x/web-show/page/header?resource_id=1')
+    if (json.code !== 0) {
+      seasonLogoUrl.value = ''
+      return
+    }
+    seasonLogoUrl.value = lodash.get(json, 'data.litpic', '').replace('http:', 'https:')
+  },
+  true,
+)
+addComponentListener(
+  'customNavbar.themeLogo',
+  async (value: boolean) => {
+    useThemeColor.value = value
+  },
+  true,
+)
 </script>
 
 <style lang="scss">

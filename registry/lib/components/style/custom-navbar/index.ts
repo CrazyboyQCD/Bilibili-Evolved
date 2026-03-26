@@ -1,9 +1,10 @@
+import { defineAsyncComponent } from 'vue'
 import {
   defineComponentMetadata,
   defineOptionsMetadata,
-  OptionsOfMetadata,
+  type OptionsOfMetadata,
 } from '@/components/define'
-import { LaunchBarActionProvider } from '@/components/launch-bar/launch-bar-action'
+import { type LaunchBarActionProvider } from '@/components/launch-bar/launch-bar-action'
 import { urlInclude, urlExclude } from './urls'
 import { entry } from './entry'
 import { getNumberValidator } from '@/core/utils'
@@ -136,9 +137,9 @@ export const component = defineComponentMetadata({
     navbarSettings.forEach((it: HTMLElement) => (it.style.display = 'block'))
   },
   widget: {
-    component: () => import('./settings/Widget.vue').then(m => m.default),
+    component: defineAsyncComponent(() => import('./settings/Widget.vue')),
   },
-  extraOptions: () => import('./settings/ExtraOptions.vue').then(m => m.default),
+  extraOptions: defineAsyncComponent(() => import('./settings/ExtraOptions.vue')),
   plugin: {
     displayName: '自定义顶栏 - 功能扩展',
     setup: ({ addData }) => {

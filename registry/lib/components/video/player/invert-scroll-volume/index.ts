@@ -1,5 +1,5 @@
 import {
-  OptionsOfMetadata,
+  type OptionsOfMetadata,
   defineComponentMetadata,
   defineOptionsMetadata,
 } from '@/components/define'

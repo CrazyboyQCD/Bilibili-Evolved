@@ -8,7 +8,7 @@
     @pointermove="handlePointerMove"
     @dblclick="resetCustomWidth"
   >
-    <div class="chat-panel-fit-dragger-bar"></div>
+    <div class="chat-panel-fit-dragger-bar" />
     <div class="chat-panel-fit-dragger-preview-area" :style="{ width: `${previewWidth}px` }">
       <div class="chat-panel-fit-dragger-preview-area-background">
         {{ previewWidth.toFixed(1) }}px
@@ -17,9 +17,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, reactive, ref, onBeforeMount } from 'vue'
+import { computed, reactive, ref, onBeforeMount, useTemplateRef } from 'vue'
 import { getComponentSettings } from '@/core/settings'
-import { ChatPanelFitOptions, ChatPanelFitOptionsMinWidth } from './options'
+import { type ChatPanelFitOptions, ChatPanelFitOptionsMinWidth } from './options'
 
 const options = reactive(getComponentSettings<ChatPanelFitOptions>('liveChatPanelFit').options)
 onBeforeMount(() => {
@@ -32,7 +32,7 @@ onBeforeMount(() => {
 })
 const getAutoWidth = () =>
   parseFloat(document.documentElement.style.getPropertyValue('--live-chat-panel-width'))
-const draggerElement = ref<HTMLElement>()
+const draggerElement = useTemplateRef('draggerElement')
 const startPoint = ref(0)
 const movement = ref(0)
 const previewWidth = computed(() => {

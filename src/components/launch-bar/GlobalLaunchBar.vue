@@ -1,33 +1,34 @@
 <template>
   <VPopup
-    v-model="show"
+    :open="show"
     :lazy="false"
     fixed
     class="global-launch-bar-container"
     @keydown.esc.capture="close()"
+    @popup-change="show = $event"
   >
     <LaunchBar ref="launchBar" @close="close()" />
   </VPopup>
 </template>
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted } from 'vue'
+import { ref, watch, nextTick, onMounted, useTemplateRef } from 'vue'
 import VPopup from '@/ui/VPopup.vue'
 import LaunchBar from './LaunchBar.vue'
 
-const launchBar = ref<InstanceType<typeof LaunchBar>>()
+const launchBar = useTemplateRef('launchBar')
 
 const show = ref(true)
 
 const focus = () => {
-  const input = launchBar.value?.input as HTMLInputElement
-  input?.focus()
-  input?.select()
+  const { input } = launchBar.value
+  input.focus()
+  input.select()
 }
 
 const close = () => {
   show.value = false
-  const input = launchBar.value?.input as HTMLInputElement
-  input?.blur()
+  const { input } = launchBar.value
+  input.blur()
 }
 
 watch(show, (value: boolean) => {

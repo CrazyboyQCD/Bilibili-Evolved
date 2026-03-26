@@ -1,13 +1,14 @@
 import { contentLoaded } from '../life-cycle'
 import { childListSubtree } from '../observer'
 import { deleteValue } from '../utils'
-import { ShadowDomCallback, ShadowDomEntry } from './dom-entry'
+import { type ShadowDomCallback, ShadowDomEntry } from './dom-entry'
 import { ShadowRootObserver } from './root-observer'
 import { ShadowRootEvents } from './types'
 
 export class ShadowDomObserver extends ShadowRootObserver {
   static enforceOpenRoot() {
     const originalAttachShadow = Element.prototype.attachShadow
+    // oxlint-disable-next-line no-extend-native
     Element.prototype.attachShadow = function attachShadow(options: ShadowRootInit) {
       return originalAttachShadow.call(this, {
         ...options,

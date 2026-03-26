@@ -1,7 +1,7 @@
 import { select } from '@/core/spin-query'
 import { isBwpVideo } from '@/core/utils'
 import { PlayerAgent, selectorWrap } from './base'
-import { AgentType, PlayerQuery, ElementQuery } from './types'
+import { type AgentType, type PlayerQuery, type ElementQuery } from './types'
 
 /** @deprecated Use `VideoPlayerBpxAgent` instead */
 export class VideoPlayerV2Agent extends PlayerAgent {

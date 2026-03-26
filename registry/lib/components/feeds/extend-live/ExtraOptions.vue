@@ -20,8 +20,8 @@
 import { ref } from 'vue'
 import FollowingListSelect from './FollowingListSelect.vue'
 import { getComponentSettings } from '@/core/settings'
-import { ExtendFeedsLiveOptions } from './options'
-import { FollowingListID } from './types'
+import { type ExtendFeedsLiveOptions } from './options'
+import { type FollowingListID } from './types'
 
 const { options } = getComponentSettings<ExtendFeedsLiveOptions>('extendFeedsLive')
 

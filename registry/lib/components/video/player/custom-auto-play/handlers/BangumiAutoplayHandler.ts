@@ -1,6 +1,6 @@
 import { matchUrlPattern } from '@/core/utils'
 import { bangumiUrls } from '@/core/utils/urls'
-import { AutoplayActionType } from '../AutoplayActionType'
+import { type AutoplayActionType } from '../AutoplayActionType'
 import { BaseAutoplayHandler } from './BaseAutoplayHandler'
 
 /** 自动连播处理器-番剧 */

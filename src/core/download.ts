@@ -1,4 +1,4 @@
-import { JSZipFileOptions } from 'jszip'
+import { type JSZipFileOptions } from 'jszip'
 import { DownloadPackageEmitMode } from './download-mode'
 import { JSZipLibrary } from './runtime-library'
 import { getGeneralSettings } from './settings'

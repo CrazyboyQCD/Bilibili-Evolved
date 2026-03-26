@@ -1,12 +1,13 @@
+import { type ComponentPublicInstance, defineAsyncComponent } from 'vue'
 import { getJson, monkey, postJson } from '@/core/ajax'
 import { Toast } from '@/core/toast'
 import { UserAgent } from '@/core/utils/constants'
 import { logError } from '@/core/utils/log'
 import {
-  DownloadVideoAssets,
-  DownloadVideoOutput,
+  type DownloadVideoAssets,
+  type DownloadVideoOutput,
 } from '../../../../components/video/download/types'
-import { Aria2RpcProfile } from './rpc-profiles'
+import { type Aria2RpcProfile } from './rpc-profiles'
 
 interface RpcParam {
   params: (string | string[] | Record<string, string>)[]
@@ -132,7 +133,7 @@ export const aria2Rpc: DownloadVideoOutput = {
   description: '使用 aria2 RPC 功能发送下载请求.',
   runAction: async (
     action,
-    instance: Vue & {
+    instance: ComponentPublicInstance & {
       selectedRpcProfile: Aria2RpcProfile
       isPluginDownloadAssets?: boolean
     },
@@ -205,5 +206,5 @@ export const aria2Rpc: DownloadVideoOutput = {
       )
     }
   },
-  component: () => import('./RpcConfig.vue').then(m => m.default),
+  component: defineAsyncComponent(() => import('./RpcConfig.vue')),
 }

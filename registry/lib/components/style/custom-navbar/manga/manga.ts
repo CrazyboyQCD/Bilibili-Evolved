@@ -1,4 +1,5 @@
-import { CustomNavbarItemInit } from '../custom-navbar-item'
+import { defineAsyncComponent, markRaw } from 'vue'
+import { type CustomNavbarItemInit } from '../custom-navbar-item'
 
 export const manga: CustomNavbarItemInit = {
   name: 'manga',
@@ -10,5 +11,5 @@ export const manga: CustomNavbarItemInit = {
 
   boundingWidth: 500,
   noPopupPadding: true,
-  popupContent: () => import('./MangaPopup.vue').then(m => m.default),
+  popupContent: markRaw(defineAsyncComponent(() => import('./MangaPopup.vue'))),
 }

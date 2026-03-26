@@ -1,6 +1,6 @@
 import { matchUrlPattern } from '@/core/utils'
 import { favoriteListUrls } from '@/core/utils/urls'
-import { AutoplayActionType } from '../AutoplayActionType'
+import { type AutoplayActionType } from '../AutoplayActionType'
 import { BaseAutoplayHandler } from './BaseAutoplayHandler'
 
 /** 自动连播处理器-收藏夹 */

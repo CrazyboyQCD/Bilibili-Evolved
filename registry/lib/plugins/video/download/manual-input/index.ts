@@ -1,13 +1,14 @@
+import { defineAsyncComponent } from 'vue'
 import { bilibiliApi, getJsonWithCredentials } from '@/core/ajax'
 import { getGeneralSettings } from '@/core/settings'
 import { formatNumber } from '@/core/utils/formatters'
 import { useScopedConsole } from '@/core/utils/log'
 import { formatTitle } from '@/core/utils/title'
 import { videoUrls } from '@/core/utils/urls'
-import { PluginMetadata } from '@/plugins/plugin'
+import { type PluginMetadata } from '@/plugins/plugin'
 import {
-  DownloadVideoInput,
-  DownloadVideoInputItem,
+  type DownloadVideoInput,
+  type DownloadVideoInputItem,
 } from '../../../../components/video/download/types'
 
 export const plugin: PluginMetadata = {
@@ -84,7 +85,7 @@ export const plugin: PluginMetadata = {
               return item
             })
         },
-        component: () => import('./ManualInput.vue').then(m => m.default),
+        component: defineAsyncComponent(() => import('./ManualInput.vue')),
       })
     })
   },

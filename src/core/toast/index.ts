@@ -9,13 +9,13 @@ export enum ToastType {
   Success = 'success',
   Error = 'error',
 }
-let container: Vue & { cards: Toast[] }
+let container: InstanceType<typeof ToastCardContainer> | undefined
 export class Toast {
   private durationNumber: number | undefined = 3000
   private durationTimeout = 0
 
   closeTime = 0
-  creationTime = Number(new Date())
+  creationTime = Date.now()
   randomKey = Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER + 1))
   constructor(public message = '', public title = '', public type = ToastType.Default) {}
   static get containerVM() {
@@ -27,8 +27,9 @@ export class Toast {
   static createToastContainer() {
     if (!dq('.toast-card-container')) {
       // console.log(Vue, ToastCardContainer)
-      container = mountVueComponent(ToastCardContainer)
-      document.body.insertAdjacentElement('beforeend', container.$el)
+      const [el, vm] = mountVueComponent(ToastCardContainer)
+      container = vm
+      document.body.insertAdjacentElement('beforeend', el)
     }
   }
   get element() {
@@ -70,7 +71,7 @@ export class Toast {
     if (this.durationTimeout) {
       this.clearDuration()
     }
-    this.closeTime = Number(new Date()) + this.durationNumber
+    this.closeTime = Date.now() + this.durationNumber
     this.durationTimeout = window.setTimeout(() => this.close(), this.durationNumber)
   }
   clearDuration() {

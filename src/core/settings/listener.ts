@@ -1,5 +1,5 @@
 import { settingsInternalState } from './internal-state'
-import { Property, ValueChangeListener } from './types'
+import { type Property, type ValueChangeListener } from './types'
 
 export const registeredListeners = new Map<string, ValueChangeListener[]>()
 export const settingsChangedHandler = (

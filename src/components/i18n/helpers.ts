@@ -1,7 +1,12 @@
 import { addData } from '@/plugins/data'
 import { getComponentSettings } from '@/core/settings'
 import { languageNameToCode } from '@/core/utils/i18n'
-import { Translation, GeneralTranslation, RegexTranslation, Options as I18nOptions } from './types'
+import {
+  type Translation,
+  type GeneralTranslation,
+  type RegexTranslation,
+  type Options as I18nOptions,
+} from './types'
 
 /**
  * 在`plugin.setup`中可使用此帮助函数快速注入翻译数据

@@ -1,9 +1,9 @@
 import {
   defineOptionsMetadata,
-  OptionsOfMetadata,
+  type OptionsOfMetadata,
   defineComponentMetadata,
 } from '@/components/define'
-import { ComponentEntry } from '@/components/types'
+import { type ComponentEntry } from '@/components/types'
 import { playerUrls } from '@/core/utils/urls'
 
 const options = defineOptionsMetadata({
@@ -20,7 +20,7 @@ const entry: ComponentEntry<Options> = async ({ settings }) => {
   if (isEmbeddedPlayer()) {
     return
   }
-  const { videoChange } = await import('@/core/observer')
+  const { videoChange } = await import('@/core/video')
   const { sq } = await import('@/core/spin-query')
   const { logError } = await import('@/core/utils/log')
   videoChange(async () => {

@@ -1,6 +1,6 @@
 import { playerAgent } from '@/components/video/player-agent'
 import { lightOn, lightOff } from '@/components/video/player-light'
-import { videoChange } from '@/core/observer'
+import { videoChange } from '@/core/video'
 import { allVideoUrls } from '@/core/utils/urls'
 import type { PlayerAgent } from '@/components/video/player-agent/base'
 import { StarAnim } from './animation'

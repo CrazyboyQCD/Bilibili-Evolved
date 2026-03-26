@@ -1,6 +1,6 @@
 import path from 'path'
 import lodash from 'lodash'
-import { Configuration } from 'webpack'
+import { type Configuration } from 'webpack'
 import { enableProductionSourceMap, getDefaultConfig } from '../../webpack/webpack.config'
 import { getId } from '../lib/id'
 

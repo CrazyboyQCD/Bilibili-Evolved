@@ -1,10 +1,11 @@
-import { TestPattern, Executable, VueModule, I18nDescription } from '@/core/common-types'
-import { ComponentSettings } from '@/core/settings'
-import { CoreApis } from '@/core/core-apis'
-import { PluginMinimalData } from '@/plugins/plugin'
-import { Range } from '@/ui/range'
-import { Widget } from '@/components/widget'
-import { LanguagePack } from './i18n/types'
+import { type Component } from 'vue'
+import { type TestPattern, type Executable, type I18nDescription } from '@/core/common-types'
+import { type ComponentSettings } from '@/core/settings'
+import { type CoreApis } from '@/core/core-apis'
+import { type PluginMinimalData } from '@/plugins/plugin'
+import { type Range } from '@/ui/range'
+import { type Widget } from '@/components/widget'
+import { type LanguagePack } from './i18n/types'
 
 export type Author = {
   name: string
@@ -41,7 +42,7 @@ export interface ComponentTag {
   order: number
 }
 
-type ComponentOptionValidator<T> = (value: T, oldValue: T) => T | undefined | null
+export type ComponentOptionValidator<T> = (value: T, oldValue?: T) => T | undefined | null
 
 export type UnknownOptions = Record<string, unknown>
 
@@ -193,7 +194,7 @@ export interface FunctionalMetadata<O extends UnknownOptions = UnknownOptions> {
   /** 插件化数据定义 */
   plugin?: Optional<PluginMinimalData, 'name'>
   /** 额外想要展示在设置里的选项 UI */
-  extraOptions?: () => Promise<VueModule>
+  extraOptions?: Component
   /** 设置匹配的URL, 不匹配则不运行此组件 */
   urlInclude?: TestPattern
   /** 设置不匹配的URL, 不匹配则不运行此组件, 优先级高于`urlInclude` */

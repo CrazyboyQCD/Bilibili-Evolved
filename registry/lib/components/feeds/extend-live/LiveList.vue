@@ -21,7 +21,7 @@
     </div>
     <div class="be-live-list-search">
       <VIcon icon="search" :size="18" />
-      <TextBox v-model="keyword" placeholder="搜索" />
+      <TextBox :text="keyword" placeholder="搜索" @change="keyword = $event" />
     </div>
     <div class="be-live-list-content">
       <VLoading v-if="!loaded" />
@@ -52,9 +52,14 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { VIcon, TextBox, DpiImage, VEmpty, VLoading } from '@/ui'
 import { bilibiliApi, getJsonWithCredentials, getPages, responsiveGetPages } from '@/core/ajax'
-import { FollowingListID, FollowingUserInfo, LiveInfo, RawFollowingListItem } from './types'
+import {
+  type FollowingListID,
+  type FollowingUserInfo,
+  type LiveInfo,
+  type RawFollowingListItem,
+} from './types'
 import { getUID } from '@/core/utils'
-import { ExtendFeedsLiveOptions, UnselectedListID } from './options'
+import { type ExtendFeedsLiveOptions, UnselectedListID } from './options'
 import {
   addComponentListener,
   getComponentSettings,

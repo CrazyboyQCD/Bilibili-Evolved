@@ -1,6 +1,6 @@
 import { defineComponentMetadata } from '@/components/define'
 import { addData } from '@/plugins/data'
-import { AboutPageAction } from '@/components/settings-panel/sub-pages/about-page'
+import { type AboutPageAction } from '@/components/settings-panel/sub-pages/about-page'
 import { runMigrate } from './migrate'
 
 export const component = defineComponentMetadata({

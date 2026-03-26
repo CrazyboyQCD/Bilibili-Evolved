@@ -1,4 +1,4 @@
-import { defineOptionsMetadata, OptionsOfMetadata } from '@/components/define'
+import { defineOptionsMetadata, type OptionsOfMetadata } from '@/components/define'
 
 export enum DisplayMode {
   Auto = '自动',
@@ -17,4 +17,4 @@ export const options = defineOptionsMetadata({
   },
 })
 
-export type Options = OptionsOfMetadata<typeof options>
+export type OuterWatchlaterOptions = OptionsOfMetadata<typeof options>

@@ -1,9 +1,9 @@
 import {
   defineComponentMetadata,
   defineOptionsMetadata,
-  OptionsOfMetadata,
+  type OptionsOfMetadata,
 } from '@/components/define'
-import { ComponentEntry } from '@/components/types'
+import { type ComponentEntry } from '@/components/types'
 import { playerUrls } from '@/core/utils/urls'
 import { addComponentListener } from '@/core/settings'
 import { watchLocalStorage } from '@/core/local-storage'

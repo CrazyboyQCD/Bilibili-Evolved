@@ -1,30 +1,24 @@
 <template>
   <div class="custom-navbar-extra-options">
-    <VButton ref="button" @mouseover="loadNavbarSettings()" @click="toggleNavbarSettings()">
-      布局设置<VIcon icon="right-arrow" :size="16"></VIcon>
+    <VButton ref="button" @mouseover="loadNavbarSettingsHandler()" @click="toggleNavbarSettings()">
+      布局设置<VIcon icon="right-arrow" :size="16" />
     </VButton>
   </div>
 </template>
-<script lang="ts">
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
 import { VIcon, VButton } from '@/ui'
 import { setTriggerElement, loadNavbarSettings, toggleNavbarSettings } from './vm'
 
-export default Vue.extend({
-  components: {
-    VIcon,
-    VButton,
-  },
-  methods: {
-    async loadNavbarSettings() {
-      const isFirstLoad = await loadNavbarSettings()
-      if (isFirstLoad) {
-        const triggerButton = this.$refs.button.$el as HTMLElement
-        setTriggerElement(triggerButton)
-      }
-    },
-    toggleNavbarSettings,
-  },
-})
+const button = useTemplateRef('button')
+
+const loadNavbarSettingsHandler = async () => {
+  const isFirstLoad = await loadNavbarSettings()
+  if (isFirstLoad) {
+    const triggerButton = button.value.root as HTMLElement
+    setTriggerElement(triggerButton)
+  }
+}
 </script>
 <style lang="scss">
 .custom-navbar-extra-options {

@@ -1,4 +1,4 @@
-import { meta } from './meta'
+import { compilationInfo } from './compilationInfo'
 
 /** 热更新使用的更新源 */
 export enum CdnTypes {
@@ -11,8 +11,8 @@ export enum CdnTypes {
 export const defaultOwner = 'the1812'
 /** 根据分支名和仓库 owner 检索 CDN 链接 */
 export const cdnRoots: Record<CdnTypes, (branch: string, owner?: string) => string> = {
-  jsDelivr: (branch, owner) => meta.compilationInfo.allCdns.jsDelivr.root(branch, owner),
-  AltCdn: (branch, owner) => meta.compilationInfo.altCdn.root(branch, owner),
+  jsDelivr: (branch, owner) => compilationInfo.allCdns.jsDelivr.root(branch, owner),
+  AltCdn: (branch, owner) => compilationInfo.altCdn.root(branch, owner),
   GitHub: (branch, owner) =>
     `https://raw.githubusercontent.com/${owner || defaultOwner}/Bilibili-Evolved/${branch}/`,
 }

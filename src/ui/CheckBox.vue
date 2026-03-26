@@ -1,52 +1,48 @@
 <template>
   <VButton
+    ref="root"
     class="be-check-box"
     :class="{ checked, 'left-icon': iconPosition === 'left' }"
     role="checkbox"
     :aria-checked="checked"
     type="transparent"
-    v-bind="$attrs"
-    @click="$emit('change', !checked)"
+    v-bind="attrs"
+    @click="emit('change', !checked)"
   >
     <div class="text-container">
       <slot>CheckBox</slot>
     </div>
     <div class="icon-container">
-      <VIcon :size="16" class="not-checked" :icon="notCheckedIcon"></VIcon>
-      <VIcon :size="16" class="checked" :icon="checkedIcon"></VIcon>
+      <VIcon :size="16" class="not-checked" :icon="notCheckedIcon" />
+      <VIcon :size="16" class="checked" :icon="checkedIcon" />
     </div>
   </VButton>
 </template>
 
-<script lang="ts">
-export default Vue.extend({
-  name: 'CheckBox',
-  components: {
-    VButton: () => import('./VButton.vue').then(m => m.default),
-    VIcon: () => import('./icon/VIcon.vue').then(m => m.default),
-  },
-  model: {
-    prop: 'checked',
-    event: 'change',
-  },
-  props: {
-    checked: {
-      type: Boolean,
-      required: true,
-    },
-    iconPosition: {
-      type: String,
-      default: 'left',
-    },
-    checkedIcon: {
-      type: String,
-      default: 'mdi-checkbox-marked-circle',
-    },
-    notCheckedIcon: {
-      type: String,
-      default: 'mdi-checkbox-blank-circle-outline',
-    },
-  },
+<script setup lang="ts">
+import { defineAsyncComponent, useAttrs, useTemplateRef } from 'vue'
+
+const VButton = defineAsyncComponent(() => import('./VButton.vue'))
+const VIcon = defineAsyncComponent(() => import('./icon/VIcon.vue'))
+
+const {
+  checked,
+  iconPosition = 'left',
+  checkedIcon = 'mdi-checkbox-marked-circle',
+  notCheckedIcon = 'mdi-checkbox-blank-circle-outline',
+} = defineProps<{
+  checked: boolean
+  iconPosition?: 'left' | 'right'
+  checkedIcon?: string
+  notCheckedIcon?: string
+}>()
+const attrs = useAttrs()
+const emit = defineEmits<{
+  change: [checked: boolean]
+}>()
+const root = useTemplateRef('root')
+defineExpose({
+  root,
 })
 </script>
 

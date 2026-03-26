@@ -1,80 +1,49 @@
 <template>
   <div class="be-range-input">
-    <TextBox
-      change-on-blur
-      :text="wrapper.range.start.toString()"
-      @change="wrapper.start = $event"
-    ></TextBox>
+    <TextBox change-on-blur :text="start" @change="setStart($event)" />
     <slot name="separator">
       <div class="default-separator">~</div>
     </slot>
-    <TextBox
-      change-on-blur
-      :text="wrapper.range.end.toString()"
-      @change="wrapper.end = $event"
-    ></TextBox>
+    <TextBox change-on-blur :text="end" @change="setEnd($event)" />
   </div>
 </template>
 
-<script lang="ts">
-const createWrapper = (instance: any) => {
-  const wrapper = {
-    range: instance.range,
-    get start() {
-      return this.range.start.toString()
-    },
-    set start(value: string) {
-      this.createNewRange(value, this.end)
-    },
-    get end() {
-      return this.range.end.toString()
-    },
-    set end(value: string) {
-      this.createNewRange(this.start, value)
-    },
-    createNewRange(start: string, end: string) {
-      let newRange = { start, end }
-      if (instance.validator) {
-        newRange = instance.validator(newRange)
-      }
-      if (newRange === null || newRange === undefined) {
-        this.range = {
-          start: this.range.start,
-          end: this.range.end,
-        }
-        return
-      }
-      this.range = newRange
-      instance.$emit('change', newRange)
-    },
-  }
-  return wrapper
+<script setup lang="ts">
+import { computed } from 'vue'
+import TextBox from './TextBox.vue'
+
+interface Range {
+  start: string | number
+  end: string | number
 }
-export default Vue.extend({
-  name: 'RangeInput',
-  components: {
-    TextBox: () => import('./TextBox.vue'),
-  },
-  model: {
-    prop: 'range',
-    event: 'change',
-  },
-  props: {
-    range: {
-      type: Object,
-      required: true,
-    },
-    validator: {
-      type: Function,
-      default: undefined,
-    },
-  },
-  data() {
-    return {
-      wrapper: createWrapper(this),
-    }
-  },
-})
+
+const { range, validator } = defineProps<{
+  range: Range
+  validator?: (range: Range) => Range | null | undefined
+}>()
+
+const emit = defineEmits<{
+  change: [range: Range]
+}>()
+const start = computed(() => range.start.toString())
+const end = computed(() => range.end.toString())
+const createNewRange = (_start: string, _end: string) => {
+  let newRange: Range | null | undefined = { start: _start, end: _end }
+  if (validator) {
+    newRange = validator(newRange) || newRange
+  }
+  if (newRange === null || newRange === undefined) {
+    return
+  }
+  emit('change', newRange)
+}
+const setStart = (newValue: string) => {
+  createNewRange(newValue, end.value)
+}
+
+const setEnd = (newValue: string) => {
+  createNewRange(start.value, newValue)
+}
 </script>
 
 <style lang="scss" scoped>

@@ -1,9 +1,9 @@
 import {
   defineComponentMetadata,
   defineOptionsMetadata,
-  OptionsOfMetadata,
+  type OptionsOfMetadata,
 } from '@/components/define'
-import { ComponentEntry } from '@/components/types'
+import { type ComponentEntry } from '@/components/types'
 import { playerAgent } from '@/components/video/player-agent'
 import { sq } from '@/core/spin-query'
 import { disableWindowScroll, isEmbeddedPlayer, playerReady } from '@/core/utils'

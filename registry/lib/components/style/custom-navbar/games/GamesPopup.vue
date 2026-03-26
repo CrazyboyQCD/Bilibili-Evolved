@@ -4,7 +4,7 @@ import { VLoading } from '@/ui'
 import type { GameInfo } from './types'
 import { bilibiliApi, getJson } from '@/core/ajax'
 import { usePopper } from '../mixins'
-import { CustomNavbarItem } from '../custom-navbar-item'
+import { type CustomNavbarItem } from '../custom-navbar-item'
 
 const props = defineProps<{
   item: CustomNavbarItem
@@ -60,7 +60,7 @@ defineExpose({
           </a>
         </div>
       </div>
-      <div class="custom-navbar-games-panel-separator"></div>
+      <div class="custom-navbar-games-panel-separator" />
       <div class="custom-navbar-games-right-panel">
         <div class="list-game-cards-title">新游预告</div>
         <div class="list-game-cards">

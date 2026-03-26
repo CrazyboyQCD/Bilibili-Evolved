@@ -1,6 +1,6 @@
-import { PluginMetadata } from '@/plugins/plugin'
-import { TagFilter } from '@/components/settings-panel/tag-filter'
-import { ComponentMetadata } from '@/components/types'
+import { type PluginMetadata } from '@/plugins/plugin'
+import { type TagFilter } from '@/components/settings-panel/tag-filter'
+import { type ComponentMetadata } from '@/components/types'
 import type { Options as SettingPanelOptions } from '@/components/settings-panel'
 
 type ExtendedOptions = SettingPanelOptions & {
@@ -23,13 +23,13 @@ export const plugin: PluginMetadata = {
     addHook('settingsPanel.componentDetail.open', {
       after: async (name: string) => {
         const recentComponents = await getRecentComponents()
-        recentComponents[name] = Number(new Date())
+        recentComponents[name] = Date.now()
       },
     })
     addHook('userComponents.add', {
       after: async (code: string, url: string, component: ComponentMetadata) => {
         const recentComponents = await getRecentComponents()
-        recentComponents[component.name] = Number(new Date())
+        recentComponents[component.name] = Date.now()
       },
     })
     addHook('userComponents.remove', {

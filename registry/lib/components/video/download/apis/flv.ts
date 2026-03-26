@@ -4,10 +4,10 @@ import { allQualities } from '@/components/video/video-quality'
 import { bangumiUrls } from '@/core/utils/urls'
 import { compareQuality } from '../error'
 import {
-  DownloadVideoApi,
-  DownloadVideoFragment,
+  type DownloadVideoApi,
+  type DownloadVideoFragment,
   DownloadVideoInfo,
-  DownloadVideoInputItem,
+  type DownloadVideoInputItem,
 } from '../types'
 import { bangumiApi, videoApi } from './url'
 

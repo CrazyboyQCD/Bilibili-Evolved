@@ -94,13 +94,12 @@ export const navbarFilterTypes = [
 ] as TypeFilter[]
 
 const getTimeData = () => {
-  const now = new Date()
-  const today = Number(new Date(now.getFullYear(), now.getMonth(), now.getDate()))
+  const now = Date.now()
+  const today = now - (now % 86400000)
   const oneDay = 24 * 3600000
   const yesterday = today - oneDay
   const lastWeek = today - 7 * oneDay
   return {
-    now,
     today,
     oneDay,
     yesterday,
@@ -227,10 +226,7 @@ export const getHistoryItems = async (viewTime?: number, type?: TypeFilter) => {
     params.set('view_at', Math.round(viewTime / 1000).toString())
   }
   params.set('type', type?.apiType ?? '')
-  const { list } = await bilibiliApi(
-    getJsonWithCredentials(`${api}?${params.toString()}`),
-    '获取历史记录失败',
-  )
+  const { list } = await bilibiliApi(getJsonWithCredentials(`${api}?${params}`), '获取历史记录失败')
   if (!Array.isArray(list)) {
     return []
   }

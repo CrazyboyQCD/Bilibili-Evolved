@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from 'vue'
 import { defineComponentMetadata } from '@/components/define'
 import { getUID } from '@/core/utils'
 
@@ -11,6 +12,6 @@ export const component = defineComponentMetadata({
   entry: none,
   urlInclude: [`https://space.bilibili.com/${getUID()}/dynamic`],
   widget: {
-    component: () => import('./Widget.vue').then(m => m.default),
+    component: defineAsyncComponent(() => import('./Widget.vue')),
   },
 })

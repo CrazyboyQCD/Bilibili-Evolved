@@ -6,10 +6,7 @@ export const getDropdownItems = <T>(enumClass: T) => {
     .filter(([key]) => {
       const charCode = key.charCodeAt(0)
       // '0': 48; '9': 57
-      if (charCode >= 48 && charCode <= 57) {
-        return false
-      }
-      return true
+      return charCode < 48 || charCode > 57
     })
     .map(([, value]) => value)
   // console.log(dropdownItems)

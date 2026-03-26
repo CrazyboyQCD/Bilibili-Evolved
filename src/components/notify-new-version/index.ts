@@ -28,7 +28,7 @@ export const component = defineComponentMetadata({
       if (isDataSaveMode()) {
         return
       }
-      const now = Number(new Date())
+      const now = Date.now()
       const duration = now - options.lastUpdateCheck
       if (duration < options.minimumDuration) {
         // 未到间隔期
@@ -43,7 +43,7 @@ export const component = defineComponentMetadata({
         url: updateUrl,
         responseType: 'text',
       })
-      options.lastUpdateCheck = Number(new Date())
+      options.lastUpdateCheck = Date.now()
       const versionMatch = scriptText.match(/^\/\/ @version\s*([\d.]+)$/m)
       if (!versionMatch?.[1]) {
         console.warn('[新版本提示] 未能检测出脚本版本, scriptText.length =', scriptText.length)

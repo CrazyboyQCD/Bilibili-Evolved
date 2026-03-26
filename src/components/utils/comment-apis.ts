@@ -1,7 +1,7 @@
 import { contentLoaded } from '@/core/life-cycle'
 import { CommentAreaManager } from './comment/comment-area-manager'
-import { CommentAreaCallback, CommentItemCallback } from './comment/types'
-import { CommentReplyItem } from './comment/reply-item'
+import { type CommentAreaCallback, type CommentItemCallback } from './comment/types'
+import { type CommentReplyItem } from './comment/reply-item'
 
 export const commentAreaManager = new CommentAreaManager()
 contentLoaded(() => {

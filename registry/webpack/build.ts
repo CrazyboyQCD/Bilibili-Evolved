@@ -1,5 +1,5 @@
 import path from 'path'
-import glob from 'glob'
+import { glob } from 'glob'
 import { buildByEntry } from './config'
 
 const shorten = (p: string, type: string) => path.dirname(p).replace(`./registry/lib/${type}s/`, '')

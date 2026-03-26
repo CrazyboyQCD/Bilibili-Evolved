@@ -1,4 +1,4 @@
-import { CommentReplyItem } from '@/components/utils/comment/reply-item'
+import { type CommentReplyItem } from '@/components/utils/comment/reply-item'
 
 export interface CommentContentReplaceContext {
   commentItem: CommentReplyItem

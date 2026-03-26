@@ -1,6 +1,7 @@
-import VueLoaderPlugin from 'vue-loader/lib/plugin'
-import TerserPlugin from 'terser-webpack-plugin'
-import webpack, { Configuration } from 'webpack'
+import { VueLoaderPlugin } from 'vue-loader'
+// import TerserPlugin from 'terser-webpack-plugin'
+import { SwcMinifyWebpackPlugin } from './minifier'
+import webpack, { type Configuration } from 'webpack'
 import path from 'path'
 import get from 'lodash/get'
 import { cssStyleLoaders, sassStyleLoaders } from './loaders/style-loaders'
@@ -35,13 +36,18 @@ export const getDefaultConfig = (src = relativePath('src')): Configuration => {
     },
     optimization: {
       minimizer: [
-        new TerserPlugin({
-          terserOptions: {
-            output: {
-              comments: /==\/?UserScript==|^[ ]?@|eslint-disable|spell-checker/i,
-            },
-          },
-          extractComments: false,
+        // new TerserPlugin({
+        //   terserOptions: {
+        //     output: {
+        //       comments: /==\/?UserScript==|^[ ]?@|eslint-disable|spell-checker/i,
+        //     },
+        //   },
+        //   extractComments: false,
+        // }),
+        new SwcMinifyWebpackPlugin({
+          format: {
+            comments: { regex: '/==\/?UserScript==|^[ ]?@|eslint-disable|spell-checker/i' },
+          }
         }),
       ],
     },
@@ -145,7 +151,7 @@ export const enableProductionSourceMap = (config: Configuration, cdnPath: string
 }
 
 const replaceVariables = (text: string) => {
-  return text.replace(/\[([^\[\]]+)\]/g, match => {
+  return text.replace(/\[([^[\]]+)\]/g, match => {
     const value = get(runtimeInfo, match)
     if (value !== undefined) {
       return value

@@ -1,6 +1,6 @@
-import { EpisodeInfo } from '@/components/video/video-info'
+import { type EpisodeInfo } from '@/components/video/video-info'
 import { TimeFormat } from './options'
-import { Tag, ViewPoint } from './types'
+import { type Tag, type ViewPoint } from './types'
 
 export function escape(x: any) {
   return lodash.toString(x).replace(/[=;#\\\n]/g, r => `\\${r}`)

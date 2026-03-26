@@ -30,6 +30,14 @@ module.exports = {
     'import/no-default-export': 'error',
     'import/no-named-default': 'off',
 
+    '@typescript-eslint/consistent-type-imports': [
+      'error',
+      {
+        disallowTypeAnnotations: false,
+        fixStyle: 'inline-type-imports',
+        prefer: 'type-imports',
+      },
+    ],
     '@typescript-eslint/member-delimiter-style': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -53,6 +61,18 @@ module.exports = {
     'vue/require-prop-types': 'off',
     'vue/one-component-per-file': 'off',
     'vue/singleline-html-element-content-newline': 'off',
+    // vue 3 要求在template中使用v-for时必须使用key
+    'vue/no-v-for-template-key': 'off',
+    'vue/no-v-for-template-key-on-child': 'error',
+    // vue 3.5+ props解构后会保留响应性 https://blog.vuejs.org/posts/vue-3-5#reactive-props-destructure
+    'vue/no-setup-props-destructure': 'off',
+    'vue/no-lifecycle-after-await': 'error',
+    'vue/prefer-use-template-ref': 'error',
+    'vue/no-deprecated-delete-set': 'error',
+    'vue/no-deprecated-destroyed-lifecycle': 'error',
+    'vue/no-deprecated-dollar-listeners-api': 'error',
+    'vue/no-deprecated-events-api': 'error',
+    'vue/no-deprecated-html-element-is': 'error',
 
     // 使用 @typescript-eslint/no-unused-vars, 否则 interface 都是 unused
     'no-unused-vars': 'off',

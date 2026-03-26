@@ -1,11 +1,12 @@
-import { createServer, Server } from 'http'
-import { Configuration } from 'webpack'
+import { createServer, type Server } from 'http'
+import { type Configuration } from 'webpack'
 import exitHook from 'async-exit-hook'
 import handler from 'serve-handler'
 import { devServerConfig } from './config'
 import { buildByEntry } from '../../registry/webpack/config'
 import { exitWebSocketServer } from './web-socket-server'
-import { watchers, parseRegistryUrl, startRegistryWatcher } from './registry-watcher'
+import { parseRegistryUrl, startRegistryWatcher } from './registry-watcher'
+import { watchers } from './watcher-common'
 
 export const startDevServer = () =>
   new Promise<Server>(resolve => {
@@ -13,6 +14,9 @@ export const startDevServer = () =>
 
     const server = createServer((request, response) => {
       const { url } = request
+      if (!url) {
+        return
+      }
       console.log('请求:', url)
       const callHandler = () => {
         handler(request, response, {

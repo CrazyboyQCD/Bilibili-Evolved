@@ -10,7 +10,7 @@
     :class="{ vertical: orientation === 'vertical', 'no-stats': !showStats }"
   >
     <div class="cover-container">
-      <DpiImage class="cover" :src="coverUrl" :size="{ height: 120, width: 196 }"></DpiImage>
+      <DpiImage class="cover" :src="coverUrl" :size="{ height: 120, width: 196 }" />
       <div v-if="isNew" class="new">NEW</div>
       <template v-if="pubTime && pubTimeText">
         <div class="publish-time-summary">
@@ -26,7 +26,7 @@
         class="watchlater"
         @click.stop.prevent="toggleWatchlater(aid)"
       >
-        <VIcon :size="15" :icon="watchlater ? 'mdi-check-circle' : 'mdi-clock-outline'"></VIcon>
+        <VIcon :size="15" :icon="watchlater ? 'mdi-check-circle' : 'mdi-clock-outline'" />
         {{ watchlater ? '已添加' : '稍后再看' }}
       </div>
     </div>
@@ -78,45 +78,45 @@
     <div v-if="showStats" class="stats">
       <template v-if="vertical">
         <template v-if="playCount">
-          <VIcon icon="play" :size="statsIconSize"></VIcon>
+          <VIcon icon="play" :size="statsIconSize" />
           {{ playCount }}
         </template>
         <template v-if="danmakuCount">
-          <VIcon icon="danmaku" :size="statsIconSize"></VIcon>
+          <VIcon icon="danmaku" :size="statsIconSize" />
           {{ danmakuCount }}
         </template>
         <template v-if="like">
-          <VIcon icon="like-outline" :size="statsIconSize"></VIcon>
+          <VIcon icon="like-outline" :size="statsIconSize" />
           {{ like }}
         </template>
         <template v-if="coins">
-          <VIcon icon="coin-outline" :size="statsIconSize"></VIcon>
+          <VIcon icon="coin-outline" :size="statsIconSize" />
           {{ coins }}
         </template>
         <template v-if="favorites">
-          <VIcon icon="favorites-outline" :size="statsIconSize"></VIcon>
+          <VIcon icon="favorites-outline" :size="statsIconSize" />
           {{ favorites }}
         </template>
       </template>
       <template v-else>
         <template v-if="like">
-          <VIcon icon="like-outline" :size="statsIconSize"></VIcon>
+          <VIcon icon="like-outline" :size="statsIconSize" />
           {{ like }}
         </template>
         <template v-if="coins">
-          <VIcon icon="coin-outline" :size="statsIconSize"></VIcon>
+          <VIcon icon="coin-outline" :size="statsIconSize" />
           {{ coins }}
         </template>
         <template v-if="favorites">
-          <VIcon icon="favorites-outline" :size="statsIconSize"></VIcon>
+          <VIcon icon="favorites-outline" :size="statsIconSize" />
           {{ favorites }}
         </template>
         <template v-if="playCount">
-          <VIcon icon="play" :size="statsIconSize"></VIcon>
+          <VIcon icon="play" :size="statsIconSize" />
           {{ playCount }}
         </template>
         <template v-if="danmakuCount">
-          <VIcon icon="danmaku" :size="statsIconSize"></VIcon>
+          <VIcon icon="danmaku" :size="statsIconSize" />
           {{ danmakuCount }}
         </template>
       </template>
@@ -124,7 +124,8 @@
   </a>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed } from 'vue'
 import { DpiImage, VIcon } from '@/ui'
 import { getUID } from '@/core/utils'
 import { watchlaterList, toggleWatchlater } from '@/components/video/watchlater'
@@ -134,69 +135,57 @@ import { watchlaterList, toggleWatchlater } from '@/components/video/watchlater'
   祖 传 代 码
   ============
 */
-export default {
-  // props: ['data', 'orientation'],
-  components: {
-    DpiImage,
-    VIcon,
-  },
-  props: {
-    data: {
-      type: Object,
-      required: true,
-    },
-    orientation: {
-      type: String,
-      // 'vertical'可以竖过来
-      default: 'horizontal',
-    },
-    showStats: {
-      type: Boolean,
-      default: true,
-    },
-    isNew: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  data() {
-    return {
-      watchlaterList,
-      upFaceUrl: '',
-      danmakuCount: '',
-      like: '',
-      coins: '',
-      favorites: '',
-      dynamic: '',
-      topics: [],
-      upID: 0,
-      epID: 0,
-      cooperation: [],
-      pubTime: 0,
-      pubTimeText: '',
-      ...lodash.omit(this.data, 'watchlater'),
-      watchlaterInit: this.data.watchlater,
-      statsIconSize: 14,
-    }
-  },
-  computed: {
-    vertical() {
-      return this.orientation === 'vertical'
-    },
-    watchlater() {
-      if (getUID() && this.watchlaterInit !== null) {
-        return this.watchlaterList.includes(this.aid)
-      }
-      return null
-    },
-    reversedCooperation() {
-      return [...this.cooperation].reverse().slice(0, 3)
-    },
-  },
-  methods: {
-    toggleWatchlater,
-  },
-}
+
+const {
+  data,
+  orientation = 'horizontal',
+  showStats = true,
+  isNew = false,
+} = defineProps<{
+  data: Record<string, any>
+  orientation?: string
+  showStats?: boolean
+  isNew?: boolean
+}>()
+
+const vertical = computed(() => {
+  return orientation === 'vertical'
+})
+
+const watchlater = computed(() => {
+  if (getUID() && data.watchlater !== null) {
+    return watchlaterList.includes(data.aid)
+  }
+  return null
+})
+
+const reversedCooperation = computed(() => {
+  return [...(data.cooperation || [])].reverse().slice(0, 3)
+})
+
+const {
+  aid,
+  bvid,
+  coverUrl,
+  title,
+  description,
+  upName,
+  upFaceUrl = '',
+  danmakuCount = '',
+  like = '',
+  coins = '',
+  favorites = '',
+  topics = [],
+  upID = 0,
+  epID = 0,
+  cooperation = [],
+  pubTime = 0,
+  pubTimeText = '',
+  durationText,
+  playCount,
+} = data
+
+const statsIconSize = 14
 </script>
 
 <style lang="scss" scoped>
@@ -253,6 +242,7 @@ export default {
     .title {
       display: -webkit-box;
       -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       max-height: 3em;
       word-break: break-all;
@@ -330,6 +320,7 @@ export default {
     .cover {
       transition: 0.1s cubic-bezier(0.39, 0.58, 0.57, 1);
       -webkit-transform: rotate(0deg);
+      transform: rotate(0deg);
       object-fit: cover;
       width: 100%;
       height: 100%;
@@ -433,6 +424,7 @@ export default {
     height: 3em;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     scrollbar-width: none !important;
 

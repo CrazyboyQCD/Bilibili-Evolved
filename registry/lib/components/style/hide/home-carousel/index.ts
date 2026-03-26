@@ -1,12 +1,13 @@
+import { defineAsyncComponent } from 'vue'
 import { defineComponentMetadata } from '@/components/define'
-import { ComponentEntry } from '@/components/types'
+import { type ComponentEntry } from '@/components/types'
 import { addComponentListener } from '@/core/settings'
 import { select, selectAll } from '@/core/spin-query'
 import { createComponentWithProps } from '@/core/utils'
 import { useScopedConsole } from '@/core/utils/log'
-import { RadioItem } from '@/ui'
+import { type RadioItem } from '@/ui'
 
-const componentName = 'hideHomeCarousel'
+const componentName = 'hideHomeCarousel' as const
 
 const logger = useScopedConsole(componentName)
 
@@ -71,20 +72,20 @@ const entry: ComponentEntry = async ({ metadata }) => {
   })
 }
 
-const items: Record<string, RadioItem> = {
+const items = {
   full: {
     name: 'full',
     isOption: true,
-  },
+  } as RadioItem,
   transparent: {
     name: 'transparent',
     isOption: true,
-  },
+  } as RadioItem,
   custom: {
     name: 'custom',
     isOption: true,
     optionsIncluded: ['disableCarousel', 'blur', 'picture', 'footerText'],
-  },
+  } as RadioItem,
 }
 
 const props = {
@@ -150,18 +151,20 @@ export const component = defineComponentMetadata({
       hidden: true,
     },
   },
-  extraOptions: () =>
-    import('@/ui').then(m =>
-      createComponentWithProps(m.OptionRadioGroup, {
+  extraOptions: defineAsyncComponent(() =>
+    import('@/ui').then(({ OptionRadioGroup }) =>
+      createComponentWithProps(OptionRadioGroup, {
         ...props,
         isPopup: false,
         hasContainer: false,
       }),
     ),
+  ),
   widget: {
-    component: () =>
-      import('@/ui').then(m =>
-        createComponentWithProps(m.OptionRadioGroup, { ...props, isPopup: true }),
+    component: defineAsyncComponent(() =>
+      import('@/ui').then(({ OptionRadioGroup }) =>
+        createComponentWithProps(OptionRadioGroup, { ...props, isPopup: true }),
       ),
+    ),
   },
 })

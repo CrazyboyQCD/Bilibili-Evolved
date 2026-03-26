@@ -1,5 +1,5 @@
 import { crossOriginLocalStorage } from '@/core/local-storage'
-import { LaunchBarAction, LaunchBarActionProvider } from './launch-bar-action'
+import { type LaunchBarAction, type LaunchBarActionProvider } from './launch-bar-action'
 
 export interface HistoryItem {
   value: string
@@ -25,7 +25,7 @@ export const addHistoryItem = async (keyword: string, key = SearchHistoryKey) =>
             [
               {
                 value: keyword,
-                timestamp: Number(new Date()),
+                timestamp: Date.now(),
               },
               ...(await getHistoryItems()),
             ],

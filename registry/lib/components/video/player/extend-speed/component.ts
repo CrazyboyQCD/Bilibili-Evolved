@@ -1,22 +1,27 @@
-import { ComponentSettings, getComponentSettings } from '@/core/settings'
+import { type ComponentSettings, getComponentSettings } from '@/core/settings'
 import { addStyle } from '@/core/style'
 import { Toast } from '@/core/toast'
 import { dea, des } from '@/core/utils'
 import { logError } from '@/core/utils/log'
 import { ascendingSort } from '@/core/utils/sort'
-import { fromEvent, PublishContext, Subject, TeardownLogic } from '../common/mini-rxjs'
+import {
+  fromEvent,
+  type PublishContext,
+  type Subject,
+  type TeardownLogic,
+} from '../common/mini-rxjs'
 import { debounceTime } from '../common/mini-rxjs/operators/debounceTime'
 import { filter } from '../common/mini-rxjs/operators/filter'
 import { asapScheduler, observeOn } from '../common/mini-rxjs/operators/observeOn'
 import { loadStyle } from '../common/mini-rxjs/utils/loadStyle'
 import {
-  EntryContext,
+  type EntryContext,
   EntrySpeedComponent,
   MAX_BROWSER_SPEED_VALUE,
   MIN_BROWSER_SPEED_VALUE,
   NATIVE_SUPPORTED_VALUES,
 } from '../common/speed'
-import { PLAYER_AGENT, SpeedContext } from '../common/speed/context'
+import { PLAYER_AGENT, type SpeedContext } from '../common/speed/context'
 import {
   formatSpeedText,
   parseSpeedText,

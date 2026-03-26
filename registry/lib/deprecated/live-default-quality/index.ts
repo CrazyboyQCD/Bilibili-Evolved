@@ -1,9 +1,9 @@
 import {
   defineOptionsMetadata,
-  OptionsOfMetadata,
+  type OptionsOfMetadata,
   defineComponentMetadata,
 } from '@/components/define'
-import { ComponentEntry } from '@/components/types'
+import { type ComponentEntry } from '@/components/types'
 import { delay } from '@/core/utils'
 import { liveUrls } from '@/core/utils/urls'
 

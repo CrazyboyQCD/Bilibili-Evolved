@@ -4,8 +4,8 @@ import { TextColor } from '@/core/text-color'
 import { CdnTypes } from '@/core/cdn-types'
 import { addComponentListener } from '@/core/settings'
 import { DownloadPackageEmitMode } from '@/core/download-mode'
-import { ComponentEntry, componentsTags } from '../types'
-import { defineComponentMetadata, defineOptionsMetadata, OptionsOfMetadata } from '../define'
+import { type ComponentEntry, componentsTags } from '../types'
+import { defineComponentMetadata, defineOptionsMetadata, type OptionsOfMetadata } from '../define'
 import { provideActions } from './external-actions'
 import { SettingsPanelDockSide } from './dock'
 
@@ -82,8 +82,8 @@ const entry: ComponentEntry<Options> = async ({ metadata }) => {
   )
   requestIdleCallback(async () => {
     const Container = await import('./SettingsContainer.vue')
-    const instance = mountVueComponent(Container)
-    document.body.insertAdjacentElement('beforeend', instance.$el)
+    const [el] = mountVueComponent(Container)
+    document.body.insertAdjacentElement('beforeend', el)
   })
 }
 

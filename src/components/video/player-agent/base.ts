@@ -1,12 +1,12 @@
 import { select } from '@/core/spin-query'
 import { raiseEvent } from '@/core/utils'
 import {
-  ElementQuery,
-  CustomNestedQuery,
-  AgentType,
-  PlayerQuery,
-  CustomQuery,
-  CustomQueryProvider,
+  type ElementQuery,
+  type CustomNestedQuery,
+  type AgentType,
+  type PlayerQuery,
+  type CustomQuery,
+  type CustomQueryProvider,
   PlayerAgentEventTypes,
 } from './types'
 

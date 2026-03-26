@@ -2,15 +2,15 @@ import { componentsMap } from '@/components/component'
 import { installComponent } from '@/components/user-component'
 import { monkey } from '@/core/ajax'
 import { cdnRoots } from '@/core/cdn-types'
-import { Executable } from '@/core/common-types'
+import { type Executable } from '@/core/common-types'
 import { meta } from '@/core/meta'
 import { getComponentSettings, getGeneralSettings, settings } from '@/core/settings'
 import { Toast } from '@/core/toast'
 import { logError } from '@/core/utils/log'
 import { getHook } from '@/plugins/hook'
 import { installPlugin, pluginsMap } from '@/plugins/plugin'
-import { UserStyle } from '@/plugins/style'
-import type { DocSourceItem } from '../../../docs'
+import { type UserStyle } from '@/plugins/style'
+import type { DocSourceItem } from '../../../docs/types'
 
 export const runMigrate = async (v1Settings: any) => {
   const toast = Toast.info('下载功能列表中', '导入 v1 设置')

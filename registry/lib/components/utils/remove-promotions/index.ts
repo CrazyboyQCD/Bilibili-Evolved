@@ -1,5 +1,5 @@
-import { RadioItem } from '@/ui'
-import { ComponentEntry } from '@/components/types'
+import { type RadioItem } from '@/ui'
+import { type ComponentEntry } from '@/components/types'
 import { defineComponentMetadata } from '@/components/define'
 import { createComponentWithProps } from '@/core/utils'
 

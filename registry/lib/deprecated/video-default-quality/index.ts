@@ -1,9 +1,9 @@
 import {
   defineOptionsMetadata,
-  OptionsOfMetadata,
+  type OptionsOfMetadata,
   defineComponentMetadata,
 } from '@/components/define'
-import { ComponentEntry } from '@/components/types'
+import { type ComponentEntry } from '@/components/types'
 import { allQualities } from '@/components/video/video-quality'
 import { playerUrls } from '@/core/utils/urls'
 
@@ -18,7 +18,7 @@ const options = defineOptionsMetadata({
 export type Options = OptionsOfMetadata<typeof options>
 
 const entry: ComponentEntry<Options> = async ({ settings }) => {
-  const { videoChange } = await import('@/core/observer')
+  const { videoChange } = await import('@/core/video')
   videoChange(async () => {
     const { select } = await import('@/core/spin-query')
     const { descendingSort } = await import('@/core/utils/sort')

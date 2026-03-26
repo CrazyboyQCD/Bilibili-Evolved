@@ -4,9 +4,15 @@ import {
   convertTimeByDuration,
   normalizeContent,
 } from '@/components/video/ass-utils'
-import { Duration, BlockTypes, AssDanmaku, AssDanmakuDocument, Resolution } from './ass-danmaku'
-import { Danmaku } from './danmaku-data'
-import { XmlDanmakuDocument, XmlDanmaku } from './xml-danmaku'
+import {
+  type Duration,
+  type BlockTypes,
+  AssDanmaku,
+  AssDanmakuDocument,
+  type Resolution,
+} from './ass-danmaku'
+import { type Danmaku } from './danmaku-data'
+import { XmlDanmakuDocument, type XmlDanmaku } from './xml-danmaku'
 import { DanmakuStack } from './danmaku-stack'
 
 export interface DanmakuConverterConfig {

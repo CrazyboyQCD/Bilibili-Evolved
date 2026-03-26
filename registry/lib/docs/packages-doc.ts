@@ -1,6 +1,6 @@
 import { cdnRoots } from '@/core/cdn-types'
 import { branches } from '@/core/meta'
-import { DocSourceItem, Package } from '.'
+import { type DocSourceItem, type Package } from './types'
 
 const generateDescription = (pack: Package, containedItems: DocSourceItem[]) => {
   const finalDescription = `包含以下功能:\n${containedItems.map(it => it.displayName).join(', ')}`

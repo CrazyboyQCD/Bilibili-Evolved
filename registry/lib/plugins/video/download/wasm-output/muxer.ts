@@ -1,5 +1,5 @@
-import { FFmpeg, ProgressEvent } from './ffmpeg'
-import { Format, OutputFormats, OutputType } from './types'
+import { type FFmpeg, type ProgressEvent } from './ffmpeg'
+import { type Format, type OutputFormats, type OutputType } from './types'
 
 const mp4Format: Format = {
   extension: 'mp4',
@@ -88,7 +88,7 @@ export async function mux(
   ffmpeg.onProgress(callback)
   await ffmpeg.exec(args)
 
-  const output = await ffmpeg.readFile('output')
+  const output = (await ffmpeg.readFile('output')) as Uint8Array<ArrayBuffer>
   const outputBlob = new Blob([output], { type: format.mime })
 
   await Promise.all([

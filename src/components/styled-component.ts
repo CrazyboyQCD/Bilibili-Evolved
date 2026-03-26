@@ -1,5 +1,5 @@
 import { none } from '@/core/utils'
-import { ComponentEntry, ComponentMetadata, UnknownOptions } from './component'
+import { type ComponentEntry, type ComponentMetadata, type UnknownOptions } from './component'
 
 /**
  * 创建一个自动添加指定样式的组件入口函数

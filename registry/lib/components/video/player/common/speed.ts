@@ -1,19 +1,19 @@
 import {
-  ComponentEntry,
-  ComponentMetadata,
-  OptionMetadata,
-  UnknownOptions,
+  type ComponentEntry,
+  type ComponentMetadata,
+  type OptionMetadata,
+  type UnknownOptions,
 } from '@/components/types'
-import { CoreApis } from '@/core/core-apis'
-import { addComponentListener, ComponentSettings } from '@/core/settings'
+import { type CoreApis } from '@/core/core-apis'
+import { addComponentListener, type ComponentSettings } from '@/core/settings'
 import { logError } from '@/core/utils/log'
 import { getHook } from '@/plugins/hook'
-import { bindCallback, Subject, subject, TeardownLogic } from './mini-rxjs'
+import { bindCallback, type Subject, subject, type TeardownLogic } from './mini-rxjs'
 import { distinctUntilChanged } from './mini-rxjs/operators/distinctUntilChanged'
 import {
   getSpeedContext,
-  SpeedContext,
-  SpeedSeekPosition,
+  type SpeedContext,
+  type SpeedSeekPosition,
   useShareBuildArgument$,
 } from './speed/context'
 
@@ -95,7 +95,7 @@ export class EntrySpeedComponent<O extends UnknownOptions = UnknownOptions>
   readonly decreaseVideoSpeed: () => Promise<void>
 
   getSpeedContextMixin?(context: SpeedContext): Partial<SpeedContext>
-  onSpeedContext?(context: SpeedContext): TeardownLogic | any
+  onSpeedContext?(context: SpeedContext): TeardownLogic | void
   protected migrate?(): void
 }
 

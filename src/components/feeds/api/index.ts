@@ -4,8 +4,8 @@ import { formatCount, formatDuration, parseCount, parseDuration } from '@/core/u
 import { watchlaterList } from '@/components/video/watchlater'
 import { getData, registerData } from '@/plugins/data'
 import { descendingStringSort } from '@/core/utils/sort'
-import { VideoCard } from '../video-card'
-import { FeedsCard, FeedsCardType, feedsCardTypes } from './types'
+import { type VideoCard } from '../video-card'
+import { type FeedsCard, type FeedsCardType, feedsCardTypes } from './types'
 import { childList } from '@/core/observer'
 import { select } from '@/core/spin-query'
 
@@ -16,7 +16,7 @@ export * from './manager'
  * 搜索视频卡片中重复的 aid, 合并为联合投稿
  * @param cards 视频卡片
  */
-export const groupVideoFeeds = (cards: VideoCard[]) => {
+export const groupVideoFeeds = <C extends VideoCard>(cards: C[]): C[] => {
   const groups = lodash.groupBy(cards, c => c.aid)
   const cardToCooperationItem = (card: VideoCard) => ({
     id: card.upID,

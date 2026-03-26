@@ -1,5 +1,5 @@
 import type { AutoUpdateOptions } from '@/components/auto-update'
-import { defineOptionsMetadata, OptionsOfMetadata } from '@/components/define'
+import { defineOptionsMetadata, type OptionsOfMetadata } from '@/components/define'
 import { getComponentSettings } from '@/core/settings'
 import { getNumberValidator } from '@/core/utils'
 import { RefreshMethod, HotReloadMethod } from './update-method'

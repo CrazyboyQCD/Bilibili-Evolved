@@ -1,8 +1,9 @@
+import { reactive } from 'vue'
 import { registerAndGetData } from '@/plugins/data'
 import { getComponentSettings } from '@/core/settings'
-import { CommentContentReplaceHandler } from './types'
-import { CommentContentReplaceOptions } from '../options'
-import { NodeContentReplacer } from './node-content-replacer'
+import { type CommentContentReplaceHandler } from './types'
+import { type CommentContentReplaceOptions } from '../options'
+import { type NodeContentReplacer } from './node-content-replacer'
 import { EmoticonToEmoticonReplacer } from './emoticon-to-emoticon'
 import { EmoticonToTextReplacer } from './emoticon-to-text'
 import { RecursiveReplacer } from './recursive'
@@ -25,7 +26,7 @@ const defaultHandler: CommentContentReplaceHandler = ({ content }) => {
   const { replaceMap } = options
   const [finalReplaceMap] = registerAndGetData(
     CommentContentReplaceDefaultHandlerReplaceMap,
-    replaceMap,
+    reactive(replaceMap),
   )
   const replaceNodes = (nodes: Node[]) => {
     nodes.forEach(node => {
@@ -46,4 +47,7 @@ const defaultHandler: CommentContentReplaceHandler = ({ content }) => {
 }
 
 export const CommentContentReplaceHandlers = 'commentContentReplace.handlers'
-export const handlers = registerAndGetData(CommentContentReplaceHandlers, [defaultHandler])
+export const handlers = registerAndGetData(
+  CommentContentReplaceHandlers,
+  reactive([defaultHandler]),
+)

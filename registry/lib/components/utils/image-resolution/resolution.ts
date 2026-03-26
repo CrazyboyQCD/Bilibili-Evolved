@@ -1,5 +1,5 @@
 import { styledComponentEntry } from '@/components/styled-component'
-import { Options } from '.'
+import { type Options } from './options'
 
 const resizeRegex = /@(\d+)[Ww](_(\d+)[Hh])?/
 

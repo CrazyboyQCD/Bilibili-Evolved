@@ -21,7 +21,7 @@ export const startCoreWatcher = () =>
       ),
     )
     exitHook(exit =>
-      instance.close(() => {
+      instance?.close(() => {
         console.log('本体编译器已退出')
         exit()
       }),

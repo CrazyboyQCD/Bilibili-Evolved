@@ -41,8 +41,8 @@
           :focused="a.key === activeActionKey"
           @delete-item="onDeleteItem(a.key)"
           @action="
-            index === actions.length - 1 && onClearHistory()
-            onAction()
+            index === actions.length - 1 && onClearHistory();
+            onAction();
           "
         />
       </div>

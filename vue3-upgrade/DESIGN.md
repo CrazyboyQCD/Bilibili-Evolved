@@ -1,6 +1,6 @@
 # Vue 3 升级设计方案
 
-> Bilibili-Evolved · vue 2.7.16 → vue ^3.5 · 状态：设计定稿，未开始实施
+> Bilibili-Evolved · vue 2.7.16 → vue ^3.5 · 状态：阶段 0 完成（2026-09-04）——工具链切换 + build-core 通过；type/lint 红已记录在案（见 §4.0.6），从阶段 1 开始
 > 分支：`vue3-upgrade`（基于 master）。本文档由 2026-09-02 会话综合代码考古与历史尝试教训产出。
 
 ## 1. 目标与已定决策
@@ -32,12 +32,37 @@
 
 ## 4. 阶段计划
 
-### 阶段 0：工具链切换（不动业务代码）
-1. 升级 `vue@^3.5`、`@vue/compiler-sfc@3.x`、`vue-loader@^17`；alias 从 `vue/dist/vue.runtime.common.prod.js`（`webpack/webpack.prod.ts:23`、`webpack.dev.ts:21`）改为 ESM 构建。
-2. ESLint extends 改 `plugin:vue/vue3-recommended`；开启 `vue/require-explicit-emits`。
-3. `src/shims.d.ts` 改 Vue 3 泛型形式；移除 `vueCompilerOptions.target`、`consolidate` 的 pnpm override。
-4. **第一个任务（最小实验）**：验证 `window.Vue = { default, ...ESM命名空间, __esModule: true }` 方案下，registry 侧 `global Vue` external 的具名导入（`Vue.ref`）与默认导入 interop 行为。
-5. 记录基线：`pnpm run type` / `lint-check` / `build-core` / `build-features` 全绿留作对照。
+### 阶段 0：工具链切换（除两处编译必需的最小模板修复外，不动业务代码）
+
+1. **✅ 已完成（2026-09-04）**：升级 `vue@3.5.42`、`@vue/compiler-sfc@3.5.42`、`vue-loader@17.4.2`；alias 从 `vue/dist/vue.runtime.common.prod.js`（`webpack/webpack.prod.ts`、`webpack.dev.ts`）改为 `vue/dist/vue.runtime.esm-bundler.js`；`webpack.config.ts` 补 DefinePlugin 特性标志（`__VUE_OPTIONS_API__` 等，esm-bundler 运行时必需）；`VueLoaderPlugin` 改从 `vue-loader` 具名导入。
+2. **✅ 已完成（2026-09-04）**：ESLint extends 改 `plugin:vue/vue3-recommended`；开启 `vue/require-explicit-emits`（error）。
+3. **✅ 已完成（2026-09-04）**：`src/shims.d.ts` 改 Vue 3 泛型（`DefineComponent`）；`src/global.d.ts` 全局 `Vue`/`Vue` 类型从 `vue/types/umd`（vue2 专属路径，vue3 下不存在）改 `typeof import('vue')`（vue3 d.mts 自带 `export as namespace Vue`，两种声明均能解析）；移除 `vueCompilerOptions.target` 与 `consolidate` 的 pnpm override。
+4. **✅ 已完成（2026-09-03）：`window.Vue` interop 最小实验通过**（代码与可复现脚本：`vue3-upgrade/interop-experiment/`）。实验修正了本方案最初的包装假设，最终结论：
+   - **webpack 5 对 `global Vue` external 不做任何运行时 interop**：default 导入、具名导入、namespace 导入全部编译为对 `globalThis["Vue"]` 的属性访问（`const external_Vue_namespaceObject = globalThis["Vue"]`），`__esModule` 标记不参与 default 导入解析。
+   - **vue3 ESM 构建没有 default 导出**（172 个具名导出，`default === undefined`）——最初设想的 `{ default: VueNS.default, ... }` 中 `default` 会是 undefined。
+   - **验证通过的 `window.Vue` 形态**（复刻 Vue 2.7 CJS "默认导出 = 整库" 语义，default 导入/具名导入/namespace 导入三向可用）：
+     ```ts
+     import * as VueLibrary from 'vue'
+     const VueNamespace = { ...VueLibrary, __esModule: true }
+     VueNamespace.default = VueNamespace // default 自引用，default 导入即整库
+     window.Vue = VueNamespace
+     ```
+   - 验证矩阵（vue@3.5.42 + 仓库 webpack 5.97.1，UMD 产物同 registry 形态）：default 导入 === `window.Vue` 本体（`createApp`/`ref` 全可用）；具名导入（`ref`/`createApp`）与 namespace 导入身份一致；`createApp` + `ref`/`reactive` 实际运行通过。反例成立：`window.Vue = vue3 default 导出`（undefined）在具名导入处直接 `TypeError`。
+   - **沙箱兼容性确认**：`load-feature-code.ts` 的 `with(proxy)` 沙箱中，webpack 生成的 `globalThis["Vue"]` 经 `has: () => true` + `get` 转发 `window[p]` 解析为 `window.Vue`，与现状机制相同，**registry externals 方案无需改动**。
+   - `__esModule: true` 与 default 自引用是语义完备性选择（保证 `import * as Vue; Vue.default` 也返回整库，与 2.7 CJS 行为对齐）；实测仅 `{ ...VueLibrary }` 展开（无标记、无 default）在三种导入下行为亦等价。
+5. ~~记录基线：`pnpm run type` / `lint-check` / `build-core` / `build-features` 全绿留作对照。~~ **未按原计划执行**：依赖升级先行，vue2 全绿基线未及记录；改为记录升级后红项作为阶段 1–3 的收口清单（见 §4.0.6）。
+6. **✅ 阶段 0 验证记录（2026-09-04）**：
+   - `pnpm run build-core`：**通过**（0 error）。产物含 5 个预期 warning：4 个 `export 'default' (imported as 'Vue') was not found in 'vue'`（bisector 3 个 SFC + `init-vue.ts`，webpack 对 vue3 无 default 导出按 warning 处理、运行时为 undefined，属阶段 1 改写对象，**不会编译期拦截**——HANDOFF 早先"编译期报错"的说法据此修正）+ 1 个 vue3 模板编译器新增的 `<a>` 嵌套 HTML 规范 warning（ColumnCard.vue，vue2 不查）。
+   - 编译必需的最小业务修复（阶段 0 仅有的业务代码改动）：**vue3 模板表达式解析器把多语句内联 handler 当单表达式解析，多语句必须用分号分隔**（vue2 换行分隔即可）。共 2 文件 4 处：`src/ui/ImagePicker.vue`（3 处）、`src/components/launch-bar/LaunchBar.vue`（1 处）。**registry 改写时同类模式会再次出现，已录入 §5.4 checklist**。
+   - `pnpm run type`：**76 errors**（全部为预期的 Vue 2→3 API/类型差异，非笔误）：
+     - 3 个 `TS1192`/`TS2305`（`import Vue from 'vue'` default 导入：bigger-video-preview、vue-host.ts、show-upload-time×2、init-vue.ts）；
+     - 2 个 `TS2305`（`VueConstructor` 已移除：widget.ts、common-types.ts）；
+     - ~60 个 `TS2339`（vue3 库对象上不存在 `$el`/`$on`/`$off`/`$destroy`/`$nextTick`/`$watch`/`extend`/`config`/`directive`：遍布 core 接缝 utils/index.ts、dialog、toast、settings-panel、bisector 及 registry 若干组件——全部是阶段 1/2/3 的改写清单）；
+     - 1 个 `TS2351`（`new Vue(...)` 不可构造，mountVueComponent 内，阶段 1）；
+     - 1 个 `TS2456`（`ExternalApis` 循环引用，见下）。
+   - `pnpm run lint-check`：**128 errors / 2 warnings**，全部来自 vue3 新规则：`vue/require-explicit-emits` 65、`vue/no-deprecated-destroyed-lifecycle` 19、`vue/no-deprecated-filter` 14、`vue/no-deprecated-dollar-listeners-api` 13、`vue/no-deprecated-v-on-native-modifier` 7、`vue/v-on-event-hyphenation` 2、`vue/no-v-for-template-key-on-child` 1、其他 2 warning。无 @typescript-eslint 类意外错误。这些规则错误与 §5 迁移 checklist 一一对应，可当作改写完成的回归指标（阶段 5 应清零）。
+   - **TS2456 根因备忘**：`ExternalApis = typeof externalApis` ↔ `global.d.ts` 的 `Window.bilibiliEvolved: ExternalApis` 通过某核心模块导出类型引用 `Window` 形成环（实验证实：把 `bilibiliEvolved` 临时改 `any` 即消失；改 `sandboxWindow: window` 或全局 `Vue` 为 `any` 无效）。vue2 下懒求值可解、vue3 下被强制求值（疑似 `get settings()` getter 触发）。阶段 1 重写 core-apis 时顺带解环（如 bilibiliEvolved 改为接口引用或拆分 sandboxWindow 类型）。
+   - `build-features`（registry 全量）未跑：registry 改写完成前必然红（过滤器/`::v-deep`/多语句 handler 等），无对照价值，留到阶段 3。
 
 ### 阶段 1：core 基础设施（必须先行）
 - 重写 `mountVueComponent` 为 `createApp` + per-app 注册 `v-hit` 指令 + detached div 挂载；签名升级为接受 props（**事件回调作为 `onXxx` props 传入，结构性消灭全仓库 `vm.$on` 挂载监听模式**）。所有动态挂载点收口到它。
@@ -88,6 +113,10 @@
 - 字符串解析本地注册组件（SwitchOptions 三元）：script setup 化后失效，**必须改为传组件对象**（不报错但渲染成自定义元素，静默失败）。
 - 字符串当原生标签（`'div'`）：合法，保留；但"字符串当组件名"（Dialog title 等）逐个核对合约。若确需全局名字解析，只能在 mountVueComponent 上 per-app `app.component` 注册。
 
+### 5.4 模板语法规则
+1. **多语句内联 handler 必须用分号分隔**：vue3 模板表达式解析器把多语句 handler 当单表达式解析（vue2 换行分隔即可），`@click="a(); b()"` 合法、换行无分号直接 `VueCompilerError`。阶段 0 已修 core 2 文件，registry 改写时先排查同类模式。
+2. 过滤器（`|`）已移除 → 函数调用；`::v-deep` → `:deep()`；`v-for` template key 语义变化（key 必须放 `<template>` 上）；事件名 hyphenation 检查开启（`v-on-event-hyphenation`）。
+
 ## 6. 前次尝试考古（origin/vue3-migration、origin/vue3 分支）
 
 ### 6.1 分支状态
@@ -107,7 +136,7 @@
 - **附带地雷**：vue3-migration 的 `Widget.vue` 把 DevClient 实例放 `ref()`（§5.1 规则 1 的实例）；`index.ts` 的 dev 记录恢复逻辑被改坏（删了 ServerStop 事件处理，改为连接后首个 SessionsUpdate 的嵌套 once 监听）；Action.vue 的 ServerChange 监听未在 onUnmounted 移除（master 同样漏了，两边都要修）。
 
 ## 7. 风险与开放问题
-- `window.Vue` interop 实验（§4.0.4）是全计划的第一块多米诺，失败则需改 registry externals 方案（如按具名导出逐个映射 global）。
+- ~~`window.Vue` interop 实验（§4.0.4）是全计划的第一块多米诺~~ **已解决（2026-09-03，结论见 §4.0.4）**：registry externals 方案成立，无需按具名导出逐个映射 global。
 - 第三方旧组件硬失效：大版本公告 + 迁移文档，无运行时兼容手段。
 - `sass 1.25` + `fast-sass-loader` 老旧：正交问题，本次不动，可列后续。
 - 提交纪律：**按阶段/组件块原子提交**（工具链 → core 接缝 → src 分块 → registry 分块），出问题可二分——前次单提交暂存是排查困难的主因。

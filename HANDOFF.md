@@ -1,10 +1,18 @@
 # HANDOFF — Vue 3 升级项目交接
 
 > 生成于 2026-09-02 会话结束。工作分支 `vue3-upgrade`（基于 master，已切换）。
+> 2026-09-03 更新：§4.0.4 `window.Vue` interop 最小实验已完成并通过（结论与修正后的方案已回写 DESIGN.md），实验代码在 `vue3-upgrade/interop-experiment/`（未跟踪的临时实验，含自己的 node_modules/dist，勿提交）。
+> 2026-09-04 更新：**阶段 0 完成**——工具链切换（§4.0.1–0.3）+ build-core 编译通过 + type/lint 红项记录在案（全部见 DESIGN.md §4.0.6），已提交。下一任务从阶段 1（core 基础设施）开始。
 
 ## 下一会话的任务
 
-开始实施 Vue 2.7 → Vue 3.5+ 升级。**第一步是 vue3-upgrade/DESIGN.md §4 阶段 0 的第 4 项：`window.Vue` interop 最小实验**——它决定 registry externals 方案能否成立，是全计划的第一块多米诺。之后按 DESIGN.md 的阶段 0 → 1 → 2 → 3 → 4 → 5 顺序推进。
+**阶段 1：core 基础设施（DESIGN.md §4）**，按序：
+
+1. `mountVueComponent`（`src/core/utils/index.ts:180`）重写为 `createApp` + per-app 注册 `v-hit` 指令 + detached div 挂载；签名升级为接受 props（事件回调作为 `onXxx` props）。所有动态挂载点收口到它。
+2. `init-vue.ts` 重写：直接采用 DESIGN.md §4.0.4 已验证的 `window.Vue` 形态（整库对象 + `__esModule: true` + default 自引用）；v-hit `inserted` → `mounted`；移除 `Vue.config` 全局配置。
+3. `el.__vue__`/实例取用 → `mountVueComponent` 维护 `WeakMap<Element, Vm>` + `getInstanceFromElement(el)`；`createComponentWithProps` 用 `defineComponent` + `h` 重写；解 TS2456 循环引用（§4.0.6 备忘）。
+4. 验收：`pnpm run type` 的 76 个红中 core 接缝部分（init-vue/utils/dialog/toast/settings-panel/bisector/widget/common-types/core-apis）清零，lint 的 128 红中 core 部分清零；build-core 保持绿。
+5. 之后按阶段 2（src/ 全量）→ 3（registry）→ 4（版本与第三方）→ 5（验证）推进。改写时逐条对照 §5 checklist，注意 §5.4 新增的"多语句内联 handler 必须分号分隔"规则。
 
 ## 权威设计文档（勿在本文件重复其内容）
 

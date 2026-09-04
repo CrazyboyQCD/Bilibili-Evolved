@@ -18,9 +18,6 @@
       ]
     }
   },
-  "vueCompilerOptions": {
-    "target": "auto"
-  },
   "include": [
     "src/**/*",
     "tests/**/*",

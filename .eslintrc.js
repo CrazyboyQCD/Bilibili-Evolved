@@ -4,7 +4,7 @@ module.exports = {
     es2020: true,
   },
   extends: [
-    'plugin:vue/recommended',
+    'plugin:vue/vue3-recommended',
     'plugin:@typescript-eslint/recommended',
     'airbnb-base',
     'plugin:prettier/recommended',
@@ -53,6 +53,8 @@ module.exports = {
     'vue/require-prop-types': 'off',
     'vue/one-component-per-file': 'off',
     'vue/singleline-html-element-content-newline': 'off',
+    // 防止未声明的 emit 泄漏成原生事件监听导致双触发（见 vue3-upgrade/DESIGN.md §5.2）
+    'vue/require-explicit-emits': 'error',
 
     // 使用 @typescript-eslint/no-unused-vars, 否则 interface 都是 unused
     'no-unused-vars': 'off',

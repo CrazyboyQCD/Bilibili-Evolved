@@ -1,7 +1,8 @@
 declare module '*.vue' {
-  import Vue from 'vue'
+  import type { DefineComponent } from 'vue'
 
-  export default Vue
+  const component: DefineComponent<Record<string, never>, Record<string, never>, any>
+  export default component
 }
 declare module '*.scss' {
   const style: string

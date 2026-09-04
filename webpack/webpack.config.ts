@@ -1,4 +1,4 @@
-import VueLoaderPlugin from 'vue-loader/lib/plugin'
+import { VueLoaderPlugin } from 'vue-loader'
 import TerserPlugin from 'terser-webpack-plugin'
 import webpack, { Configuration } from 'webpack'
 import path from 'path'
@@ -126,6 +126,10 @@ export const getDefaultConfig = (src = relativePath('src')): Configuration => {
       }),
       new webpack.DefinePlugin({
         webpackGitInfo: JSON.stringify(gitInfo),
+        // vue3 esm-bundler 构建要求的特性标志（build 全局量，未定义会在运行时 ReferenceError）
+        __VUE_OPTIONS_API__: JSON.stringify(true),
+        __VUE_PROD_DEVTOOLS__: JSON.stringify(false),
+        __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: JSON.stringify(false),
       }),
       new webpack.optimize.LimitChunkCountPlugin({
         maxChunks: 1,

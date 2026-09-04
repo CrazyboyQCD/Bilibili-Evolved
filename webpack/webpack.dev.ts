@@ -18,6 +18,6 @@ previewConfig.plugins.push(
 )
 
 // see src/client/init-vue.ts
-lodash.set(previewConfig, 'resolve.alias.vue$', 'vue/dist/vue.runtime.common.prod.js')
+lodash.set(previewConfig, 'resolve.alias.vue$', 'vue/dist/vue.runtime.esm-bundler.js')
 
 export default previewConfig
